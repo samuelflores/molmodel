@@ -1,0 +1,4 @@
+added parameter chainsPrefix to createCompound call
+--This line, and those below, will be ignored--
+
+M    ExampleLoadPdb.cpp
