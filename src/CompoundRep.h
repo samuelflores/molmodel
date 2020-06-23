@@ -1758,6 +1758,26 @@ public:
     //    const Transform& transform
     //    ) const;
 
+  /**
+   * \brief Write the entity_poly_seq loop into the MMDB2 Data object.
+   */
+  void writeEntityPolySeqLoop(
+      const State& state, ///< simbody state representing the current configuration of the molecule
+      mmdb::io::File *cifFile,  ///< MMDB2 File pointer - to this file object will the loop be written into.
+      int compoundNumber ///< Compound number.
+      ) const;
+
+  /**
+   * \brief Create the MMDB2 object structure for mmCIF writing..
+   *
+   * Starting with the first atom's serial number as one(1).
+   */
+  void buildCif(
+      const State& state, ///< simbody state representing the current configuration of the molecule
+      mmdb::Model* mmdb2Model,  ///< MMDB2 library model object pointer to which the MMDB2 object structure will be build into.
+      const Transform& transform ///< optional change to location and orientation of molecule
+      ) const;
+    
     std::ostream& writePdb(
         const State& state, 
         std::ostream& os, 
