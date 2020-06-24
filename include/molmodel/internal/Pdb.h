@@ -206,7 +206,7 @@ protected:
     /// Try to be smart about guessing correct atom name for names that are not 4 characters long
     static std::vector<SimTK::String> generatePossibleAtomNames(SimTK::String name);
 
-private:
+public:
     Element element;
 
     // avoid dll export warnings for these private types
@@ -216,7 +216,6 @@ private:
 #endif
 
     SimTK::String atomName;
-public:
     typedef std::vector<PdbAtomLocation> Locations;
     Locations locations;
     std::map<char, int> locationIndicesById;
