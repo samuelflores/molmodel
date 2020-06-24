@@ -1004,6 +1004,7 @@ std::ostream& CompoundRep::writeDefaultPdb(std::ostream& os, int& nextSerialNumb
     return os;
 }
 
+#ifdef MMDB2_LIB_USAGE
 void CompoundRep::writeEntityPolySeqLoop( const State& state, mmdb::io::File *cifFile, int compoundNumber ) const
 {
     //================================================ Prepare the basic sequence loop ( _entity_poly_seq )
@@ -1143,6 +1144,7 @@ void CompoundRep::buildCif( const State& state, mmdb::Model* mmdb2Model, const T
     //================================================ Done
     return;
 }
+#endif
 
 ostream& CompoundRep::writePdb(const State& state, ostream& os, const Transform& transform) const  
 {
@@ -2091,6 +2093,7 @@ void Compound::writeDefaultPdb(const char* outFileName, const Transform& transfo
     os.close();
 }
 
+#ifdef MMDB2_LIB_USAGE
 void Compound::writeEntityPolySeqLoop( const State& state, mmdb::io::File *cifFile, int compoundNumber ) const
 {
     getImpl().writeEntityPolySeqLoop ( state, cifFile, compoundNumber );
@@ -2102,6 +2105,7 @@ void Compound::buildCif( const State& state, mmdb::Model* mmdb2Model, const Tran
     getImpl().buildCif ( state, mmdb2Model, transform );
     return ;
 }
+#endif
 
 ostream& Compound::writePdb(const SimTK::State& state, ostream& os, const Transform& transform) const  
 {

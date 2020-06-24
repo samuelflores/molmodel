@@ -1758,6 +1758,7 @@ public:
     //    const Transform& transform
     //    ) const;
 
+#ifdef MMDB2_LIB_USAGE
   /**
    * \brief Write the entity_poly_seq loop into the MMDB2 Data object.
    */
@@ -1777,6 +1778,7 @@ public:
       mmdb::Model* mmdb2Model,  ///< MMDB2 library model object pointer to which the MMDB2 object structure will be build into.
       const Transform& transform ///< optional change to location and orientation of molecule
       ) const;
+#endif
     
     std::ostream& writePdb(
         const State& state, 
