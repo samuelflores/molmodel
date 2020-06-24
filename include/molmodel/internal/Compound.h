@@ -846,6 +846,8 @@ public:
       * This function writes the poly_seq loop into the supplied MMDB2 mmCIF file object. This is required for a proper
       * mmCIF file to be created.
       */
+    
+#ifdef MMDB2_LIB_USAGE
      void writeEntityPolySeqLoop(
          const State& state, ///< simbody state representing the current configuration of the molecule
          mmdb::io::File *cifFile,  ///< MMDB2 File pointer - to this file object will the loop be written into.
@@ -862,6 +864,7 @@ public:
          mmdb::Model* mmdb2Model,  ///< MMDB2 library model object pointer to which the MMDB2 object structure will be build into.
          const Transform& transform = Transform() ///< optional change to location and orientation of molecule
          ) const;
+#endif
     
     /**
      * \brief Write the dynamic Compound configuration in Protein Data Bank (PDB) format.
