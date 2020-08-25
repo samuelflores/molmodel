@@ -61,7 +61,8 @@ public:
         {
             mol_DbRead("mol", filename.c_str(), MOL_DB_PDB, &model );
         }
-        else if ( filename.substr ( filename.length() - 4, filename.length() - 1) == ".cif" )
+        else if ( ( filename.substr ( filename.length() - 4, filename.length() - 1) == ".cif" ) ||
+                  ( filename.substr ( filename.length() - 7, filename.length() - 1) == ".cif.gz" ) )
         {
 #ifdef MMDB2_LIB_USAGE
             //======================================== Open file
@@ -330,13 +331,13 @@ public:
             //======================================== Clean up
             delete mfile;
 #else
-            std::cerr << "ERROR: The suplied file has the mmCIF format, but Molmodel was not compiled with the MMDB2 library, which is required for the mmCIF support. Please re-run the Molmodel cmake command with the -DADD_MMDB2_LIBRARY=TRUE option (and then alse re-run the make install command). Terminating..." << std::endl;
+            std::cerr << "ERROR: The suplied file has the mmCIF format, but Molmodel was not compiled with the Gemmi library, which is required for the mmCIF support. Please re-run the Molmodel cmake command with the -DUSE_GEMMI=TRUE -DGEMMI_PATH=/path/to/gemmi/include options (and then alse re-run the make install command). Terminating..." << std::endl;
             exit                                      ( -1 );
 #endif
         }
         else
         {
-            std::cerr << "Failed to detect the extension of the input file " << filename << ". The supported extensions are: \'.pdb\' and \'.cif\'. Terminating now..." << std::endl;
+            std::cerr << "Failed to detect the extension of the input file " << filename << ". The supported extensions are: \'.pdb\' and \'.cif\' (or \'.cif.gz\'). Terminating now..." << std::endl;
             exit                                      ( -1 );
         }
 

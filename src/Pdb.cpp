@@ -5,8 +5,9 @@
 #include "molmodel/internal/Compound.h"
 #include <stdexcept>
 
-#ifdef MMDB2_LIB_USAGE
-   #include <mmdb2/mmdb_manager.h>
+#ifdef GEMMI_USAGE
+    //================================================ Include Gemmi headers
+    #include <gemmi/gz.hpp>
 #endif
 
 // uncomment this if you want debug flags to be printed
@@ -825,171 +826,113 @@ PdbStructure::PdbStructure( ) {
 PdbStructure::PdbStructure(
                            std::string pdbFileName)
 {
-#ifdef MMDB2_LIB_USAGE
-    //================================================ Create the first (and only) model
-    models.push_back                                  ( PdbModel(models.size() + 1) );
+#ifdef GEMMI_USAGE
+    //================================================ Read in the file into Gemmi document
+    gemmi::cif::Document gemmiDoc                     = gemmi::cif::read ( gemmi::MaybeGzipped ( pdbFileName ) );
     
-    //================================================ Crawl through the hierarchy
-    mmdb::CoorManager *mfile                          = new mmdb::CoorManager ( );
-        
-    //================================================ Check that the file was opened correctly
-    if ( mfile->ReadCoorFile ( pdbFileName.c_str() ) )
+    //================================================ Check the number of blocks
+    if ( gemmiDoc.blocks.size() < 1 )
     {
-        std::cerr << "MMDB2 Failed to open the file " << pdbFileName << ". Terminating now..." << std::endl;
-        exit                                  ( -1 );
+        std::cerr << "!!! Error !!! The file " << pdbFileName << " contains 0 blocks. Nothing the be read." << std::endl;
+        exit                                          ( EXIT_FAILURE );
     }
-        
-    //================================================ Initialise MMDB crawl
-    int noModels                                      = 0;
-    int noChains                                      = 0;
-    int noResidues                                    = 0;
-    int noAtoms                                       = 0;
-    mmdb::Model **mmdb2Model;
-    mmdb::Chain **mmdb2Chain;
-    mmdb::Residue **mmdb2Residue;
-    mmdb::Atom **mmdb2Atom;
-        
-    //================================================ Find all models in the PDB file
-    mfile->GetModelTable                              ( mmdb2Model, noModels );
-    
-    //================================================ Check that at least one model was found
-    if ( noModels < 1 )
+    else if ( gemmiDoc.blocks.size() > 1 )
     {
-        std::cerr << "MMDB2 found no models the file " << pdbFileName << ". Terminating now..." << std::endl;
-        exit                                          ( -1 );
+        std::cerr << "!!! Warning !!! The file " << pdbFileName << " contains multiple blocks. Molmodel will use the first block named " << gemmiDoc.blocks.at(0).name << " and ignore the rest." << std::endl;
     }
-    
-    //================================================ If there are multiple models, just the first one will be used. This may needs some tweaking in the future
-    if ( noModels < 1 )
-    {
-        std::cout << "WARNING: MMDB2 found multiple models (" << noModels << ") the file " << pdbFileName << ". Only the first model will be used." << std::endl;
-    }
-        
-    //================================================ Check the first model is readable
-    if ( mmdb2Model[0] )
-    {
 
-        //============================================ Find all chains for first model (the 1 in the first argument to the GetCHainTable() function)
-        mfile->GetChainTable                          ( 1, mmdb2Chain, noChains );
+    //================================================ Generate structure from block
+    gemmi::Structure gemmiStruct                      = gemmi::impl::make_structure_from_block ( gemmiDoc.blocks.at(0) );
+    
+    //================================================ Use first model check
+    if ( gemmiStruct.models.size() < 1 )
+    {
+        std::cerr << "!!! Error !!! The file " << pdbFileName << " contains 0 models. Nothing the be read." << std::endl;
+        exit                                          ( EXIT_FAILURE );
+    }
+    else if ( gemmiStruct.models.size() > 1 )
+    {
+        std::cerr << "!!! Warning !!! The file " << pdbFileName << " contains multiple models. Molmodel will use the first model only." << std::endl;
+    }
+    
+    //================================================ Create molmodel model (first and only)
+    models.push_back                                  ( PdbModel ( models.size() + 1 ) );
+    
+    //================================================ For each chain
+    for ( unsigned int chIt = 0; chIt < static_cast<unsigned int> ( gemmiStruct.models.at(0).chains.size() ); chIt++ )
+    {
+        //============================================ Get the chain ID
+        String chainId                                =  std::string ( gemmiStruct.models.at(0).chains.at(chIt).name );
         
-        //============================================ For each chain
-        for ( int nCh = 0; nCh < noChains; nCh++ )
+        //============================================ Add the chain to molmodel unless it already exists
+        if ( !models.back().hasChain ( chainId ) )
         {
-            //======================================== Check that the chain is reaable
-            if ( mmdb2Chain[nCh] )
+            models.back().chainIndicesById[chainId]   = models.back().chains.size();
+            models.back().chains.push_back            ( PdbChain ( chainId ) );
+        }
+        
+        //============================================ For each residue
+        int resNumGemmi                               = 0;
+        for ( unsigned int reIt = 0; reIt < static_cast<unsigned int> ( gemmiStruct.models.at(0).chains.at(chIt).residues.size() ); reIt++ )
+        {
+            //======================================== Get residue insertion code, residueID and residue name
+            char ICode                                = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).seqid.icode;
+            
+            if ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).seqid.num.has_value() ) { resNumGemmi = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).seqid.num.value; }
+            else                                                                                    { resNumGemmi++; }
+            
+            PdbResidueId residueId                    ( resNumGemmi, ICode );
+            String residueName                        = std::string ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).name );
+            
+            //======================================== Add it to molmodel unless it already exists
+            if ( !models.back().chains[models.back().chainIndicesById[chainId]].hasResidue ( residueId ) )
             {
-                //==================================== Get the chain ID
-                String chainId                        =  std::string ( mmdb2Chain[nCh]->GetChainID() );
-                
-                //==================================== Make sure the chain exists
-                if ( !models.back().hasChain ( chainId ) )
-                {
-                    models.back().chainIndicesById[chainId] = models.back().chains.size();
-                    models.back().chains.push_back    ( PdbChain ( chainId ) );
-                }
-                
-                //==================================== Get all residues for this chain
-                mfile->GetResidueTable                ( 1, nCh, mmdb2Residue, noResidues );
-
-                //==================================== For each residue
-                for ( int nRes = 0; nRes < noResidues; nRes++ )
-                {
-                    //================================ Check that the residue is readable
-                    if ( mmdb2Residue[nRes] )
-                    {
-                        //============================ Check if this is not a TER entry
-                        mfile->GetAtomTable           ( 1, nCh, nRes, mmdb2Atom, noAtoms );
-                        bool isTer                    = false;
-                        for ( int aNo = 0; aNo < noAtoms; aNo++ ) { if ( mmdb2Atom[aNo] ) { if ( mmdb2Atom[aNo]->Ter ) { isTer = true; } } }
-                        if ( isTer ) { continue; }
-                        
-                        //============================ Create residue and if it does not exist, add it
-                        std::string ICodeHlp          = std::string ( mmdb2Residue[nRes]->insCode );
-                        char ICode;
-                        if ( ICodeHlp == "" ) { ICode = ' '; } else { ICode = mmdb2Residue[nRes]->insCode[0]; }
-                        
-                        PdbResidueId residueId        ( mmdb2Residue[nRes]->seqNum, ICode );
-                        String residueName             = std::string ( mmdb2Residue[nRes]->name );
-                        
-                        if ( !models.back().chains[models.back().chainIndicesById[chainId]].hasResidue ( residueId ) )
-                        {
-                            models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId] = models.back().chains[models.back().chainIndicesById[chainId]].residues.size();
-                            models.back().chains[models.back().chainIndicesById[chainId]].residues.push_back ( PdbResidue ( residueName, residueId ) );
-                        }
-
-                        //============================ Get all atoms
-                        mfile->GetAtomTable           ( 1, nCh, nRes, mmdb2Atom, noAtoms );
-
-                        //============================ For each atom
-                        for ( int aNo = 0; aNo < noAtoms; aNo++ )
-                        {
-                            //======================== Check that the atom is readable
-                            if ( mmdb2Atom[aNo] )
-                            {
-                                //==================== Initialise variables
-                                String atomName       = std::string ( mmdb2Atom[aNo]->name );
-                                
-                                //==================== If this atom does not yet exist in molmodel
-                                if ( !models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].hasAtom( atomName ) )
-                                {
-                                    //================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
-                                    String elementSymbol = std::string ( mmdb2Atom[aNo]->element );
-                                    if ( ( elementSymbol.length() > 1 ) && ( toupper (  elementSymbol[0] ) ==  elementSymbol[0] ) ) { elementSymbol[1] = tolower ( elementSymbol[1] ); }
-
-                                    // Four character atom names starting with "H" are probably hydrogen, even if they start with "HO", which should properly be Holmium. - taken from molmodel
-                                    if ( ( 'H' == atomName[0] ) && ( std::string::npos == atomName.find_first_of(" ") ) ) { elementSymbol = "H"; }
-
-                                    const Element& element = Element::getBySymbol ( elementSymbol );
-                                    models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].addAtom ( PdbAtom ( atomName, element ) );
-                                }
-                                
-                                //==================== Fill in the atom class
-                                char altLoc           = mmdb2Atom[aNo]->altLoc[0];
-
-                                //==================== If this alt location is not in the molmodel structure, add it
-                                if ( !models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].hasLocation(altLoc) )
-                                {
-                                    double x          = mmdb2Atom[aNo]->x;
-                                    double y          = mmdb2Atom[aNo]->y;
-                                    double z          = mmdb2Atom[aNo]->z;
-                                    SimTK::Real tempFac = static_cast<SimTK::Real> ( mmdb2Atom[aNo]->tempFactor );
-                                    SimTK::Real occ   = static_cast<SimTK::Real> ( mmdb2Atom[aNo]->occupancy );
-
-                                    models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locationIndicesById[altLoc] = models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.size();
-                                    models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.push_back ( PdbAtomLocation ( 0.1 * SimTK::Vec3 ( x,y,z ), altLoc, tempFac, occ ) );
-                                }
-                            }
-                            else
-                            {
-                                std::cerr << "MMDB2 failed to read the atom " << aNo << " in residue " << nRes << " in chain " << nCh << " in file " << pdbFileName << ". The file i   most likely corrupted. Terminating now..." << std::endl;
-                                exit                          ( -1 );
-                            }
-                        }
-                    }
-                    else
-                    {
-                        std::cerr << "MMDB2 failed to read the residue " << nRes << " in chain " << nCh << " in file " << pdbFileName << ". The file is most likely corrupted  Terminating now..." << std::endl;
-                        exit                          ( -1 );
-                    }
-                }
+                models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId] = models.back().chains[models.back().chainIndicesById[chainId]].residues.size();
+                models.back().chains[models.back().chainIndicesById[chainId]].residues.push_back ( PdbResidue ( residueName, residueId ) );
             }
-            else
+            
+            //======================================== For each atom
+            for ( unsigned int atIt = 0; atIt < static_cast<unsigned int> ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.size() ); atIt++ )
             {
-                std::cerr << "MMDB2 failed to read the chain " << nCh << " in file " << pdbFileName << ". The file is most likely corrupted. Terminating now..." << std::endl;
-                exit                          ( -1 );
+                //==================================== Get atom name
+                String atomName                       = std::string ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name );
+                
+                //==================================== If this atom does not yet exist in molmodel, add it
+                if ( !models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].hasAtom( atomName ) )
+                {
+                    //================================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
+                    String elementSymbol              = std::string ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).element.name() );
+                    if ( ( elementSymbol.length() > 1 ) && ( toupper (  elementSymbol[0] ) ==  elementSymbol[0] ) ) { elementSymbol[1] = tolower ( elementSymbol[1] ); }
+                    
+                    //================================ Four character atom names starting with "H" are probably hydrogen, even if they start with "HO", which should properly be Holmium. - taken from molmodel
+                    if ( ( 'H' == atomName[0] ) && ( std::string::npos == atomName.find_first_of(" ") ) ) { elementSymbol = "H"; }
+
+                    //================================ Add the atom
+                    const Element& element            = Element::getBySymbol ( elementSymbol );
+                    models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].addAtom ( PdbAtom ( atomName, element ) );
+                }
+                
+                //==================================== Find alternative location indication
+                char altLoc                           = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).altloc;
+                
+                //==================================== If this alt location is not in the molmodel structure, add it
+                if ( !models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].hasLocation(altLoc) )
+                {
+                    double x                          = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.x;
+                    double y                          = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.y;
+                    double z                          = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.z;
+                    SimTK::Real tempFac               = static_cast<SimTK::Real> ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).b_iso );
+                    SimTK::Real occ                   = static_cast<SimTK::Real> ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).occ   );
+
+                    models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locationIndicesById[altLoc] = models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.size();
+                    models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.push_back ( PdbAtomLocation ( 0.1 * SimTK::Vec3 ( x,y,z ), altLoc, tempFac, occ ) );
+                }
+                
             }
         }
     }
-    else
-    {
-        std::cerr << "MMDB2 failed to read the first model in file " << pdbFileName << ". The file is most likely corrupted. Terminating now..." << std::endl;
-        exit                                  ( -1 );
-    }
-        
-    //================================================ Clean up
-    delete mfile;
 #else
-    std::cerr << "ERROR: You have attempted to read mmCIF file, but Molmodel was not compiled with the MMDB2 library required for mmCIF file support. Please re-run the Molmodel cmake command with the -DADD_MMDB2_LIBRARY=TRUE option (and then re-run the make install command as well). Terminating..." << std::endl;
+    std::cerr << "ERROR: You have attempted to read mmCIF file, but Molmodel was not compiled with the Gemmi library required for mmCIF file support. Please re-run the Molmodel cmake command with the -DUSE_GEMMI=TRUE -DGEMMI_PATH=/path/to/gemmi/include options (and then re-run the make install command as well). Terminating..." << std::endl;
     exit                                              ( -1 );
 #endif
 }
