@@ -4,6 +4,8 @@
 #include "molmodel/internal/Pdb.h"
 #include "molmodel/internal/Compound.h"
 #include <stdexcept>
+#include <algorithm>
+#include <cctype>
 
 #ifdef GEMMI_USAGE
     //================================================ Include Gemmi headers
@@ -896,12 +898,16 @@ PdbStructure::PdbStructure(
             {
                 //==================================== Get atom name
                 String atomName                       = std::string ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name );
+                if ( atomName.length() == 3 ) { atomName.insert ( 0, " " ); }
+                if ( atomName.length() == 2 ) { atomName = " " + atomName + " "; }
+                if ( atomName.length() == 1 ) { atomName = " " + atomName + "  "; }
                 
                 //==================================== If this atom does not yet exist in molmodel, add it
                 if ( !models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].hasAtom( atomName ) )
                 {
                     //================================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
                     String elementSymbol              = std::string ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).element.name() );
+                    while ( elementSymbol.length() < 2 ) { elementSymbol.insert ( 0, " " ); }
                     if ( ( elementSymbol.length() > 1 ) && ( toupper (  elementSymbol[0] ) ==  elementSymbol[0] ) ) { elementSymbol[1] = tolower ( elementSymbol[1] ); }
                     
                     //================================ Four character atom names starting with "H" are probably hydrogen, even if they start with "HO", which should properly be Holmium. - taken from molmodel
