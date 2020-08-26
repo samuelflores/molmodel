@@ -846,94 +846,87 @@ PdbStructure::PdbStructure(
     //================================================ Generate structure from block
     gemmi::Structure gemmiStruct                      = gemmi::impl::make_structure_from_block ( gemmiDoc.blocks.at(0) );
     
-    //================================================ Use first model check
-    if ( gemmiStruct.models.size() < 1 )
+    //================================================ For each model
+    for ( unsigned int moIt = 0; moIt < static_cast<unsigned int> ( gemmiStruct.models.size() ); moIt++ )
     {
-        std::cerr << "!!! Error !!! The file " << pdbFileName << " contains 0 models. Nothing the be read." << std::endl;
-        exit                                          ( EXIT_FAILURE );
-    }
-    else if ( gemmiStruct.models.size() > 1 )
-    {
-        std::cerr << "!!! Warning !!! The file " << pdbFileName << " contains multiple models. Molmodel will use the first model only." << std::endl;
-    }
-    
-    //================================================ Create molmodel model (first and only)
-    models.push_back                                  ( PdbModel ( models.size() + 1 ) );
-    
-    //================================================ For each chain
-    for ( unsigned int chIt = 0; chIt < static_cast<unsigned int> ( gemmiStruct.models.at(0).chains.size() ); chIt++ )
-    {
-        //============================================ Get the chain ID
-        String chainId                                =  std::string ( gemmiStruct.models.at(0).chains.at(chIt).name );
+        //============================================ Create molmodel model (first and only)
+        models.push_back                              ( PdbModel ( models.size() + 1 ) );
         
-        //============================================ Add the chain to molmodel unless it already exists
-        if ( !models.back().hasChain ( chainId ) )
+        //============================================ For each chain
+        for ( unsigned int chIt = 0; chIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.size() ); chIt++ )
         {
-            models.back().chainIndicesById[chainId]   = models.back().chains.size();
-            models.back().chains.push_back            ( PdbChain ( chainId ) );
-        }
-        
-        //============================================ For each residue
-        int resNumGemmi                               = 0;
-        for ( unsigned int reIt = 0; reIt < static_cast<unsigned int> ( gemmiStruct.models.at(0).chains.at(chIt).residues.size() ); reIt++ )
-        {
-            //======================================== Get residue insertion code, residueID and residue name
-            char ICode                                = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).seqid.icode;
+            //======================================== Get the chain ID
+            String chainId                            =  std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).name );
             
-            if ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).seqid.num.has_value() ) { resNumGemmi = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).seqid.num.value; }
-            else                                                                                    { resNumGemmi++; }
-            
-            PdbResidueId residueId                    ( resNumGemmi, ICode );
-            String residueName                        = std::string ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).name );
-            
-            //======================================== Add it to molmodel unless it already exists
-            if ( !models.back().chains[models.back().chainIndicesById[chainId]].hasResidue ( residueId ) )
+            //======================================== Add the chain to molmodel unless it already exists
+            if ( !models.back().hasChain ( chainId ) )
             {
-                models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId] = models.back().chains[models.back().chainIndicesById[chainId]].residues.size();
-                models.back().chains[models.back().chainIndicesById[chainId]].residues.push_back ( PdbResidue ( residueName, residueId ) );
+                models.back().chainIndicesById[chainId] = models.back().chains.size();
+                models.back().chains.push_back        ( PdbChain ( chainId ) );
             }
             
-            //======================================== For each atom
-            for ( unsigned int atIt = 0; atIt < static_cast<unsigned int> ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.size() ); atIt++ )
+            //======================================== For each residue
+            int resNumGemmi                           = 0;
+            for ( unsigned int reIt = 0; reIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.size() ); reIt++ )
             {
-                //==================================== Get atom name
-                String atomName                       = std::string ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name );
-                if ( atomName.length() == 3 ) { atomName.insert ( 0, " " ); }
-                if ( atomName.length() == 2 ) { atomName = " " + atomName + " "; }
-                if ( atomName.length() == 1 ) { atomName = " " + atomName + "  "; }
+                //==================================== Get residue insertion code, residueID and residue name
+                char ICode                            = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.icode;
                 
-                //==================================== If this atom does not yet exist in molmodel, add it
-                if ( !models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].hasAtom( atomName ) )
+                if ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.has_value() ) { resNumGemmi = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.value; }
+                else                                                                                       { resNumGemmi++; }
+                
+                PdbResidueId residueId                ( resNumGemmi, ICode );
+                String residueName                    = std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).name );
+                
+                //==================================== Add it to molmodel unless it already exists
+                if ( !models.back().chains[models.back().chainIndicesById[chainId]].hasResidue ( residueId ) )
                 {
-                    //================================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
-                    String elementSymbol              = std::string ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).element.name() );
-                    while ( elementSymbol.length() < 2 ) { elementSymbol.insert ( 0, " " ); }
-                    if ( ( elementSymbol.length() > 1 ) && ( toupper (  elementSymbol[0] ) ==  elementSymbol[0] ) ) { elementSymbol[1] = tolower ( elementSymbol[1] ); }
+                    models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId] = models.back().chains[models.back().chainIndicesById[chainId]].residues.size();
+                    models.back().chains[models.back().chainIndicesById[chainId]].residues.push_back ( PdbResidue ( residueName, residueId ) );
+                }
+                
+                //==================================== For each atom
+                for ( unsigned int atIt = 0; atIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.size() ); atIt++ )
+                {
+                    //================================ Get atom name
+                    String atomName                   = std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name );
+                    if ( atomName.length() == 3 ) { atomName.insert ( 0, " " ); }
+                    if ( atomName.length() == 2 ) { atomName = " " + atomName + " "; }
+                    if ( atomName.length() == 1 ) { atomName = " " + atomName + "  "; }
                     
-                    //================================ Four character atom names starting with "H" are probably hydrogen, even if they start with "HO", which should properly be Holmium. - taken from molmodel
-                    if ( ( 'H' == atomName[0] ) && ( std::string::npos == atomName.find_first_of(" ") ) ) { elementSymbol = "H"; }
+                    //================================ If this atom does not yet exist in molmodel, add it
+                    if ( !models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].hasAtom( atomName ) )
+                    {
+                        //============================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
+                        String elementSymbol          = std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).element.name() );
+                        while ( elementSymbol.length() < 2 ) { elementSymbol.insert ( 0, " " ); }
+                        if ( ( elementSymbol.length() > 1 ) && ( toupper (  elementSymbol[0] ) ==  elementSymbol[0] ) ) { elementSymbol[1] = tolower ( elementSymbol[1] ); }
+                        
+                        //============================ Four character atom names starting with "H" are probably hydrogen, even if they start with "HO", which should properly be Holmium. - taken from molmodel
+                        if ( ( 'H' == atomName[0] ) && ( std::string::npos == atomName.find_first_of(" ") ) ) { elementSymbol = "H"; }
 
-                    //================================ Add the atom
-                    const Element& element            = Element::getBySymbol ( elementSymbol );
-                    models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].addAtom ( PdbAtom ( atomName, element ) );
-                }
-                
-                //==================================== Find alternative location indication
-                char altLoc                           = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).altloc;
-                
-                //==================================== If this alt location is not in the molmodel structure, add it
-                if ( !models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].hasLocation(altLoc) )
-                {
-                    double x                          = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.x;
-                    double y                          = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.y;
-                    double z                          = gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.z;
-                    SimTK::Real tempFac               = static_cast<SimTK::Real> ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).b_iso );
-                    SimTK::Real occ                   = static_cast<SimTK::Real> ( gemmiStruct.models.at(0).chains.at(chIt).residues.at(reIt).atoms.at(atIt).occ   );
+                        //============================ Add the atom
+                        const Element& element        = Element::getBySymbol ( elementSymbol );
+                        models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].addAtom ( PdbAtom ( atomName, element ) );
+                    }
+                    
+                    //================================ Find alternative location indication
+                    char altLoc                       = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).altloc;
+                    
+                    //================================ If this alt location is not in the molmodel structure, add it
+                    if ( !models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].hasLocation(altLoc) )
+                    {
+                        double x                      = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.x;
+                        double y                      = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.y;
+                        double z                      = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.z;
+                        SimTK::Real tempFac           = static_cast<SimTK::Real> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).b_iso );
+                        SimTK::Real occ               = static_cast<SimTK::Real> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).occ   );
 
-                    models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locationIndicesById[altLoc] = models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.size();
-                    models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.push_back ( PdbAtomLocation ( 0.1 * SimTK::Vec3 ( x,y,z ), altLoc, tempFac, occ ) );
+                        models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locationIndicesById[altLoc] = models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.size();
+                        models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainId]].residues[models.back().chains[models.back().chainIndicesById[chainId]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.push_back ( PdbAtomLocation ( 0.1 * SimTK::Vec3 ( x,y,z ), altLoc, tempFac, occ ) );
+                    }
+                    
                 }
-                
             }
         }
     }

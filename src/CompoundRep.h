@@ -1768,6 +1768,7 @@ public:
       const State& state, ///< simbody state representing the current configuration of the molecule
       gemmi::Model* gemmiModel,  ///< Gemmi library Model object pointer to which the molmodel object structure will be saveds into.
       bool isPolymer, ///< Is this compound a polymer?
+      int decimal_places, ///< Number of decimal place to which the co-ordinates to to be rounded to.
       const Transform& transform ///< optional change to location and orientation of molecule
       ) const;
 #endif

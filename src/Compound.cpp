@@ -1005,7 +1005,7 @@ std::ostream& CompoundRep::writeDefaultPdb(std::ostream& os, int& nextSerialNumb
 }
 
 #ifdef GEMMI_USAGE
-void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, const Transform& transform = Transform() ) const
+void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, int decimal_places = 8, const Transform& transform = Transform() ) const
 {
     //================================================ Initialise local variables
     PdbChain chain                                    ( state, getOwnerHandle(), transform );
@@ -1052,9 +1052,9 @@ void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool i
             gemmiAtom.element                         = gemmi::Element ( (*atomI).element.getSymbol() );
             const PdbAtomLocation& location           = (*atomI).getPdbAtomLocation();
             Vec3 modCoords                            = transform * location.getCoordinates();
-            gemmiAtom.pos                             = gemmi::Position ( static_cast<double> ( modCoords[0] * 10.0 ),
-                                                                          static_cast<double> ( modCoords[1] * 10.0 ),
-                                                                          static_cast<double> ( modCoords[2] * 10.0 ) );
+            gemmiAtom.pos                             = gemmi::Position ( static_cast<double> ( std::ceil ( (modCoords[0] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ),
+                                                                          static_cast<double> ( std::ceil ( (modCoords[1] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ),
+                                                                          static_cast<double> ( std::ceil ( (modCoords[2] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ) );
             gemmiAtom.occ                             = static_cast<double> ( location.getOccupancy() );
             gemmiAtom.b_iso                           = static_cast<double> ( location.getTemperatureFactor() );
             gemmiAtom.serial                          = nextAtomSerialNumber;
@@ -2025,9 +2025,9 @@ void Compound::writeDefaultPdb(const char* outFileName, const Transform& transfo
 }
 
 #ifdef GEMMI_USAGE
-void Compound::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, const Transform& transform ) const
+void Compound::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, int decimal_places, const Transform& transform ) const
 {
-    getImpl().buildCif ( state, gemmiModel, isPolymer, transform );
+    getImpl().buildCif ( state, gemmiModel, isPolymer, decimal_places, transform );
     return ;
 }
 #endif
