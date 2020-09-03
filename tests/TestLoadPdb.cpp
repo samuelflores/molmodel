@@ -50,7 +50,8 @@ void testExactMatch(const std::string& pdbFileName)
     startTime = endTime;
     
     cout << "Matching chirality..." << endl;
-    rna.matchDefaultAtomChirality(atomTargets, 0.01);
+    double myMaxObservedSinePlaneDeviation;
+    rna.matchDefaultAtomChirality(atomTargets,myMaxObservedSinePlaneDeviation, 0.01);
 
     endTime = time(NULL);
     cout << endTime - startTime << " s elapsed time" << endl;
@@ -152,7 +153,8 @@ void testIdealizedMatch(const std::string& pdbFileName)
     startTime = endTime;
     
     cout << "Matching chirality..." << endl;
-    rna.matchDefaultAtomChirality(atomTargets, 90*Deg2Rad);
+    double myMaxObservedSinePlaneDeviation;
+    rna.matchDefaultAtomChirality(atomTargets,myMaxObservedSinePlaneDeviation, 90*Deg2Rad);
 
     endTime = time(NULL);
     cout << endTime - startTime << " s elapsed time" << endl;

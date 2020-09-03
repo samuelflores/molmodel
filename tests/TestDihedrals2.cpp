@@ -71,7 +71,8 @@ int main()
     //}
 
     // Four steps to a perfect match
-    myRNA.matchDefaultAtomChirality(atomTargets);
+    double myMaxObservedSinePlaneDeviation;
+    myRNA.matchDefaultAtomChirality(atomTargets,myMaxObservedSinePlaneDeviation,.01);
     myRNA.matchDefaultBondLengths(atomTargets);
     myRNA.matchDefaultBondAngles(atomTargets);
     myRNA.matchDefaultDihedralAngles(atomTargets);

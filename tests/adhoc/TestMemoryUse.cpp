@@ -3,6 +3,7 @@
 
 #if defined (__linux__)
 # include <sys/sysinfo.h>
+#include <unistd.h>
 
 #elif defined(__APPLE__)
 # include <mach/task.h>

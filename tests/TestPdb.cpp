@@ -115,9 +115,9 @@ void testMatchDefaultBreaksPlanarity() {
 
     // 1) First reproduce undesired behavior
     RNA mol1("A");
-	Compound::AtomTargetLocations atomTargets = mol1.createAtomTargets(pdbStructure); 
-
-	mol1.matchDefaultAtomChirality(atomTargets);
+    Compound::AtomTargetLocations atomTargets = mol1.createAtomTargets(pdbStructure); 
+    double myMaxObservedSinePlaneDeviation;
+    mol1.matchDefaultAtomChirality(atomTargets, myMaxObservedSinePlaneDeviation);
     mol1.matchDefaultBondLengths(atomTargets);
     mol1.matchDefaultBondAngles(atomTargets);
     mol1.matchDefaultDihedralAngles(atomTargets, Compound::DistortPlanarBonds);
@@ -135,9 +135,9 @@ void testMatchDefaultBreaksPlanarity() {
     // 2) Repair with extra parameter on matchDefaultAtomChirality
 
     RNA mol2("A");
-	atomTargets = mol2.createAtomTargets(pdbStructure); 
+    atomTargets = mol2.createAtomTargets(pdbStructure); 
 
-	mol2.matchDefaultAtomChirality(atomTargets, 0.20);
+    mol2.matchDefaultAtomChirality(atomTargets,myMaxObservedSinePlaneDeviation, 0.20);
     mol2.matchDefaultBondLengths(atomTargets);
     mol2.matchDefaultBondAngles(atomTargets);
     mol2.matchDefaultDihedralAngles(atomTargets, Compound::DistortPlanarBonds);
@@ -160,7 +160,7 @@ void testMatchDefaultBreaksPlanarity() {
     RNA mol3("A");
 	atomTargets = mol3.createAtomTargets(pdbStructure); 
 
-	mol3.matchDefaultAtomChirality(atomTargets);
+	mol3.matchDefaultAtomChirality(atomTargets,myMaxObservedSinePlaneDeviation);
     mol3.matchDefaultBondLengths(atomTargets);
     mol3.matchDefaultBondAngles(atomTargets);
     mol3.matchDefaultDihedralAngles(atomTargets, Compound::KeepPlanarBonds);
