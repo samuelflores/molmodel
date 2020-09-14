@@ -1004,143 +1004,74 @@ std::ostream& CompoundRep::writeDefaultPdb(std::ostream& os, int& nextSerialNumb
     return os;
 }
 
-#ifdef MMDB2_LIB_USAGE
-void CompoundRep::writeEntityPolySeqLoop( const State& state, mmdb::io::File *cifFile, int compoundNumber ) const
+#ifdef GEMMI_USAGE
+void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, int decimal_places = 8, const Transform& transform = Transform() ) const
 {
-    //================================================ Prepare the basic sequence loop ( _entity_poly_seq )
-    mmdb::mmcif::Loop loop;
-    loop.SetCategoryName                              ( "_entity_poly_seq" );
-    std::string hlpNam;
-
-    //================================================ Create loop structure
-    loop.AddLoopTag                                   ( "entity_id"    );
-    loop.AddLoopTag                                   ( "num"  );
-    loop.AddLoopTag                                   ( "mon_id" );
-    loop.AddLoopTag                                   ( "hetero" );
-
-    //================================================ Fill loop with data
-    PdbChain chain                                    ( state, getOwnerHandle() );
-    decltype(chain)::Residues::const_iterator residueI;
-    int residueNumber                                 = 1;
-    for ( residueI = chain.residues.begin(); residueI != chain.residues.end(); ++residueI)
-    {
-        loop.AddInteger                               ( compoundNumber );
-        loop.AddInteger                               ( residueNumber );
-
-        hlpNam                                        = std::string ( (*residueI).getName() );
-        hlpNam                                        = std::regex_replace ( hlpNam, std::regex ( "\\s+$" ), std::string ( "" ) );
-
-
-        loop.AddString                                ( hlpNam.c_str() );
-        loop.AddString                                ( std::string ( "n" ).c_str() );
-        ++residueNumber;
-    }
-
-    //================================================ Write loop into the file
-    loop.WriteMMCIF                                   ( *cifFile );
-
-    //================================================ Done
-    return ;
-}
-
-void CompoundRep::buildCif( const State& state, mmdb::Model* mmdb2Model, const Transform& transform = Transform() ) const
-{
-    //================================================ Get compound chain
+    //================================================ Initialise local variables
     PdbChain chain                                    ( state, getOwnerHandle(), transform );
-
-    //================================================ Create MMDB2 chain object
-    mmdb::Chain *mmdb2Chain                           = new mmdb::Chain ( mmdb2Model, chain.getChainId() );
-
-    //================================================ Iterate over all residues
+    gemmi::Chain gemmiChain                           ( chain.getChainId() );
     int nextAtomSerialNumber                          = 1;
     int nextResidueSerialNumber                       = 1;
     size_t pos;
-    std::string nameHlp;
+    
+    //================================================ Copy information to chain
+    gemmiChain.name                                   = chain.getChainId();
+    
+    //================================================ For each molmodel residue in chain
     decltype(chain)::Residues::const_iterator residueI;
     for ( residueI = chain.residues.begin(); residueI != chain.residues.end(); ++residueI)
     {
-        //============================================ Create the MMDB2 residue object
-        mmdb::Residue *mmdb2Residue                   = new mmdb::Residue ( mmdb2Chain );
-
-        //============================================ And fill it with the information
-        strncpy                                       ( mmdb2Residue->insCode, "         ", 10 );
-        mmdb2Residue->insCode[0]                      = (*residueI).getResidueId().insertionCode;
-        mmdb2Residue->insCode[1]                      = '\0';
-
-        mmdb2Residue->seqNum                          = (*residueI).getResidueId().residueNumber;
-        mmdb2Residue->label_seq_id                    = nextResidueSerialNumber;
-
-        strncpy                                       ( mmdb2Residue->name, "                   ", 20 );
-        nameHlp                                       = std::string ( (*residueI).getName() );
-        strncpy                                       ( mmdb2Residue->name, nameHlp.c_str(), std::min( static_cast<int> ( nameHlp.length() ), 4 ) );
-        nameHlp                                       = std::regex_replace ( nameHlp, std::regex ( "\\s+$" ), std::string ( "" ) );
-        if ( nameHlp.length() < 3 ) { mmdb2Residue->name[nameHlp.length()] = '\0'; }
-
-        strncpy                                       ( mmdb2Residue->label_comp_id, "                   ", 20 );
-        nameHlp                                       = std::string ( (*residueI).getName() );
-        strncpy                                       ( mmdb2Residue->label_comp_id, nameHlp.c_str(), std::min( static_cast<int> ( nameHlp.length() ), 4 ) );
-        nameHlp                                       = std::regex_replace ( nameHlp, std::regex ( "\\s+$" ), std::string ( "" ) );
-        if ( nameHlp.length() < 3 ) { mmdb2Residue->label_comp_id[nameHlp.length()] = '\0'; }
-
-        strncpy                                       ( mmdb2Residue->label_asym_id, "         ", 10 );
-        strncpy                                       ( mmdb2Residue->label_asym_id, chain.getChainId().c_str(), std::min( 10, chain.getChainId().length() ) );
-        if ( chain.getChainId().length() < 9 ) { mmdb2Residue->label_asym_id[chain.getChainId().length()] = '\0'; }
-
-        //============================================ Iterate over all atoms for the residue
+        //============================================ Create new Gemmi residue
+        gemmi::Residue gemmiRes;
+        
+        //============================================ Copy information to residue
+        gemmiRes.name                                 = std::string ( (*residueI).getName() );
+        gemmiRes.name.resize                          ( 3 );
+        if ( gemmiRes.name[3] == ' ' )                { gemmiRes.name.erase ( 2, 3 ); }
+        if ( gemmiRes.name[2] == ' ' )                { gemmiRes.name.erase ( 1, 2 ); }
+        
+        gemmiRes.seqid                                = gemmi::SeqId ( (*residueI).getResidueId().residueNumber, (*residueI).getResidueId().insertionCode );
+        gemmiRes.label_seq                            = nextResidueSerialNumber;
+        if ( isPolymer ) { gemmiRes.entity_type       = gemmi::EntityType::Polymer; }
+        else             { gemmiRes.entity_type       = gemmi::EntityType::Unknown; }
+        gemmiRes.het_flag                             = '\0';
+        
+        //============================================ For each molmodel atom
         SimTK::PdbResidue::Atoms::const_iterator atomI;
         for ( atomI = (*residueI).atoms.begin(); atomI != (*residueI).atoms.end(); ++atomI)
         {
-            //======================================== Create the MMDB2 Atom object
-            mmdb::Atom *mmdb2Atom                     = new mmdb::Atom ( mmdb2Residue );
-
-            //======================================== And fill it with the information
-            mmdb2Atom->serNum                         = nextAtomSerialNumber;                                      // Serial number
-
-            strncpy                                   ( mmdb2Atom->name, "                   ", 20 );
-            nameHlp                                   = std::string ( (*atomI).getName() );
-            while ( ( pos = nameHlp.find ( "*" ) ) != std::string::npos ) { nameHlp.replace ( pos, 1, "'" ); }
-            strncpy                                   ( mmdb2Atom->name, nameHlp.c_str(), std::min( 20, static_cast<int> ( nameHlp.length() ) ) ); // Atom name
-            if ( nameHlp.length() < 19 ) { mmdb2Atom->name[nameHlp.length()] = '\0'; }
-
-
-            strncpy                                   ( mmdb2Atom->altLoc, "                   ", 20 );
-            mmdb2Atom->altLoc[0]                      = ' ';                                                       // Alternative location - currently not applicable
-
-            const PdbAtomLocation& location           = (*atomI).getPdbAtomLocation();                             // Writing out the coords as follows:
+            //======================================== Create new Gemmi atom
+            gemmi::Atom gemmiAtom;
+            
+            //======================================== Copy information to atom
+            gemmiAtom.name                            = std::string ( (*atomI).getName() );
+            while ( ( pos = gemmiAtom.name.find ( "*" ) ) != std::string::npos ) { gemmiAtom.name.replace ( pos, 1, "'" ); }
+            gemmiAtom.name.erase                      ( std::remove ( gemmiAtom.name.begin(), gemmiAtom.name.end(), ' ' ), gemmiAtom.name.end() );
+            gemmiAtom.altloc                          = '\0';
+            gemmiAtom.charge                          = 0;
+            gemmiAtom.element                         = gemmi::Element ( (*atomI).element.getSymbol() );
+            const PdbAtomLocation& location           = (*atomI).getPdbAtomLocation();
             Vec3 modCoords                            = transform * location.getCoordinates();
-            mmdb2Atom->SetCoordinates                 ( static_cast<double> ( modCoords[0] * 10.0 ),               // X (the time ten is to convert from nm to A)
-                                                        static_cast<double> ( modCoords[1] * 10.0 ),               // Y (the time ten is to convert from nm to A)
-                                                        static_cast<double> ( modCoords[2] * 10.0 ),               // Z (the time ten is to convert from nm to A)
-                                                        static_cast<double> ( location.getOccupancy() ),           // Occupancy
-                                                        static_cast<double> ( location.getTemperatureFactor() ) ); // B-factor
-
-            std::string elem                          = (*atomI).element.getSymbol();                              // Element symbol with conversion
-            std::transform                            ( elem.begin(), elem.end(), elem.begin(), ( int(*)(int) ) toupper );
-            strncpy                                   ( mmdb2Atom->element, elem.c_str(), std::min( 10, static_cast<int> ( elem.length() ) ) );
-
-            strncpy                                   ( mmdb2Atom->label_atom_id, "                   ", 20 );
-            nameHlp                                   = std::string ( (*atomI).getName() );
-            while ( ( pos = nameHlp.find ( "*" ) ) != std::string::npos ) { nameHlp.replace ( pos, 1, "'" ); }
-            strncpy                                   ( mmdb2Atom->label_atom_id, nameHlp.c_str(), std::min( 20, static_cast<int> ( nameHlp.length() ) ) ); // Author atom name
-            if ( nameHlp.length() < 19 ) { mmdb2Atom->label_atom_id[nameHlp.length()] = '\0'; }
-
-            //======================================== Update the atom serial number
-            ++nextAtomSerialNumber;
-
-            //======================================== Add atom to residue
-            mmdb2Residue->AddAtom                     ( mmdb2Atom );
+            gemmiAtom.pos                             = gemmi::Position ( static_cast<double> ( std::ceil ( (modCoords[0] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ),
+                                                                          static_cast<double> ( std::ceil ( (modCoords[1] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ),
+                                                                          static_cast<double> ( std::ceil ( (modCoords[2] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ) );
+            gemmiAtom.occ                             = static_cast<double> ( location.getOccupancy() );
+            gemmiAtom.b_iso                           = static_cast<double> ( location.getTemperatureFactor() );
+            gemmiAtom.serial                          = nextAtomSerialNumber;
+            nextAtomSerialNumber++;
+            
+            //======================================== Save atom to residue
+            gemmiRes.atoms.push_back                  ( gemmiAtom );
         }
-
-        //============================================ Update the residue serial number
-        ++nextResidueSerialNumber;
-
-        //============================================ Add residue to chain
-        mmdb2Chain->AddResidue                        ( mmdb2Residue );
+        
+        //============================================ Save residue to chain
+        gemmiChain.residues.push_back                 ( gemmiRes );
+        nextResidueSerialNumber++;
     }
-
-    //================================================ Add chain to the model
-    mmdb2Model->AddChain                              ( mmdb2Chain );
-
+    
+    //================================================ Save chain to model
+    gemmiModel->chains.push_back                      ( gemmiChain );
+    
     //================================================ Done
     return;
 }
@@ -2093,16 +2024,10 @@ void Compound::writeDefaultPdb(const char* outFileName, const Transform& transfo
     os.close();
 }
 
-#ifdef MMDB2_LIB_USAGE
-void Compound::writeEntityPolySeqLoop( const State& state, mmdb::io::File *cifFile, int compoundNumber ) const
+#ifdef GEMMI_USAGE
+void Compound::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, int decimal_places, const Transform& transform ) const
 {
-    getImpl().writeEntityPolySeqLoop ( state, cifFile, compoundNumber );
-    return ;
-}
-
-void Compound::buildCif( const State& state, mmdb::Model* mmdb2Model, const Transform& transform ) const
-{
-    getImpl().buildCif ( state, mmdb2Model, transform );
+    getImpl().buildCif ( state, gemmiModel, isPolymer, decimal_places, transform );
     return ;
 }
 #endif

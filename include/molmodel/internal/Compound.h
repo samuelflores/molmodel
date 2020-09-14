@@ -44,12 +44,12 @@
 
 #include <iosfwd> // declare ostream without all the definitions
 
-#ifdef MMDB2_LIB_USAGE
-  #include <mmdb2/mmdb_manager.h>
-#endif
-
-#ifdef CPP4_MAPS_USAGE
-  #include <mmdb2/mmdb_manager.h>
+#ifdef GEMMI_USAGE
+    #include <gemmi/mmread.hpp>
+    #include <gemmi/it92.hpp>
+    #include <gemmi/cif.hpp>
+    #include <gemmi/model.hpp>
+    #include <gemmi/cifdoc.hpp>
 #endif
 
 namespace SimTK {
@@ -847,21 +847,17 @@ public:
       * mmCIF file to be created.
       */
     
-#ifdef MMDB2_LIB_USAGE
-     void writeEntityPolySeqLoop(
-         const State& state, ///< simbody state representing the current configuration of the molecule
-         mmdb::io::File *cifFile,  ///< MMDB2 File pointer - to this file object will the loop be written into.
-         int compoundNumber ///< Compound number.
-         ) const;
-
-     /** \brief Create the MMDB2 object structure for mmCIF writing..
+#ifdef GEMMI_USAGE
+     /** \brief Create the Gemmi Structure object structure for mmCIF writing..
       *
-      * Starting with the first atom's serial number as one(1), this function will fill in the MMDB2 objects structure with the structural
+      * Starting with the first atom's serial number as one(1), this function will fill in the Gemmi structure objects structure with the structural
       * data so that these can be written into a mmCIF file.
       */
      void buildCif(
          const State& state, ///< simbody state representing the current configuration of the molecule
-         mmdb::Model* mmdb2Model,  ///< MMDB2 library model object pointer to which the MMDB2 object structure will be build into.
+         gemmi::Model* gemmiModel,  ///< Gemmi library model object pointer to which the molmodel structure information will be copied into.
+         bool isPolymer, ///< Is this compound a polymer?
+         int decimal_places = 8, ///< Number of decimal places to which the co-ordinates are to be rounded to.
          const Transform& transform = Transform() ///< optional change to location and orientation of molecule
          ) const;
 #endif

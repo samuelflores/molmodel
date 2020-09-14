@@ -40,10 +40,10 @@
 #include <vector>
 #include <algorithm>
 
-#ifdef MMDB2_LIB_USAGE
-  #include <mmdb2/mmdb_manager.h>
+#ifdef GEMMI_USAGE
+    //================================================ Include Gemmi headers
+    #include <gemmi/gz.hpp>
 #endif
-
 
 using namespace SimTK;
 using std::map;
@@ -61,282 +61,108 @@ public:
         {
             mol_DbRead("mol", filename.c_str(), MOL_DB_PDB, &model );
         }
-        else if ( filename.substr ( filename.length() - 4, filename.length() - 1) == ".cif" )
+        else if ( ( filename.substr ( filename.length() - 4, filename.length() - 1) == ".cif" ) ||
+                  ( filename.substr ( filename.length() - 7, filename.length() - 1) == ".cif.gz" ) )
         {
-#ifdef MMDB2_LIB_USAGE
-            //======================================== Open file
-            mmdb::CoorManager *mfile                  = new mmdb::CoorManager ( );
+#ifdef GEMMI_USAGE
+            //======================================== Read in the file into Gemmi document
+            gemmi::cif::Document gemmiDoc             = gemmi::cif::read ( gemmi::MaybeGzipped ( filename ) );
             
-            //======================================== Check that the file was opened correctly
-            if ( mfile->ReadCoorFile ( filename.c_str() ) )
+            //======================================== Check the number of blocks
+            if ( gemmiDoc.blocks.size() < 1 )
             {
-                std::cout << "MMDB2 Failed to open the file " << filename << ". Terminating now..." << std::endl;
-                exit                                  ( -1 );
+                std::cerr << "!!! Error !!! The file " << filename << " contains 0 blocks. Nothing the be read." << std::endl;
+                exit                                  ( EXIT_FAILURE );
             }
-        
-            //======================================== Initialise the molmodel model
-            mol_MolModelCreate                        ( "mol", &model );
-            
-            //======================================== Initialise MMDB crawl
-            int noModels                              = 0;
-            int noChains                              = 0;
-            int noResidues                            = 0;
-            int noAtoms                               = 0;
-            mmdb::Model **mmdb2Model;
-            mmdb::Chain **mmdb2Chain;
-            mmdb::Residue **mmdb2Residue;
-            mmdb::Atom **mmdb2Atom;
-            
-            //======================================== Find all models in the PDB file
-            mfile->GetModelTable                      ( mmdb2Model, noModels );
-            
-            //======================================== Check that at least one model was found
-            if ( noModels < 1 )
+            else if ( gemmiDoc.blocks.size() > 1 )
             {
-                std::cerr << "MMDB2 found no models the file " << filename << ". Terminating now..." << std::endl;
-                exit                                  ( -1 );
+                std::cerr << "!!! Warning !!! The file " << filename << " contains multiple blocks. Molmodel will use the first block named " << gemmiDoc.blocks.at(0).name << " and ignore the rest." << std::endl;
             }
-            
-            //======================================== If there are multiple models, just the first one will be used. This may needs some tweaking in the future
-            if ( noModels < 1 )
-            {
-                std::cout << "WARNING: MMDB2 found multiple models (" << noModels << ") the file " << filename << ". Only the first model will be used." << std::endl;
-            }
-            
-            //======================================== Check the first model is readable
-            if ( mmdb2Model[0] )
-            {
-                //==================================== Deal with secondary structure's (alpha-helices first)
-                int noHelices                         = mmdb2Model[0]->GetNumberOfHelices ( );
-                
-                for ( int hNo = 0; hNo < noHelices; hNo++ )
-                {
-                    //================================ Initialise variables
-                    MolStructure *hStruc;
-                    MolHelix helix;
-                    mmdb::Helix *mmdb2Helix           = mmdb2Model[0]->GetHelix ( hNo+1 );
-                    
-                    //================================ Copy relevant information to molmodel structures
-                    helix.num                         = mmdb2Helix->serNum;
-                    mol_DbRecordStrGet                ( mmdb2Helix->helixID,     1, 3, helix.id );
-                    mol_DbRecordStrGet                ( mmdb2Helix->initResName, 1, 3, helix.init_res_name );
-                    helix.init_chain_id               = mmdb2Helix->initChainID[0];
-                    helix.init_seq_num                = mmdb2Helix->initSeqNum;
-                    mol_DbRecordStrGet                ( mmdb2Helix->endResName,  1, 3, helix.term_res_name );
-                    helix.term_chain_id               = mmdb2Helix->endChainID[0];
-                    helix.term_seq_num                = mmdb2Helix->endSeqNum;
-                    helix.helixClass                  = mmdb2Helix->helixClass;
-                    helix.length                      = mmdb2Helix->length;
-                    
-                    //================================ Save the read helix to the molmodel model
-                    mol_MolModelCurrStrucGet          ( model, &hStruc ); // Copies model->curr_struc to hStruc
-                    
-                    MolHelix *hlist;
-                    int num                           = hStruc->secondary.helix.num;
-                    int size                          = hStruc->secondary.helix.size;
-                    hlist                             = hStruc->secondary.helix.list;
-                    if (num == (size - 1))
-                    {
-                        size                         += 1000;
-                        mem_Realloc                   ( hlist, size, hStruc->model, MolHelix* );
-                        hStruc->secondary.helix.size  = size;
-                        hStruc->secondary.helix.list  = hlist;
-                    }
-                    memcpy                            ( hlist+num, &helix, sizeof(MolHelix) );
-                    num                              += 1;
-                    hStruc->secondary.helix.num       = num;
-                }
-                
-                //==================================== Deal with secondary structure's (beta-sheets now)
-                int noSheets                          = mmdb2Model[0]->GetNumberOfSheets ( );
-                
-                for ( int sNo = 0; sNo < noSheets; sNo++ )
-                {
-                    //================================ Initialise variables
-                    mmdb::Sheet *mmdb2Sheet           = mmdb2Model[0]->GetSheet ( sNo+1 );
-                    
-                    int noStrands                     = mmdb2Sheet->nStrands;
-                    for ( int stNo = 0; stNo < noStrands; stNo++ )
-                    {
-                        //============================ Initialise variables
-                        MolStructure *sStruct;
-                        MolSheet sheet;
-                        mmdb::Strand *mmdb2Strand     = mmdb2Sheet->strand[stNo];
-                        
-                        //============================ Copy relevant information to molmodel structures
-                        sheet.num                     = mmdb2Strand->strandNo;
-                        mol_DbRecordStrGet            ( mmdb2Strand->sheetID,     1, 2, sheet.id );
-                        sheet.num_strands             = noStrands;
-                        mol_DbRecordStrGet            ( mmdb2Strand->initResName, 1, 3, sheet.init_res_name ); 
-                        sheet.init_chain_id           = mmdb2Strand->initChainID[0];
-                        sheet.init_seq_num            = mmdb2Strand->initSeqNum;
-                        sheet.init_icode              = mmdb2Strand->initICode[0];
-                        mol_DbRecordStrGet            ( mmdb2Strand->endResName,  1, 3, sheet.term_res_name );
-                        sheet.term_chain_id           = mmdb2Strand->endChainID[0];
-                        sheet.term_seq_num            = mmdb2Strand->endSeqNum;
-                        sheet.end_icode               = mmdb2Strand->endICode[0];
-                        sheet.sense                   = mmdb2Strand->sense;
-                        
-                        //============================ Save the read sheet to the molmodel model
-                        mol_MolModelCurrStrucGet      ( model, &sStruct ); // Copies model->curr_struc to sStructt
-                        
-                        MolStructureSecSheet *secStruct;
-                        MolSheet *list;
-                        secStruct                     = &sStruct->secondary.sheet;
-                        
-                        int num                       = secStruct->num;
-                        int size                      = secStruct->size;
-                        list                          = secStruct->list;
-                        if ( num == (size - 1) )
-                        {
-                          size                       += 1000;
-                          mem_Realloc                 ( list, size, sStruct->model, MolSheet* );
-                          secStruct->size             = size;
-                          secStruct->list             = list;
-                        }
 
-                        memcpy                        ( list+num, &sheet, sizeof(MolSheet) );
-                        num                          += 1;
-                        secStruct->num                = num;
-                    }
-                    
-                }
-                
-                //==================================== Find all chains for first model (the 1 in the first argument to the GetCHainTable() function)
-                mfile->GetChainTable                  ( 1, mmdb2Chain, noChains );
+            //======================================== Generate structure from block
+            gemmi::Structure gemmiStruct              = gemmi::impl::make_structure_from_block ( gemmiDoc.blocks.at(0) );
+            
+            //======================================== For each model
+            for ( unsigned int moIt = 0; moIt < static_cast<unsigned int> ( gemmiStruct.models.size() ); moIt++ )
+            {
+                //==================================== Initialise the molmodel model
+                std::stringstream molName;
+                molName << "mol" << moIt;
+                mol_MolModelCreate                    ( molName.str().c_str(), &model );
                 
                 //==================================== For each chain
-                for ( int nCh = 0; nCh < noChains; nCh++ )
+                for ( unsigned int chIt = 0; chIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.size() ); chIt++ )
                 {
-                    //================================ Check that the chain is reaable
-                    if ( mmdb2Chain[nCh] )
+                    //================================ Get the chain ID
+                    std::string chainId               =  std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).name );
+                 
+                    //================================ For each residue
+                    int resNumGemmi                   = 0;
+                    for ( unsigned int reIt = 0; reIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.size() ); reIt++ )
                     {
-                        //============================ Get all residues for this chain
-                        mfile->GetResidueTable        ( 1, nCh, mmdb2Residue, noResidues );
+                        //============================ Get residue insertion code, residueID and residue name
+                        char ICode                    = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.icode;
                         
-                        //============================ For each residue
-                        for ( int nRes = 0; nRes < noResidues; nRes++ )
+                        if ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.has_value() ) { resNumGemmi = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.value; }
+                        else                                                                                       { resNumGemmi++; }
+                        
+                        PdbResidueId residueId        ( resNumGemmi, ICode );
+                        std::string residueName       = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).name;
+                        
+                        //============================ For each atom
+                        for ( unsigned int atIt = 0; atIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.size() ); atIt++ )
                         {
-                            //======================== Check that the residue is readable
-                            if ( mmdb2Residue[nRes] )
-                            {
-                                //==================== Get all atoms
-                                mfile->GetAtomTable   ( 1, nCh, nRes, mmdb2Atom, noAtoms );
-                                
-                                //==================== For each atom
-                                for ( int aNo = 0; aNo < noAtoms; aNo++ )
-                                {
-                                    //================ Check that the atom is readable
-                                    if ( mmdb2Atom[aNo] )
-                                    {
-                                        //============ Check for termination 'residue'
-                                        if ( mmdb2Atom[aNo]->Ter )
-                                        {
-                                            //======== Initialise variables
-                                            MolStructure *terStruc;
-                                            MolChainTerm term;
-                                            
-                                            term.id   = mmdb2Atom[aNo]->serNum;
-                                            mol_DbRecordStrGet ( mmdb2Residue[nRes]->name, 1, 3, term.res_name );
-                                            term.chain_id = mmdb2Chain[nCh]->GetChainID()[0];
-                                            term.res_seq = mmdb2Residue[nRes]->seqNum;
-                                            std::string ICodeHlp = std::string ( mmdb2Residue[nRes]->GetInsCode() );
-                                            char ICode;
-                                            if ( ICodeHlp == "" ) { ICode = ' '; } else { ICode = mmdb2Residue[nRes]->GetInsCode()[0]; }
-                                            term.insertion_code = ICode;
-                                            
-                                            //============================ Save the read TER to the molmodel model
-                                            mol_MolModelCurrStrucGet ( model, &terStruc );
-                                            
-                                            MolChainTerm *tp;
-                                            mem_Alloc ( tp, 1, model, MolChainTerm* );
-                                            tp->id    = term.id;
-                                            tp->chain_id = term.chain_id;
-                                            tp->res_seq = term.res_seq;
-                                            tp->insertion_code = term.insertion_code;
-                                            strcpy    ( tp->res_name, term.res_name );
-                                            tp->next = terStruc->terms;
-                                            terStruc->terms = tp;
-                                            
-                                            continue;
-                                        }
-                                        
-                                        //============ Process atom
-                                        MolAtom atom;
-                                        MolStructure *struc;
-                                        atom.orig_id  = mmdb2Atom[aNo]->serNum;
-                                        atom.name     = mol_StrCopy( mmdb2Atom[aNo]->name, model ); // This assigns the allocated memory for the string to the model, while copying the string.
-                                        mol_ResTypeConv ( mmdb2Residue[nRes]->name, &atom.res_type );
-                                        atom.res_prop = mol_res_props[atom.res_type];
-                                        
-                                        if ( !( std::string ( mmdb2Atom[aNo]->altLoc ) == std::string ( "" ) ) &&
-                                             !( std::string ( mmdb2Atom[aNo]->altLoc ) == std::string ( "A" ) ) )
-                                            continue; // This is in keeping with the mol_DbPdbAtomProcLongChainId() function; it allows only the first alt-loc to be added.
-                                        
-                                        atom.res_seq  = mmdb2Residue[nRes]->seqNum;
-                                        std::string ICodeHlp = std::string ( mmdb2Residue[nRes]->GetInsCode() );
-                                        char ICode;
-                                        if ( ICodeHlp == "" ) { ICode = ' '; } else { ICode = mmdb2Residue[nRes]->GetInsCode()[0]; }
-                                        atom.insertion_code = ICode;
-                                        atom.pos[0]   = mmdb2Atom[aNo]->x;
-                                        atom.pos[1]   = mmdb2Atom[aNo]->y;
-                                        atom.pos[2]   = mmdb2Atom[aNo]->z;
-                                        atom.temp     = mmdb2Atom[aNo]->tempFactor;
-                                        
-                                        if (atom.name[0] != ' ') { mol_AtomTypeConv ( &atom.name[0], &atom.type ); }
-                                        else                     { mol_AtomTypeConv ( &atom.name[1], &atom.type ); }
-                                        
-                                        if ( mmdb2Atom[aNo]->Het ) { atom.het = MOL_TRUE; }
-                                        else                       { atom.het = MOL_FALSE; }
-                                        atom.chain_id = mmdb2Chain[nCh]->GetChainID()[0];
-                                        atom.long_chain_id = mol_StrCopy( " ", model ); // We do not have LongChainID, so empty
-                                        
-                                        mol_MolModelCurrStrucGet ( model, &struc );                 // Copies model->curr_struc to struc
-                                        mol_StructureAtomAdd ( struc, mmdb2Atom[aNo]->Het, &atom ); // Saves the atom to the model (through struc)
-                                    }
-                                    else
-                                    {
-                                        std::cerr << "MMDB2 failed to read the atom " << aNo << " in residue " << nRes << " in chain " << nCh << " in file " << filename << ". The file is most likely corrupted. Terminating now..." << std::endl;
-                                        exit                          ( -1 );
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                std::cerr << "MMDB2 failed to read the residue " << nRes << " in chain " << nCh << " in file " << filename << ". The file is most likely corrupted. Terminating now..." << std::endl;
-                                exit                          ( -1 );
-                            }
+                            //======================== Initialise atom related variables
+                            MolAtom atom;
+                            MolStructure *struc;
+                            
+                            //======================== Get atom info
+                            char altLoc               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).altloc;
+                            
+                            //======================== Fill in atom information
+                            atom.orig_id              = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).serial;
+                            atom.name                 = mol_StrCopy( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name.c_str(), model );
+                            mol_ResTypeConv           ( const_cast<char*> ( residueName.c_str() ), &atom.res_type );
+                            atom.res_prop             = mol_res_props[atom.res_type];
+                            
+                            if ( !( altLoc == '\0' ) && !( altLoc == 'A' ) )
+                                continue;                                                    // This is in keeping with the mol_DbPdbAtomProcLongChainId() function; it allows only the first alt-loc to be added.
+                            
+                            atom.res_seq              = resNumGemmi;
+                            atom.insertion_code       = ICode;
+                            atom.pos[0]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.x;
+                            atom.pos[1]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.y;
+                            atom.pos[2]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.z;
+                            atom.temp                 = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).b_iso;
+                            
+                            atom.het                  = MOL_FALSE;                       // We do not actually know, but let's go with false here ...
+                            
+                            if (atom.name[0] != ' ')  { mol_AtomTypeConv ( &atom.name[0], &atom.type ); }
+                            else                      { mol_AtomTypeConv ( &atom.name[1], &atom.type ); }
+                            
+                            atom.chain_id             = chainId[0];
+                            atom.long_chain_id        = mol_StrCopy( " ", model );       // We do not have LongChainID, so empty
+                            
+                            mol_MolModelCurrStrucGet  ( model, &struc );                 // Copies model->curr_struc to struc
+                            mol_StructureAtomAdd      ( struc, false, &atom );           // Saves the atom to the model (through struc)
                         }
                     }
-                    else
-                    {
-                        std::cerr << "MMDB2 failed to read the chain " << nCh << " in file " << filename << ". The file is most likely corrupted. Terminating now..." << std::endl;
-                        exit                          ( -1 );
-                    }
                 }
+                
+                //==================================== Build biomolecule from the filled in structs
+                MolStructure *struc;
+                mol_MolModelCurrStrucGet              ( model, &struc ); // Fill in the struc structure
+                mol_StructureChainsBuild              ( struc, 1 );      // Build protein chains
+                mol_StructureChainsBuild              ( struc, 2 );      // Build solvent chains
             }
-            else
-            {
-                std::cerr << "MMDB2 failed to read the first model in file " << filename << ". The file is most likely corrupted. Terminating now..." << std::endl;
-                exit                                  ( -1 );
-            }
-            
-            //======================================== Build biomolecule from the filled in structs
-            MolStructure *struc;
-            mol_MolModelCurrStrucGet                  ( model, &struc ); // Fill in the struc structure
-            mol_StructureChainsBuild                  ( struc, 1 );      // Build protein chains
-            mol_StructureChainsBuild                  ( struc, 2 );      // Build solvent chains
-            
-            //======================================== Clean up
-            delete mfile;
 #else
-            std::cerr << "ERROR: The suplied file has the mmCIF format, but Molmodel was not compiled with the MMDB2 library, which is required for the mmCIF support. Please re-run the Molmodel cmake command with the -DADD_MMDB2_LIBRARY=TRUE option (and then alse re-run the make install command). Terminating..." << std::endl;
+            std::cerr << "ERROR: The suplied file has the mmCIF format, but Molmodel was not compiled with the Gemmi library, which is required for the mmCIF support. Please re-run the Molmodel cmake command with the -DUSE_GEMMI=TRUE -DGEMMI_PATH=/path/to/gemmi/include option (and then alse re-run the make install command). Terminating..." << std::endl;
             exit                                      ( -1 );
 #endif
         }
         else
         {
-            std::cerr << "Failed to detect the extension of the input file " << filename << ". The supported extensions are: \'.pdb\' and \'.cif\'. Terminating now..." << std::endl;
+            std::cerr << "Failed to detect the extension of the input file " << filename << ". The supported extensions are: \'.pdb\' and \'.cif\' (or \'.cif.gz\'). Terminating now..." << std::endl;
             exit                                      ( -1 );
         }
 
