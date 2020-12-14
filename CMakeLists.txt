@@ -228,6 +228,8 @@ set(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 
 
 
+SET(BUILD_SHARED_LIBRARIES TRUE CACHE BOOL
+    "Build dynamically linked (shared) version of the libraries")
 
 
 # Static libraries, tests, and examples won't be built unless this 
@@ -237,11 +239,11 @@ set(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 
 
 SET(BUILD_STATIC_LIBRARIES FALSE CACHE BOOL
+    "Build '_static' versions of the libraries libraries?")
 
-
-"Build '_static' versions of libraries in addition to dynamic libraries?")
-
-
+IF((NOT ${BUILD_SHARED_LIBRARIES}) AND (NOT ${BUILD_STATIC_LIBRARIES}))
+    MESSAGE(FATAL_ERROR "Neither shared nor static build has been enabled. Aborting")
+ENDIF()
 
 
 
