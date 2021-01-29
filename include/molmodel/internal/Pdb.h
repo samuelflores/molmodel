@@ -466,10 +466,13 @@ public:
         const Compound& compound,
         const Transform& transform = Transform());
     //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
+    // This Constructor handles PDB formatted files:
     explicit PdbStructure( std::istream& pdbFile, const String & chainsPrefix = "" );
     
-    /// Constructor for mmCIF files 
-    explicit PdbStructure( std::string pdbFileName );
+    /// Constructor for mmCIF files , with chain prefix
+    explicit PdbStructure( std::string pdbFileName, std::string chainsPrefixCif = "" );
+    /// Constructor for mmCIF files. Obsolete, replaced with the above.
+    //explicit PdbStructure( std::string pdbFileName );
     
     /// Empty constructor to allow later initialisation
     explicit PdbStructure();

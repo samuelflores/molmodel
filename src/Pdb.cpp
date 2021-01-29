@@ -824,10 +824,130 @@ PdbStructure::PdbStructure(
 PdbStructure::PdbStructure( ) {
     return;
 }
+PdbStructure::PdbStructure(
+                           std::string pdbFileName,
+			   std::string chainsPrefix)
+{
+#ifdef GEMMI_USAGE
+    //================================================ Read in the file into Gemmi document
+    gemmi::cif::Document gemmiDoc                     = gemmi::cif::read ( gemmi::MaybeGzipped ( pdbFileName ) );
+    
+    //================================================ Check the number of blocks
+    if ( gemmiDoc.blocks.size() < 1 )
+    {
+        std::cerr << "!!! Error !!! The file " << pdbFileName << " contains 0 blocks. Nothing the be read." << std::endl;
+        exit                                          ( EXIT_FAILURE );
+    }
+    else if ( gemmiDoc.blocks.size() > 1 )
+    {
+        std::cerr << "!!! Warning !!! The file " << pdbFileName << " contains multiple blocks. Molmodel will use the first block named " << gemmiDoc.blocks.at(0).name << " and ignore the rest." << std::endl;
+    }
 
+    //================================================ Generate structure from block
+    gemmi::Structure gemmiStruct                      = gemmi::impl::make_structure_from_block ( gemmiDoc.blocks.at(0) );
+    
+    //================================================ For each model
+    for ( unsigned int moIt = 0; moIt < static_cast<unsigned int> ( gemmiStruct.models.size() ); moIt++ )
+    {
+        //============================================ Create molmodel model (first and only)
+        models.push_back                              ( PdbModel ( models.size() + 1 ) );
+        
+        //============================================ For each chain
+        for ( unsigned int chIt = 0; chIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.size() ); chIt++ )
+        {
+            //======================================== Get the chain ID
+            String chainIdWithoutPrefix               =  std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).name );
+	    //if (chainsPrefix ==std::string( " ")) {chainsPrefix = std::string("");} // Not sure this would be the right place for a validation or data hygiene step of this sort.
+	    if (chainsPrefix ==std::string( " ")) {
+                std::cerr << "!!! Error !!! the chainsPrefix >"<<chainsPrefix<<"< is a single whitespace! This is not ok." << std::endl;
+		exit ( EXIT_FAILURE );
+	    }
+            String chainIdWithPrefix                  =  chainsPrefix + std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).name );
+            
+            //======================================== Add the chain to molmodel unless it already exists
+            if ( !models.back().hasChain ( chainIdWithoutPrefix ) )
+            {
+                models.back().chainIndicesById[chainIdWithPrefix] = models.back().chains.size();
+                models.back().chains.push_back        ( PdbChain ( chainIdWithoutPrefix ) );
+            }
+            
+            //======================================== For each residue
+            int resNumGemmi                           = 0;
+            for ( unsigned int reIt = 0; reIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.size() ); reIt++ )
+            {
+                //==================================== Get residue insertion code, residueID and residue name
+                char ICode                            = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.icode;
+                
+                if ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.has_value() ) { resNumGemmi = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.value; }
+                else                                                                                       { resNumGemmi++; }
+                
+                PdbResidueId residueId                ( resNumGemmi, ICode );
+                String residueName                    = std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).name );
+                
+                //==================================== Add it to molmodel unless it already exists
+                if ( !models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].hasResidue ( residueId ) )
+                {
+                    models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId] = models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues.size();
+                    models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues.push_back ( PdbResidue ( residueName, residueId ) );
+                }
+                
+                //==================================== For each atom
+                for ( unsigned int atIt = 0; atIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.size() ); atIt++ )
+                {
+                    //================================ Get atom name
+                    String atomName                   = std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name );
+                    if ( atomName.length() == 3 ) { atomName.insert ( 0, " " ); }
+                    if ( atomName.length() == 2 ) { atomName = " " + atomName + " "; }
+                    if ( atomName.length() == 1 ) { atomName = " " + atomName + "  "; }
+                    
+                    //================================ If this atom does not yet exist in molmodel, add it
+                    if ( !models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].hasAtom( atomName ) )
+                    {
+                        //============================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
+                        String elementSymbol          = std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).element.name() );
+                        while ( elementSymbol.length() < 2 ) { elementSymbol.insert ( 0, " " ); }
+                        if ( ( elementSymbol.length() > 1 ) && ( toupper (  elementSymbol[0] ) ==  elementSymbol[0] ) ) { elementSymbol[1] = tolower ( elementSymbol[1] ); }
+                        
+                        //============================ Four character atom names starting with "H" are probably hydrogen, even if they start with "HO", which should properly be Holmium. - taken from molmodel
+                        if ( ( 'H' == atomName[0] ) && ( std::string::npos == atomName.find_first_of(" ") ) ) { elementSymbol = "H"; }
+
+                        //============================ Add the atom
+                        const Element& element        = Element::getBySymbol ( elementSymbol );
+                        models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].addAtom ( PdbAtom ( atomName, element ) );
+                    }
+                    
+                    //================================ Find alternative location indication
+                    char altLoc                       = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).altloc;
+                    
+                    //================================ If this alt location is not in the molmodel structure, add it
+                    if ( !models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atomIndicesByName[atomName]].hasLocation(altLoc) )
+                    {
+                        double x                      = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.x;
+                        double y                      = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.y;
+                        double z                      = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.z;
+                        SimTK::Real tempFac           = static_cast<SimTK::Real> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).b_iso );
+                        SimTK::Real occ               = static_cast<SimTK::Real> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).occ   );
+
+                        models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locationIndicesById[altLoc] = models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.size();
+                        models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.push_back ( PdbAtomLocation ( 0.1 * SimTK::Vec3 ( x,y,z ), altLoc, tempFac, occ ) );
+                    }
+                    
+                }
+            }
+        }
+    }
+#else
+    std::cerr << "ERROR: You have attempted to read mmCIF file, but Molmodel was not compiled with the Gemmi library required for mmCIF file support. Please re-run the Molmodel cmake command with the -DUSE_GEMMI=TRUE -DGEMMI_PATH=/path/to/gemmi/include options (and then re-run the make install command as well). Terminating..." << std::endl;
+    exit                                              ( -1 );
+#endif
+}
+/*
 PdbStructure::PdbStructure(
                            std::string pdbFileName)
 {
+	//PdbStructure(pdbFileName, std::string(""));  // Calls the polymorphism that can handle chainsPrefix's .. even though in this case the user did not provide one and evidently does not want one.
+ // Obsolete, replaced with version above that takes chainsPrefix parameter
+//
 #ifdef GEMMI_USAGE
     //================================================ Read in the file into Gemmi document
     gemmi::cif::Document gemmiDoc                     = gemmi::cif::read ( gemmi::MaybeGzipped ( pdbFileName ) );
@@ -935,27 +1055,21 @@ PdbStructure::PdbStructure(
     exit                                              ( -1 );
 #endif
 }
+*/
+
 
 PdbStructure::PdbStructure( std::istream& pdbFile, const String & chainsPrefix /*= ""*/ )
 {
     std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
     char lineBuffer[300];
-
-    //scf added
     SimTK_ASSERT_ALWAYS(pdbFile.good(),
         "PdbStructure::ctor(): can't read pdb file -- was it missing?");
-
     String longChainId (" ");
     std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
     while (pdbFile.good()) 
     {
-
-
         pdbFile.getline(lineBuffer, 200);
         String line(lineBuffer);
-        //std::cout<<__FILE__<<":"<<__LINE__<<" read line : "<<line<<" with line.substr(0, 6) = >"<<line.substr(0, 6)<<"<"<<std::endl;
-        //std::cout<<__FILE__<<":"<<__LINE__<<" line.substr(0, 6) ==  MODEL returns : "<<(line.substr(0, 6) == "MODEL") <<std::endl;
-         
         // Create a new PdbModel if MODEL card is seen
         // (ignore ENDMDL records)
         // SCF this line was:
@@ -963,13 +1077,11 @@ PdbStructure::PdbStructure( std::istream& pdbFile, const String & chainsPrefix /
         if (line.substr(0, 6) == String("MODEL "))
         {
             std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" Found MODEL card. Currently (models.size() = "<<(models.size())<<std::endl;
-            //std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"                   Currentlymodels.back().chains.size() = "<<models.back().chains.size() <<std::endl;
             // If previous model is still empty, don't create a new one
             if ( (models.size() > 0) && (models.back().chains.size() == 0) ) {
                 std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<std::endl;//" Found MODEL card but "
                 //previous model is still empty. Will NOT create additional model now. "<<std::endl;
             }
-             
 
             // Otherwise, create a new model
             else {
@@ -989,9 +1101,6 @@ PdbStructure::PdbStructure( std::istream& pdbFile, const String & chainsPrefix /
             u.str(line);
 	    std::vector <String> mystring;
             mystring.clear();
-            //char * temp;
-            //u.getline(temp,100);
-            //std::cout<<__FILE__<<":"<<__LINE__<<" : "<<temp<<std::endl; 
             mystring.push_back(""); // must create three vector elements.
             mystring.push_back("");
             mystring.push_back("");
@@ -1035,17 +1144,7 @@ PdbStructure::PdbStructure( std::istream& pdbFile, const String & chainsPrefix /
             if (verbose) std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
             #endif
         }
-        //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
     }
-    //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-
-    //const PdbModel& targetModel = getModel(Pdb::ModelIndex(0));
-    //const PdbChain& targetChain = targetModel.getChain(std::string("E").c_str());
-    //PdbResidueId residueId(533,*(String(" ").c_str()));     
-    //std::cout<<__FILE__<<":"<<__LINE__<<" >"<< targetChain.hasAtom(String("P")     , residueId )<<"< "<<std::endl;
-    //std::cout<<__FILE__<<":"<<__LINE__<<" >"<< targetChain.hasAtom(String("OP1")     , residueId )<<"< "<<std::endl;
-
-
 }
 
 bool PdbStructure::hasAtom(String atomName, PdbResidueId residueId, String chainId) const {
