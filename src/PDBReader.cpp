@@ -206,7 +206,7 @@ public:
             
             string sequence;
             for (int i = 0; i < numResidues; ++i) {
-                sequence += mol_res_names[chainResidues[i]->type][2];
+                sequence += mol_res_names[chainResidues[i]->type].short_name;
             }
             std::transform(sequence.begin(), sequence.end(), sequence.begin(), (int(*)(int)) std::toupper);
             if ((chainResidues[0]->type >= 25) &&

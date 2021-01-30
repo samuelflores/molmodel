@@ -354,7 +354,7 @@ mol_ResTypeConv (const char *s, MolResidueType *type)
  /**************
   ***  body  ***
   **************/
-  
+
   *type = MOL_RESIDUE_UNKNOWN;
   // triming leading and trailing whitespaces
   for ( i = 0, j = 0; i < 4; i++ ) {
@@ -368,10 +368,10 @@ mol_ResTypeConv (const char *s, MolResidueType *type)
   }
 
   if (strlen(tstr) == 1) {
-    for (i = 0; mol_res_names[i][0]; i++) {
+    for (i = 0; mol_res_names[i].long_name[0]; i++) {
       //std::cout<<__FILE__<<":"<<__LINE__<<" "<<*s<<" "<<*mol_res_names[i]  << " "<< *mol_res_names[i][1]  <<  *mol_res_names[i][2]<<std::endl;
-      if (*tstr == *mol_res_names[i][2]) {
-        *type = MolResidueType(i);
+      if (tstr[0] == mol_res_names[i].short_name) {
+        *type = mol_res_names[i].type;
         //std::cout<<__FILE__<<":"<<__LINE__<<" found type! it is : "<<MolResidueType(i)<<std::endl;
         //std::cout<<__FILE__<<":"<<__LINE__<<" Decided this is residue type : "<<    mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    <<   " : "    <<     MolResidueType(i)<<" based on reading residue type >" << s << "<" << std::endl;
         return;
@@ -379,14 +379,13 @@ mol_ResTypeConv (const char *s, MolResidueType *type)
       }
     }
 
-  for (i = 0; mol_res_names[i][0]; i++) {
+  for (i = 0; mol_res_names[i].long_name[0]; i++) {
     //std::cout<<__FILE__<<":"<<__LINE__<<" trying residue name: >"<<  mol_res_names[i][0]    <<mol_res_names[i][1]    <<mol_res_names[i][2]    << "< "          <<std::endl;
-    if (!STRCASECMP(tstr, mol_res_names[i][0]) ||
-        !STRCASECMP(tstr, mol_res_names[i][1]) || 
-        !STRCASECMP(tstr, mol_res_names[i][2])) { 
+    if (!STRCASECMP(tstr, mol_res_names[i].long_name) ||
+        !STRCASECMP(tstr, mol_res_names[i].abbrev_name)) {
       //std::cout<<__FILE__<<":"<<__LINE__<<" trying residue name: >"<<  mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    << "< "          <<std::endl;
       //std::cout<<__FILE__<<":"<<__LINE__<<" Decided this is residue type : "<<    mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    <<   " : "    <<     MolResidueType(i)<<" based on reading residue type >" << s << "<" << std::endl;
-      *type = MolResidueType(i);
+      *type = mol_res_names[i].type;
       return;
       }
     }
@@ -400,21 +399,21 @@ mol_ResTypeConv (const char *s, MolResidueType *type)
     tstr[2] = 'c';
     tstr[3] = '\0';
 
-    for (i = 0; mol_res_names[i][0]; i++) {
-      tstr[0] = mol_res_names[i][1][0];
-      tstr[1] = mol_res_names[i][1][2];
+    for (i = 0; mol_res_names[i].long_name[0]; i++) {
+      tstr[0] = mol_res_names[i].long_name[0];
+      tstr[1] = mol_res_names[i].long_name[2];
       tstr[2] = 'c';
       tstr[3] = '\0';
 
-      if (!STRCASECMP(s, tstr)) { 
-        *type = MolResidueType(i);
+      if (!STRCASECMP(s, tstr)) {
+        *type = mol_res_names[i].type;
         return;
         }
 
       tstr[2] = 'n';
 
-      if (!STRCASECMP(s, tstr)) { 
-        *type = MolResidueType(i);
+      if (!STRCASECMP(s, tstr)) {
+        *type = mol_res_names[i].type;
         return;
         }
       }
