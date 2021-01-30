@@ -344,7 +344,7 @@ mol_MolModelStructuresGet (MolModel *model, int *num, MolStructure **strucs) {
  *------------------------------------------------------------*/
 
 void
-mol_ResTypeConv (char *s, MolResidueType *type)
+mol_ResTypeConv (const char *s, MolResidueType *type)
   {
 
   int i, j;
