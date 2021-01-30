@@ -272,7 +272,7 @@ public:
                 std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<protein.getPdbChainId()<<"< "<<std::endl;
                 compounds.push_back(protein);
             } else {
-                std::cout<<__FILE__<<":"<<__LINE__<<" Did not recognize chainResidues[0]->type "<<chainResidues[0]->type<<" ("<<mol_res_names[chainResidues[0]->type].long_name<<"). Please use only canonical RNA, DNA, and protein residue names"<<std::endl;
+                std::cout<<__FILE__<<":"<<__LINE__<<" Did not recognize chainResidues[0]->type "<<chainResidues[0]->type<<" ("<<mol_res_names[chainResidues[0]->type].long_name<<" - "<<mol_ResTypeAsString(chainResidues[0]->type)<<"). Please use only canonical RNA, DNA, and protein residue names"<<std::endl;
                 exit(1);
             }   
             std::cout<<__FILE__<<":"<<__LINE__<<" setPdbChainId(String("<<(*chains).long_chain_id <<") "<<std::endl;

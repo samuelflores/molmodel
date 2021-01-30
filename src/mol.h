@@ -683,3 +683,6 @@ mol_StructureTermAdd (MolStructure *struc, MolChainTerm *term, MolModel *model);
 
 void
 mol_StructureChainsBuild (MolStructure *struc, int type);
+
+const char *
+mol_ResTypeAsString(const MolResidueType type);
