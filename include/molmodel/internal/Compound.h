@@ -862,6 +862,25 @@ public:
          ) const;
 #endif
     
+#ifdef CPP4_MAPS_USAGE
+     void writeEntityPolySeqLoop(
+         const State& state, ///< simbody state representing the current configuration of the molecule
+         mmdb::io::File *cifFile,  ///< MMDB2 File pointer - to this file object will the loop be written into.
+         int compoundNumber ///< Compound number.
+         ) const;
+
+     /** \brief Create the MMDB2 object structure for mmCIF writing..
+      *
+      * Starting with the first atom's serial number as one(1), this function will fill in the MMDB2 objects structure with the structural
+      * data so that these can be written into a mmCIF file.
+      */
+     void buildCif(
+         const State& state, ///< simbody state representing the current configuration of the molecule
+         mmdb::Model* mmdb2Model,  ///< MMDB2 library model object pointer to which the MMDB2 object structure will be build into.
+         const Transform& transform = Transform() ///< optional change to location and orientation of molecule
+         ) const;
+#endif
+    
     /**
      * \brief Write the dynamic Compound configuration in Protein Data Bank (PDB) format.
      *
