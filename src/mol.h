@@ -154,7 +154,7 @@ typedef enum MolResidueType {
 
 
 typedef struct {
-  const char long_name[32];
+  const char long_name[28];
   const char abbrev_name[8];
   const char short_name;
   const MolResidueType type;
