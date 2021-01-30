@@ -104,7 +104,6 @@ typedef enum MolResidueType {
   MOL_RESIDUE_ASPARAGINE,
   MOL_RESIDUE_ASPARTIC_ACID,
   MOL_RESIDUE_CYSTEINE,
-  MOL_RESIDUE_DISULPHIDEBRIDGEDCYSTEINE,
   MOL_RESIDUE_GLUTAMIC_ACID,
   MOL_RESIDUE_GLUTAMINE,
   MOL_RESIDUE_GLYCINE,
@@ -145,6 +144,8 @@ typedef enum MolResidueType {
   MOL_RESIDUE_DEOXYGUANOSINE,
   MOL_RESIDUE_DEOXYCYTOSINE,
   MOL_RESIDUE_DEOXYTHYMINE,
+
+  MOL_RESIDUE_DISULPHIDEBRIDGEDCYSTEINE,
 
   // the int assigned to this is just the size of the typedef-1:
   MOL_RESIDUE_MAX_NUM
@@ -196,17 +197,16 @@ static const char *mol_res_names[MOL_RESIDUE_MAX_NUM+1][3] = {
   {"guanosine",     "2mg",     "G"},
   {"guanosine",     "m2g",     "G"},
 
-
-
   // scf added DNA residues
   {"deoxyadenosine",     "da",     "A"},
   {"deoxyguanosine",     "dg",     "G"},
   {"deoxycytosine",      "dc",     "C"},
   {"deoxythymidine",     "dt",     "T"},
+
   //
   {"disulphidebridgedcysteine",      "cyx",     "x"},
 
-
+  // terminator
   {NULL,              NULL,        NULL}};
 
 

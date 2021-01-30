@@ -362,9 +362,9 @@ mol_ResTypeConv (const char *s, MolResidueType *type)
       tstr[j] = s[i];
       j++;
     }
-  }
-  if ( j < 4 ) {
-    tstr[j] = '\0';
+    if ( s[i] == '\0' ) {
+      break;
+    }
   }
 
   if (strlen(tstr) == 1) {
