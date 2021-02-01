@@ -122,7 +122,7 @@ public:
                             //======================== Fill in atom information
                             atom.orig_id              = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).serial;
                             atom.name                 = mol_StrCopy( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name.c_str(), model );
-                            mol_ResTypeConv           ( const_cast<char*> ( residueName.c_str() ), &atom.res_type );
+                            mol_ResTypeConv           ( residueName.c_str(), &atom.res_type );
                             atom.res_prop             = mol_res_props[atom.res_type];
                             
                             if ( !( altLoc == '\0' ) && !( altLoc == 'A' ) )
