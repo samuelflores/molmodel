@@ -122,7 +122,7 @@ public:
                             //======================== Fill in atom information
                             atom.orig_id              = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).serial;
                             atom.name                 = mol_StrCopy( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name.c_str(), model );
-                            mol_ResTypeConv           ( const_cast<char*> ( residueName.c_str() ), &atom.res_type );
+                            mol_ResTypeConv           ( residueName.c_str(), &atom.res_type );
                             atom.res_prop             = mol_res_props[atom.res_type];
                             
                             if ( !( altLoc == '\0' ) && !( altLoc == 'A' ) )
@@ -206,11 +206,11 @@ public:
             
             string sequence;
             for (int i = 0; i < numResidues; ++i) {
-                sequence += mol_res_names[chainResidues[i]->type][2];
+                sequence += mol_res_names[chainResidues[i]->type].short_name;
             }
             std::transform(sequence.begin(), sequence.end(), sequence.begin(), (int(*)(int)) std::toupper);
-            if ((chainResidues[0]->type >= 25) &&
-                (chainResidues[0]->type <= 28)) 
+            if ((chainResidues[0]->type >= MOL_RESIDUE_ADENOSINE) &&
+                (chainResidues[0]->type <= MOL_RESIDUE_URIDINE))
             {
                 std::cout<<__FILE__<<":"<<__LINE__<<"Creating an RNA"<<std::endl;
                 // Create an RNA.
@@ -229,8 +229,8 @@ public:
                 std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<rna.getPdbChainId()<<"< "<<std::endl;
                 compounds.push_back(rna);
             } 
-            else if ((chainResidues[0]->type >= 40) &&
-                     (chainResidues[0]->type <= 43)) {
+            else if ((chainResidues[0]->type >= MOL_RESIDUE_DEOXYADENOSINE) &&
+                     (chainResidues[0]->type <= MOL_RESIDUE_DEOXYTHYMINE)) {
                 std::cout<<__FILE__<<":"<<__LINE__<<"Creating a DNA"<<std::endl;
                 // Create a  DNA.
                 
@@ -242,8 +242,8 @@ public:
                 dna.assignBiotypes();
                 compounds.push_back(dna);
             }  
-            else if (((chainResidues[0]->type < 21) && (chainResidues[0]->type > 0)) ||  // type 0 is "unknown".  1-20 are protein amino acids
-                     (chainResidues[0]->type == 44) ) {                                  // type 44 is CYX
+            else if (((chainResidues[0]->type <= MOL_RESIDUE_VALINE) && (chainResidues[0]->type > 0)) ||  // type 0 is "unknown".  1-20 are protein amino acids
+                     (chainResidues[0]->type >= MOL_RESIDUE_DISULPHIDEBRIDGEDCYSTEINE) ) {                                  // type 44 is CYX
                 std::cout<<__FILE__<<":"<<__LINE__<<"Creating a protein"<<std::endl;
                 // Create a Protein.
                 // scf changed this to use one more parameter in the Protein constructor, set to "Torsion".  Default is "Rigid".  Now the peptide bond will not be rigid.
@@ -272,7 +272,7 @@ public:
                 std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<protein.getPdbChainId()<<"< "<<std::endl;
                 compounds.push_back(protein);
             } else {
-                std::cout<<__FILE__<<":"<<__LINE__<<" Did not recognize chainResidues[0]->type "<<chainResidues[0]->type<<". Please use only canonical RNA, DNA, and protein residue names"<<std::endl;
+                std::cout<<__FILE__<<":"<<__LINE__<<" Did not recognize chainResidues[0]->type "<<chainResidues[0]->type<<" ("<<mol_res_names[chainResidues[0]->type].long_name<<" - "<<mol_ResTypeAsString(chainResidues[0]->type)<<"). Please use only canonical RNA, DNA, and protein residue names"<<std::endl;
                 exit(1);
             }   
             std::cout<<__FILE__<<":"<<__LINE__<<" setPdbChainId(String("<<(*chains).long_chain_id <<") "<<std::endl;

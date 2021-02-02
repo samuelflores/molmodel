@@ -16,6 +16,10 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+
+#define _STRINGIFY(v) #v
+#define _STRINGIFY_CASE(v) case v: return _STRINGIFY(v)
+
 /*============================================================*
  *                          a t o m                           *
  *============================================================*/
@@ -344,7 +348,7 @@ mol_MolModelStructuresGet (MolModel *model, int *num, MolStructure **strucs) {
  *------------------------------------------------------------*/
 
 void
-mol_ResTypeConv (char *s, MolResidueType *type)
+mol_ResTypeConv (const char *s, MolResidueType *type)
   {
 
   int i, j;
@@ -354,7 +358,7 @@ mol_ResTypeConv (char *s, MolResidueType *type)
  /**************
   ***  body  ***
   **************/
-  
+
   *type = MOL_RESIDUE_UNKNOWN;
   // triming leading and trailing whitespaces
   for ( i = 0, j = 0; i < 4; i++ ) {
@@ -362,16 +366,16 @@ mol_ResTypeConv (char *s, MolResidueType *type)
       tstr[j] = s[i];
       j++;
     }
-  }
-  if ( j < 4 ) {
-    tstr[j] = '\0';
+    if ( s[i] == '\0' ) {
+      break;
+    }
   }
 
   if (strlen(tstr) == 1) {
-    for (i = 0; mol_res_names[i][0]; i++) {
+    for (i = 0; mol_res_names[i].long_name[0]; i++) {
       //std::cout<<__FILE__<<":"<<__LINE__<<" "<<*s<<" "<<*mol_res_names[i]  << " "<< *mol_res_names[i][1]  <<  *mol_res_names[i][2]<<std::endl;
-      if (*tstr == *mol_res_names[i][2]) {
-        *type = MolResidueType(i);
+      if (tstr[0] == mol_res_names[i].short_name) {
+        *type = mol_res_names[i].type;
         //std::cout<<__FILE__<<":"<<__LINE__<<" found type! it is : "<<MolResidueType(i)<<std::endl;
         //std::cout<<__FILE__<<":"<<__LINE__<<" Decided this is residue type : "<<    mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    <<   " : "    <<     MolResidueType(i)<<" based on reading residue type >" << s << "<" << std::endl;
         return;
@@ -379,14 +383,13 @@ mol_ResTypeConv (char *s, MolResidueType *type)
       }
     }
 
-  for (i = 0; mol_res_names[i][0]; i++) {
+  for (i = 0; mol_res_names[i].long_name[0]; i++) {
     //std::cout<<__FILE__<<":"<<__LINE__<<" trying residue name: >"<<  mol_res_names[i][0]    <<mol_res_names[i][1]    <<mol_res_names[i][2]    << "< "          <<std::endl;
-    if (!STRCASECMP(tstr, mol_res_names[i][0]) ||
-        !STRCASECMP(tstr, mol_res_names[i][1]) || 
-        !STRCASECMP(tstr, mol_res_names[i][2])) { 
+    if (!STRCASECMP(tstr, mol_res_names[i].long_name) ||
+        !STRCASECMP(tstr, mol_res_names[i].abbrev_name)) {
       //std::cout<<__FILE__<<":"<<__LINE__<<" trying residue name: >"<<  mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    << "< "          <<std::endl;
       //std::cout<<__FILE__<<":"<<__LINE__<<" Decided this is residue type : "<<    mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    <<   " : "    <<     MolResidueType(i)<<" based on reading residue type >" << s << "<" << std::endl;
-      *type = MolResidueType(i);
+      *type = mol_res_names[i].type;
       return;
       }
     }
@@ -400,21 +403,21 @@ mol_ResTypeConv (char *s, MolResidueType *type)
     tstr[2] = 'c';
     tstr[3] = '\0';
 
-    for (i = 0; mol_res_names[i][0]; i++) {
-      tstr[0] = mol_res_names[i][1][0];
-      tstr[1] = mol_res_names[i][1][2];
+    for (i = 0; mol_res_names[i].long_name[0]; i++) {
+      tstr[0] = mol_res_names[i].long_name[0];
+      tstr[1] = mol_res_names[i].long_name[2];
       tstr[2] = 'c';
       tstr[3] = '\0';
 
-      if (!STRCASECMP(s, tstr)) { 
-        *type = MolResidueType(i);
+      if (!STRCASECMP(s, tstr)) {
+        *type = mol_res_names[i].type;
         return;
         }
 
       tstr[2] = 'n';
 
-      if (!STRCASECMP(s, tstr)) { 
-        *type = MolResidueType(i);
+      if (!STRCASECMP(s, tstr)) {
+        *type = mol_res_names[i].type;
         return;
         }
       }
@@ -2302,4 +2305,56 @@ mol_msg (const char *format, ...)
   fflush (stderr);
   }
 
-
+const char *
+mol_ResTypeAsString (const MolResidueType type)
+  {
+    switch (type) {
+    _STRINGIFY_CASE(MOL_RESIDUE_UNKNOWN);
+    _STRINGIFY_CASE(MOL_RESIDUE_ALANINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_ARGININE);
+    _STRINGIFY_CASE(MOL_RESIDUE_ASPARAGINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_ASPARTIC_ACID);
+    _STRINGIFY_CASE(MOL_RESIDUE_CYSTEINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_GLUTAMIC_ACID);
+    _STRINGIFY_CASE(MOL_RESIDUE_GLUTAMINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_GLYCINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_HISTIDINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_ISOLEUCINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_LEUCINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_LYSINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_METHIONINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_PHENYLALANINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_PROLINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_SERINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_THREONINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_TRYPTOPHAN);
+    _STRINGIFY_CASE(MOL_RESIDUE_TYROSINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_VALINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_SOLV);
+    _STRINGIFY_CASE(MOL_RESIDUE_ADP);
+    _STRINGIFY_CASE(MOL_RESIDUE_CHLORINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_HOH);
+    _STRINGIFY_CASE(MOL_RESIDUE_ADENOSINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_GUANOSINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_CYTOSINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_URIDINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_THYMINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_URIDINE2);
+    _STRINGIFY_CASE(MOL_RESIDUE_CYTOSINE2);
+    _STRINGIFY_CASE(MOL_RESIDUE_GUANOSINE2);
+    _STRINGIFY_CASE(MOL_RESIDUE_URIDINE3);
+    _STRINGIFY_CASE(MOL_RESIDUE_CYTOSINE3);
+    _STRINGIFY_CASE(MOL_RESIDUE_GUANOSINE3);
+    _STRINGIFY_CASE(MOL_RESIDUE_URIDINE4);
+    _STRINGIFY_CASE(MOL_RESIDUE_ADENOSINE2);
+    _STRINGIFY_CASE(MOL_RESIDUE_GUANOSINE4);
+    _STRINGIFY_CASE(MOL_RESIDUE_GUANOSINE5);
+    _STRINGIFY_CASE(MOL_RESIDUE_DEOXYADENOSINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_DEOXYGUANOSINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_DEOXYCYTOSINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_DEOXYTHYMINE);
+    _STRINGIFY_CASE(MOL_RESIDUE_DISULPHIDEBRIDGEDCYSTEINE);
+    default:
+      return "Unknown residue";
+  }
+  }
