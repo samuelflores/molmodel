@@ -207,7 +207,7 @@ static const char *mol_res_names[MOL_RESIDUE_MAX_NUM+1][3] = {
   {"disulphidebridgedcysteine",      "cyx",     "x"},
 
 
-  {"",              "",        ""}};
+  {NULL,              NULL,        NULL}};
 
 
 
@@ -643,7 +643,7 @@ void
 mol_msg (const char *format, ...);
 
 void
-mol_ResTypeConv (char *s, MolResidueType *type);
+mol_ResTypeConv (const char *s, MolResidueType *type);
 
 void
 mol_StructureAtomAdd (MolStructure *struc, int het, MolAtom *atom);

@@ -471,6 +471,7 @@ public:
     
     /// Constructor for mmCIF files , with chain prefix
     explicit PdbStructure( std::string pdbFileName, std::string chainsPrefixCif = "" );
+    //explicit PdbStructure( std::string pdbFileName){PdbStructure(pdbFileName, std::string ( "") );};
     /// Constructor for mmCIF files. Obsolete, replaced with the above.
     //explicit PdbStructure( std::string pdbFileName );
     

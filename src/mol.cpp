@@ -344,7 +344,7 @@ mol_MolModelStructuresGet (MolModel *model, int *num, MolStructure **strucs) {
  *------------------------------------------------------------*/
 
 void
-mol_ResTypeConv (char *s, MolResidueType *type)
+mol_ResTypeConv (const char *s, MolResidueType *type)
   {
 
   int i, j;
@@ -355,6 +355,7 @@ mol_ResTypeConv (char *s, MolResidueType *type)
   ***  body  ***
   **************/
   
+  std::cout<<__FILE__<<":"<<__LINE__<<" checking residue type >" << s << "<" << std::endl;
   *type = MOL_RESIDUE_UNKNOWN;
   // triming leading and trailing whitespaces
   for ( i = 0, j = 0; i < 4; i++ ) {
@@ -369,10 +370,10 @@ mol_ResTypeConv (char *s, MolResidueType *type)
 
   if (strlen(tstr) == 1) {
     for (i = 0; mol_res_names[i][0]; i++) {
-      //std::cout<<__FILE__<<":"<<__LINE__<<" "<<*s<<" "<<*mol_res_names[i]  << " "<< *mol_res_names[i][1]  <<  *mol_res_names[i][2]<<std::endl;
+      std::cout<<__FILE__<<":"<<__LINE__<<" "<<*s<<" "<<*mol_res_names[i]  << " "<< *mol_res_names[i][1]  <<  *mol_res_names[i][2]<<std::endl;
       if (*tstr == *mol_res_names[i][2]) {
         *type = MolResidueType(i);
-        //std::cout<<__FILE__<<":"<<__LINE__<<" found type! it is : "<<MolResidueType(i)<<std::endl;
+        std::cout<<__FILE__<<":"<<__LINE__<<" found type! it is : "<<MolResidueType(i)<<std::endl;
         //std::cout<<__FILE__<<":"<<__LINE__<<" Decided this is residue type : "<<    mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    <<   " : "    <<     MolResidueType(i)<<" based on reading residue type >" << s << "<" << std::endl;
         return;
         }
@@ -380,16 +381,21 @@ mol_ResTypeConv (char *s, MolResidueType *type)
     }
 
   for (i = 0; mol_res_names[i][0]; i++) {
-    //std::cout<<__FILE__<<":"<<__LINE__<<" trying residue name: >"<<  mol_res_names[i][0]    <<mol_res_names[i][1]    <<mol_res_names[i][2]    << "< "          <<std::endl;
     if (!STRCASECMP(tstr, mol_res_names[i][0]) ||
         !STRCASECMP(tstr, mol_res_names[i][1]) || 
         !STRCASECMP(tstr, mol_res_names[i][2])) { 
-      //std::cout<<__FILE__<<":"<<__LINE__<<" trying residue name: >"<<  mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    << "< "          <<std::endl;
-      //std::cout<<__FILE__<<":"<<__LINE__<<" Decided this is residue type : "<<    mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    <<   " : "    <<     MolResidueType(i)<<" based on reading residue type >" << s << "<" << std::endl;
+      std::cout<<__FILE__<<":"<<__LINE__<<" trying residue name: >"<<  mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    << "< "          <<std::endl;
+      std::cout<<__FILE__<<":"<<__LINE__<<" Decided this is residue type : "<<    mol_res_names[i][0]<<" : "<<    mol_res_names[i][1] <<" : "    <<mol_res_names[i][2]    <<   " : "    <<     MolResidueType(i)<<" based on reading residue type >" << s << "<" << std::endl;
       *type = MolResidueType(i);
       return;
       }
     }
+
+  /* Unknown residue, do not assign type */
+  if (i > MOL_RESIDUE_MAX_NUM) {
+      std::cout<<__FILE__<<":"<<__LINE__<<" Decided this is residue type unknown, "<<" based on reading residue type >" << s << "<" << std::endl;
+    return;
+  }
 
 
   /*  check for gromacs modified terminal residue names.  */
@@ -408,6 +414,7 @@ mol_ResTypeConv (char *s, MolResidueType *type)
 
       if (!STRCASECMP(s, tstr)) { 
         *type = MolResidueType(i);
+        std::cout<<__FILE__<<":"<<__LINE__<<" GROMACS match "<<" based on reading residue type >" << s << "<" << std::endl;
         return;
         }
 
@@ -415,10 +422,12 @@ mol_ResTypeConv (char *s, MolResidueType *type)
 
       if (!STRCASECMP(s, tstr)) { 
         *type = MolResidueType(i);
+        std::cout<<__FILE__<<":"<<__LINE__<<" GROMACS match "<<" based on reading residue type >" << s << "<" << std::endl;
         return;
         }
       }
     }
+      std::cout<<__FILE__<<":"<<__LINE__<<" No match "<<" based on reading residue type >" << s << "<" << std::endl;
   }
 
 

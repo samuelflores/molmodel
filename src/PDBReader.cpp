@@ -108,7 +108,7 @@ public:
                         
                         PdbResidueId residueId        ( resNumGemmi, ICode );
                         std::string residueName       = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).name;
-                        
+                       
                         //============================ For each atom
                         for ( unsigned int atIt = 0; atIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.size() ); atIt++ )
                         {
@@ -122,7 +122,7 @@ public:
                             //======================== Fill in atom information
                             atom.orig_id              = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).serial;
                             atom.name                 = mol_StrCopy( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name.c_str(), model );
-                            mol_ResTypeConv           ( const_cast<char*> ( residueName.c_str() ), &atom.res_type );
+                            mol_ResTypeConv           ( residueName.c_str(), &atom.res_type );
                             atom.res_prop             = mol_res_props[atom.res_type];
                             
                             if ( !( altLoc == '\0' ) && !( altLoc == 'A' ) )
@@ -206,6 +206,7 @@ public:
             
             string sequence;
             for (int i = 0; i < numResidues; ++i) {
+                std::cout<<__FILE__<<":"<<__LINE__<<" Adding a residue of type >"<< mol_res_names[chainResidues[i]->type][2]<<"<"  <<std::endl;
                 sequence += mol_res_names[chainResidues[i]->type][2];
             }
             std::transform(sequence.begin(), sequence.end(), sequence.begin(), (int(*)(int)) std::toupper);
