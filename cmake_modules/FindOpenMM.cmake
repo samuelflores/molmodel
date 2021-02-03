@@ -64,17 +64,6 @@ find_library(OpenMM_DEBUG_LIBRARY NAMES OpenMM_d
     PATH_SUFFIXES "lib" "OpenMM/lib" "openmm/lib"
 )
 
-# Set composite OpenMM_LIBRARIES variable
-set(LIBS "")
-if(OpenMM_LIBRARY AND OpenMM_DEBUG_LIBRARY)
-    set(LIBS optimized ${OpenMM_LIBRARY} debug ${OpenMM_DEBUG_LIBRARY})
-elseif(OpenMM_LIBRARY)
-    set(LIBS ${OpenMM_LIBRARY})
-elseif(OpenMM_DEBUG_LIBRARY)
-    set(LIBS ${OpenMM_DEBUG_LIBRARY})
-endif(OpenMM_LIBRARY AND OpenMM_DEBUG_LIBRARY)
-set(OpenMM_LIBRARIES "${LIBS}" CACHE STRING "OpenMM Link Libraries" FORCE)
-
 # Static library
 
 find_library(OpenMM_STATIC_LIBRARY NAMES OpenMM_static
@@ -87,13 +76,26 @@ find_library(OpenMM_STATIC_LIBRARY NAMES OpenMM_static
     PATH_SUFFIXES "lib" "OpenMM/lib" "openmm/lib"
 )
 
+# Set composite OpenMM_LIBRARIES variable
+set(LIBS "")
+if(OpenMM_LIBRARY AND OpenMM_DEBUG_LIBRARY)
+    set(LIBS optimized ${OpenMM_LIBRARY} debug ${OpenMM_DEBUG_LIBRARY})
+elseif(OpenMM_LIBRARY)
+    set(LIBS ${OpenMM_LIBRARY})
+elseif(OpenMM_DEBUG_LIBRARY)
+    set(LIBS ${OpenMM_DEBUG_LIBRARY})
+elseif(OpenMM_STATIC_LIBRARY)
+    set(LIBS ${OpenMM_STATIC_LIBRARY})
+endif(OpenMM_LIBRARY AND OpenMM_DEBUG_LIBRARY)
+set(OpenMM_LIBRARIES "${LIBS}" CACHE STRING "OpenMM Link Libraries" FORCE)
+
 # CMAKE 2.4 does not have FindPackageHandleStandardArgs
 # So to heck with CMAKE 2.4...
 set(cmv "${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}")
 if(cmv MATCHES "2.4")
 else(cmv MATCHES "2.4")
     include(FindPackageHandleStandardArgs OPTIONAL)
-    find_package_handle_standard_args(OpenMM DEFAULT_MSG OpenMM_INCLUDE_DIR OpenMM_LIBRARY OpenMM_LIBRARIES)
+    find_package_handle_standard_args(OpenMM DEFAULT_MSG OpenMM_INCLUDE_DIR OpenMM_LIBRARIES)
 endif(cmv MATCHES "2.4")
 
 mark_as_advanced(
