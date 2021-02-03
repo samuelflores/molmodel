@@ -172,7 +172,7 @@ public:
                         atom.res_prop             = mol_res_props[atom.res_type];
 
                         if ( !( altLoc == '\0' ) && !( altLoc == 'A' ) )
-                        continue;                                                    // This is in keeping with the mol_DbPdbAtomProcLongChainId() function; it allows only the first alt-loc to be added.
+                            continue;                                                    // This is in keeping with the mol_DbPdbAtomProcLongChainId() function; it allows only the first alt-loc to be added.
 
                         atom.res_seq              = resNumGemmi;
                         atom.insertion_code       = ICode;
@@ -241,13 +241,29 @@ public:
             
             // Create a string of the sequence.
             
+            auto firstValidResidueType = MOL_RESIDUE_MAX_NUM;
             string sequence;
             for (int i = 0; i < numResidues; ++i) {
-                sequence += mol_res_names[chainResidues[i]->type].short_name;
+                // Ignore anything that is not a canonal RNA or DNA residue
+                const auto type = chainResidues[i]->type;
+                if ((type >= MOL_RESIDUE_ADENOSINE && type <= MOL_RESIDUE_URIDINE) || // RNA
+                    (type >= MOL_RESIDUE_DEOXYADENOSINE && type <= MOL_RESIDUE_DEOXYTHYMINE) || // DNA
+                    ((type <= MOL_RESIDUE_VALINE && type > MOL_RESIDUE_UNKNOWN) || type == MOL_RESIDUE_DISULPHIDEBRIDGEDCYSTEINE)) { // Protein
+                    sequence += mol_res_names[chainResidues[i]->type].short_name;
+
+                    if (firstValidResidueType == MOL_RESIDUE_MAX_NUM)
+                        firstValidResidueType = type;
+                }
             }
+
+            if (sequence.length() < 1) {
+                chains = chains->next;
+                continue;
+            }
+
             std::transform(sequence.begin(), sequence.end(), sequence.begin(), (int(*)(int)) std::toupper);
-            if ((chainResidues[0]->type >= MOL_RESIDUE_ADENOSINE) &&
-                (chainResidues[0]->type <= MOL_RESIDUE_URIDINE))
+
+            if (firstValidResidueType >= MOL_RESIDUE_ADENOSINE && firstValidResidueType <= MOL_RESIDUE_URIDINE)
             {
                 std::cout<<__FILE__<<":"<<__LINE__<<"Creating an RNA"<<std::endl;
                 // Create an RNA.
@@ -265,12 +281,11 @@ public:
                 std::cout<<__FILE__<<":"<<__LINE__<<" created an RNA"<<std::endl; 
                 std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<rna.getPdbChainId()<<"< "<<std::endl;
                 compounds.push_back(rna);
-            } 
-            else if ((chainResidues[0]->type >= MOL_RESIDUE_DEOXYADENOSINE) &&
-                     (chainResidues[0]->type <= MOL_RESIDUE_DEOXYTHYMINE)) {
+            }
+            else if (firstValidResidueType >= MOL_RESIDUE_DEOXYADENOSINE && firstValidResidueType <= MOL_RESIDUE_DEOXYTHYMINE) {
                 std::cout<<__FILE__<<":"<<__LINE__<<"Creating a DNA"<<std::endl;
                 // Create a  DNA.
-                
+
                 DNA dna(sequence);
                 for (int i = 0; i < dna.getNumResidues(); i ++) {
                     dna.updResidue(ResidueInfo::Index(i)).setPdbResidueNumber(chainResidues[i]->id);
@@ -278,9 +293,8 @@ public:
                 }
                 dna.assignBiotypes();
                 compounds.push_back(dna);
-            }  
-            else if (((chainResidues[0]->type <= MOL_RESIDUE_VALINE) && (chainResidues[0]->type > 0)) ||  // type 0 is "unknown".  1-20 are protein amino acids
-                     (chainResidues[0]->type >= MOL_RESIDUE_DISULPHIDEBRIDGEDCYSTEINE) ) {                                  // type 44 is CYX
+            }
+            else if ((firstValidResidueType <= MOL_RESIDUE_VALINE && firstValidResidueType > MOL_RESIDUE_UNKNOWN) || firstValidResidueType == MOL_RESIDUE_DISULPHIDEBRIDGEDCYSTEINE) { // Protein
                 std::cout<<__FILE__<<":"<<__LINE__<<"Creating a protein"<<std::endl;
                 // Create a Protein.
                 // scf changed this to use one more parameter in the Protein constructor, set to "Torsion".  Default is "Rigid".  Now the peptide bond will not be rigid.
