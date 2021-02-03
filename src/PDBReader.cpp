@@ -36,19 +36,73 @@
 #include "mol.h"
 #include "SimTKsimbody.h"
 #include <cctype>
+#include <cstdlib>
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <array>
 
 #ifdef GEMMI_USAGE
     //================================================ Include Gemmi headers
+    #include <gemmi/cif.hpp>
     #include <gemmi/gz.hpp>
+    #include <gemmi/mmcif.hpp>
+    #include <gemmi/pdb.hpp>
 #endif
 
 using namespace SimTK;
 using std::map;
 using std::string;
 using std::vector;
+
+static const std::array<std::string, 3> INPUT_FILE_EXTNS = { ".pdb", ".cif", ".cif.gz" };
+
+static std::string getFileExtension( const std::string &filename ) {
+    static const std::string DOT = ".";
+
+    auto lastDot                 = filename.find_last_of( DOT );
+    if ( lastDot == std::string::npos )
+        return "";
+    auto tail                    = filename.substr( lastDot );
+    if ( tail == ".gz" ) {
+        lastDot                  = filename.substr( 0, lastDot - 1 ).find_last_of( DOT );
+        if (lastDot == std::string::npos )
+            return ".gz";
+        tail                     = filename.substr( lastDot );
+    }
+
+    std::transform               ( tail.begin(), tail.end(), tail.begin(), ::tolower );
+    return tail;
+}
+
+static bool isCif( const std::string extension ) {
+    return extension.find("cif") != std::string::npos;
+}
+
+#ifdef GEMMI_USAGE
+static gemmi::Structure getStructureFromFile( const std::string &filename ) {
+    if ( isCif ( getFileExtension( filename ) ) ) {
+        //======================================== Read in the file into Gemmi document
+        gemmi::cif::Document gemmiDoc                 = gemmi::cif::read ( gemmi::MaybeGzipped ( filename ) );
+        //======================================== Check the number of blocks
+        if ( gemmiDoc.blocks.size() < 1 )
+        {
+            std::cerr << "!!! Error !!! The file " << filename << " contains 0 blocks. Nothing the be read." << std::endl;
+            std::exit                                 ( EXIT_FAILURE );
+        }
+        else if ( gemmiDoc.blocks.size() > 1 )
+        {
+            std::cerr << "!!! Warning !!! The file " << filename << " contains multiple blocks. Molmodel will use the first block named " << gemmiDoc.blocks.at(0).name << " and ignore the rest." << std::endl;
+        }
+
+        //======================================== Generate structure from block
+        return gemmi::impl::make_structure_from_block ( gemmiDoc.blocks.at(0) );
+    }
+
+    // Assume PDB
+    return gemmi::read_pdb_file                       ( filename );
+}
+#endif // GEMMI_USAGE
 
 class PDBReader::PDBReaderImpl {
 public:
@@ -57,114 +111,97 @@ public:
         std::cout<<__FILE__<<":"<<__LINE__<<"  filename.c_str()  >"<< filename.c_str()<<"< "<<std::endl;
         
         //============================================ Read in PDB or CIF
-        if ( filename.substr ( filename.length() - 4, filename.length() - 1) == ".pdb" )
-        {
-            mol_DbRead("mol", filename.c_str(), MOL_DB_PDB, &model );
-        }
-        else if ( ( filename.substr ( filename.length() - 4, filename.length() - 1) == ".cif" ) ||
-                  ( filename.substr ( filename.length() - 7, filename.length() - 1) == ".cif.gz" ) )
-        {
-#ifdef GEMMI_USAGE
-            //======================================== Read in the file into Gemmi document
-            gemmi::cif::Document gemmiDoc             = gemmi::cif::read ( gemmi::MaybeGzipped ( filename ) );
-            
-            //======================================== Check the number of blocks
-            if ( gemmiDoc.blocks.size() < 1 )
-            {
-                std::cerr << "!!! Error !!! The file " << filename << " contains 0 blocks. Nothing the be read." << std::endl;
-                exit                                  ( EXIT_FAILURE );
-            }
-            else if ( gemmiDoc.blocks.size() > 1 )
-            {
-                std::cerr << "!!! Warning !!! The file " << filename << " contains multiple blocks. Molmodel will use the first block named " << gemmiDoc.blocks.at(0).name << " and ignore the rest." << std::endl;
-            }
+	const auto extension = getFileExtension(filename);
 
-            //======================================== Generate structure from block
-            gemmi::Structure gemmiStruct              = gemmi::impl::make_structure_from_block ( gemmiDoc.blocks.at(0) );
-            
-            //======================================== For each model
-            for ( unsigned int moIt = 0; moIt < static_cast<unsigned int> ( gemmiStruct.models.size() ); moIt++ )
+	if ( std::find_if( INPUT_FILE_EXTNS.cbegin(), INPUT_FILE_EXTNS.cend(), [&extension](const std::string &item) { return extension == item; } ) == INPUT_FILE_EXTNS.cend() ) {
+	    std::cerr << "!!! Error !!! This file type is not supported." << std::endl;
+	    std::exit ( EXIT_FAILURE );
+	}
+
+#ifndef GEMMI_USAGE
+        if (extension != ".pdb") {
+            std::cerr << "ERROR: The supplied file has the mmCIF format, but Molmodel was not compiled with the Gemmi library, which is required for the mmCIF support. Please re-run the Molmodel cmake command with the -DUSE_GEMMI=TRUE -DGEMMI_PATH=/path/to/gemmi/include option (and then alse re-run the make install command). Terminating..." << std::endl;
+	        std::exit( EXIT_FAILURE );
+        }
+        mol_DbRead("mol", filename.c_str(), MOL_DB_PDB, &model );
+#else
+        //======================================== Generate structure from block
+        gemmi::Structure gemmiStruct              = getStructureFromFile ( filename );
+
+        //======================================== For each model
+        for ( unsigned int moIt = 0; moIt < static_cast<unsigned int> ( gemmiStruct.models.size() ); moIt++ )
+        {
+            //==================================== Initialise the molmodel model
+            std::stringstream molName;
+            molName << "mol" << moIt;
+            mol_MolModelCreate                    ( molName.str().c_str(), &model );
+
+            //==================================== For each chain
+            for ( unsigned int chIt = 0; chIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.size() ); chIt++ )
             {
-                //==================================== Initialise the molmodel model
-                std::stringstream molName;
-                molName << "mol" << moIt;
-                mol_MolModelCreate                    ( molName.str().c_str(), &model );
-                
-                //==================================== For each chain
-                for ( unsigned int chIt = 0; chIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.size() ); chIt++ )
+                //================================ Get the chain ID
+                std::string chainId               =  std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).name );
+
+                //================================ For each residue
+                int resNumGemmi                   = 0;
+                for ( unsigned int reIt = 0; reIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.size() ); reIt++ )
                 {
-                    //================================ Get the chain ID
-                    std::string chainId               =  std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).name );
-                 
-                    //================================ For each residue
-                    int resNumGemmi                   = 0;
-                    for ( unsigned int reIt = 0; reIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.size() ); reIt++ )
+                    //============================ Get residue insertion code, residueID and residue name
+                    char ICode                    = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.icode;
+
+                    if ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.has_value() ) { resNumGemmi = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.value; }
+                    else                                                                                       { resNumGemmi++; }
+
+                    PdbResidueId residueId        ( resNumGemmi, ICode );
+                    std::string residueName       = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).name;
+
+                    //============================ For each atom
+                    for ( unsigned int atIt = 0; atIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.size() ); atIt++ )
                     {
-                        //============================ Get residue insertion code, residueID and residue name
-                        char ICode                    = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.icode;
-                        
-                        if ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.has_value() ) { resNumGemmi = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.value; }
-                        else                                                                                       { resNumGemmi++; }
-                        
-                        PdbResidueId residueId        ( resNumGemmi, ICode );
-                        std::string residueName       = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).name;
-                        
-                        //============================ For each atom
-                        for ( unsigned int atIt = 0; atIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.size() ); atIt++ )
-                        {
-                            //======================== Initialise atom related variables
-                            MolAtom atom;
-                            MolStructure *struc;
-                            
-                            //======================== Get atom info
-                            char altLoc               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).altloc;
-                            
-                            //======================== Fill in atom information
-                            atom.orig_id              = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).serial;
-                            atom.name                 = mol_StrCopy( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name.c_str(), model );
-                            mol_ResTypeConv           ( residueName.c_str(), &atom.res_type );
-                            atom.res_prop             = mol_res_props[atom.res_type];
-                            
-                            if ( !( altLoc == '\0' ) && !( altLoc == 'A' ) )
-                                continue;                                                    // This is in keeping with the mol_DbPdbAtomProcLongChainId() function; it allows only the first alt-loc to be added.
-                            
-                            atom.res_seq              = resNumGemmi;
-                            atom.insertion_code       = ICode;
-                            atom.pos[0]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.x;
-                            atom.pos[1]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.y;
-                            atom.pos[2]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.z;
-                            atom.temp                 = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).b_iso;
-                            
-                            atom.het                  = MOL_FALSE;                       // We do not actually know, but let's go with false here ...
-                            
-                            if (atom.name[0] != ' ')  { mol_AtomTypeConv ( &atom.name[0], &atom.type ); }
-                            else                      { mol_AtomTypeConv ( &atom.name[1], &atom.type ); }
-                            
-                            atom.chain_id             = chainId[0];
-                            atom.long_chain_id        = mol_StrCopy( " ", model );       // We do not have LongChainID, so empty
-                            
-                            mol_MolModelCurrStrucGet  ( model, &struc );                 // Copies model->curr_struc to struc
-                            mol_StructureAtomAdd      ( struc, false, &atom );           // Saves the atom to the model (through struc)
-                        }
+                        //======================== Initialise atom related variables
+                        MolAtom atom;
+                        MolStructure *struc;
+
+                        //======================== Get atom info
+                        char altLoc               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).altloc;
+
+                        //======================== Fill in atom information
+                        atom.orig_id              = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).serial;
+                        atom.name                 = mol_StrCopy( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name.c_str(), model );
+                        mol_ResTypeConv           ( residueName.c_str(), &atom.res_type );
+                        atom.res_prop             = mol_res_props[atom.res_type];
+
+                        if ( !( altLoc == '\0' ) && !( altLoc == 'A' ) )
+                        continue;                                                    // This is in keeping with the mol_DbPdbAtomProcLongChainId() function; it allows only the first alt-loc to be added.
+
+                        atom.res_seq              = resNumGemmi;
+                        atom.insertion_code       = ICode;
+                        atom.pos[0]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.x;
+                        atom.pos[1]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.y;
+                        atom.pos[2]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.z;
+                        atom.temp                 = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).b_iso;
+
+                        atom.het                  = MOL_FALSE;                       // We do not actually know, but let's go with false here ...
+
+                        if (atom.name[0] != ' ')  { mol_AtomTypeConv ( &atom.name[0], &atom.type ); }
+                        else                      { mol_AtomTypeConv ( &atom.name[1], &atom.type ); }
+
+                        atom.chain_id             = chainId[0];
+                        atom.long_chain_id        = mol_StrCopy( " ", model );       // We do not have LongChainID, so empty
+
+                        mol_MolModelCurrStrucGet  ( model, &struc );                 // Copies model->curr_struc to struc
+                        mol_StructureAtomAdd      ( struc, false, &atom );           // Saves the atom to the model (through struc)
                     }
                 }
-                
-                //==================================== Build biomolecule from the filled in structs
-                MolStructure *struc;
-                mol_MolModelCurrStrucGet              ( model, &struc ); // Fill in the struc structure
-                mol_StructureChainsBuild              ( struc, 1 );      // Build protein chains
-                mol_StructureChainsBuild              ( struc, 2 );      // Build solvent chains
             }
-#else
-            std::cerr << "ERROR: The suplied file has the mmCIF format, but Molmodel was not compiled with the Gemmi library, which is required for the mmCIF support. Please re-run the Molmodel cmake command with the -DUSE_GEMMI=TRUE -DGEMMI_PATH=/path/to/gemmi/include option (and then alse re-run the make install command). Terminating..." << std::endl;
-            exit                                      ( -1 );
+        }
+
+        //==================================== Build biomolecule from the filled in structs
+        MolStructure *struc;
+        mol_MolModelCurrStrucGet              ( model, &struc ); // Fill in the struc structure
+        mol_StructureChainsBuild              ( struc, 1 );      // Build protein chains
+        mol_StructureChainsBuild              ( struc, 2 );      // Build solvent chains
 #endif
-        }
-        else
-        {
-            std::cerr << "Failed to detect the extension of the input file " << filename << ". The supported extensions are: \'.pdb\' and \'.cif\' (or \'.cif.gz\'). Terminating now..." << std::endl;
-            exit                                      ( -1 );
-        }
 
         //============================================ Proceed as normal
         std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<std::endl;
