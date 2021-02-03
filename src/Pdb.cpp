@@ -824,23 +824,23 @@ PdbStructure::PdbStructure(
 PdbStructure::PdbStructure( ) {
     return;
 }
-PdbStructure::PdbStructure(
-                           std::string pdbFileName,
-			   std::string chainsPrefix)
+
+
+PdbStructure::PdbStructure( const std::string &fileName, const std::string &chainsPrefix )
 {
 #ifdef GEMMI_USAGE
     //================================================ Read in the file into Gemmi document
-    gemmi::cif::Document gemmiDoc                     = gemmi::cif::read ( gemmi::MaybeGzipped ( pdbFileName ) );
+    gemmi::cif::Document gemmiDoc                     = gemmi::cif::read ( gemmi::MaybeGzipped ( fileName ) );
     
     //================================================ Check the number of blocks
     if ( gemmiDoc.blocks.size() < 1 )
     {
-        std::cerr << "!!! Error !!! The file " << pdbFileName << " contains 0 blocks. Nothing the be read." << std::endl;
+        std::cerr << "!!! Error !!! The file " << fileName << " contains 0 blocks. Nothing the be read." << std::endl;
         exit                                          ( EXIT_FAILURE );
     }
     else if ( gemmiDoc.blocks.size() > 1 )
     {
-        std::cerr << "!!! Warning !!! The file " << pdbFileName << " contains multiple blocks. Molmodel will use the first block named " << gemmiDoc.blocks.at(0).name << " and ignore the rest." << std::endl;
+        std::cerr << "!!! Warning !!! The file " << fileName << " contains multiple blocks. Molmodel will use the first block named " << gemmiDoc.blocks.at(0).name << " and ignore the rest." << std::endl;
     }
 
     //================================================ Generate structure from block
@@ -899,18 +899,12 @@ PdbStructure::PdbStructure(
                     if ( atomName.length() == 3 ) { atomName.insert ( 0, " " ); }
                     if ( atomName.length() == 2 ) { atomName = " " + atomName + " "; }
                     if ( atomName.length() == 1 ) { atomName = " " + atomName + "  "; }
-                    
+
                     //================================ If this atom does not yet exist in molmodel, add it
                     if ( !models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].hasAtom( atomName ) )
                     {
                         //============================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
                         String elementSymbol          = std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).element.name() );
-                        while ( elementSymbol.length() < 2 ) { elementSymbol.insert ( 0, " " ); }
-                        if ( ( elementSymbol.length() > 1 ) && ( toupper (  elementSymbol[0] ) ==  elementSymbol[0] ) ) { elementSymbol[1] = tolower ( elementSymbol[1] ); }
-                        
-                        //============================ Four character atom names starting with "H" are probably hydrogen, even if they start with "HO", which should properly be Holmium. - taken from molmodel
-                        if ( ( 'H' == atomName[0] ) && ( std::string::npos == atomName.find_first_of(" ") ) ) { elementSymbol = "H"; }
-
                         //============================ Add the atom
                         const Element& element        = Element::getBySymbol ( elementSymbol );
                         models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].addAtom ( PdbAtom ( atomName, element ) );
@@ -1058,7 +1052,7 @@ PdbStructure::PdbStructure(
 */
 
 
-PdbStructure::PdbStructure( std::istream& pdbFile, const String & chainsPrefix /*= ""*/ )
+PdbStructure::PdbStructure( std::istream &pdbFile, const std::string &chainsPrefix )
 {
     std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
     char lineBuffer[300];
