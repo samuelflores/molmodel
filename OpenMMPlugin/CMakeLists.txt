@@ -6,10 +6,19 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src)
 
 # The library is dependent on its local .cpp file and some of
 # the Molmodel classes. We'll list everything to be safe.
-ADD_LIBRARY(OpenMMPlugin SHARED 
-	OpenMMPlugin.cpp
-    ${SOURCE_INCLUDE_FILES} 
-	${API_ABS_INCLUDE_FILES})
+
+IF (OpenMM_STATIC_LIBRARY)
+    ADD_LIBRARY(OpenMMPlugin STATIC
+        OpenMMPlugin.cpp
+        ${SOURCE_INCLUDE_FILES}
+        ${API_ABS_INCLUDE_FILES})
+ELSE ()
+    ADD_LIBRARY(OpenMMPlugin SHARED
+        OpenMMPlugin.cpp
+        ${SOURCE_INCLUDE_FILES}
+        ${API_ABS_INCLUDE_FILES})
+ENDIF ()
+
 IF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
     set_target_properties(OpenMMPlugin PROPERTIES DEBUG_POSTFIX "_d")
 ENDIF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)

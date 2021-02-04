@@ -323,7 +323,8 @@ set(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL "Control volume of build output" )
 
 
 
-
+#if (OpenMM_SDK)
+#    set(OpenMM_LIBRARY "${OpenMM_SDK}/
 
 set(OpenMM_ON OFF)
 
