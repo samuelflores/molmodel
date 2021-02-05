@@ -1035,7 +1035,7 @@ void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool i
         //============================================ Copy information to residue
         gemmiRes.name                                 = trim_both ( residueI->getName() );
         
-        gemmiRes.seqid                                = gemmi::SeqId ( (*residueI).getResidueId().residueNumber, (*residueI).getResidueId().insertionCode );
+        gemmiRes.seqid                                = gemmi::SeqId ( residueI->getResidueId().residueNumber, residueI->getResidueId().insertionCode );
         gemmiRes.label_seq                            = nextResidueSerialNumber;
         if ( isPolymer ) { gemmiRes.entity_type       = gemmi::EntityType::Polymer; }
         else             { gemmiRes.entity_type       = gemmi::EntityType::Unknown; }
@@ -1049,13 +1049,13 @@ void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool i
             gemmi::Atom gemmiAtom;
             
             //======================================== Copy information to atom
-            gemmiAtom.name                            = std::string ( (*atomI).getName() );
+            gemmiAtom.name                            = std::string ( atomI->getName() );
             while ( ( pos = gemmiAtom.name.find ( "*" ) ) != std::string::npos ) { gemmiAtom.name.replace ( pos, 1, "'" ); }
             gemmiAtom.name.erase                      ( std::remove ( gemmiAtom.name.begin(), gemmiAtom.name.end(), ' ' ), gemmiAtom.name.end() );
             gemmiAtom.altloc                          = '\0';
             gemmiAtom.charge                          = 0;
-            gemmiAtom.element                         = gemmi::Element ( (*atomI).element.getSymbol() );
-            const PdbAtomLocation& location           = (*atomI).getPdbAtomLocation();
+            gemmiAtom.element                         = gemmi::Element ( atomI->element.getSymbol() );
+            const PdbAtomLocation& location           = atomI->getPdbAtomLocation();
             Vec3 modCoords                            = transform * location.getCoordinates();
             gemmiAtom.pos                             = gemmi::Position ( static_cast<double> ( std::ceil ( (modCoords[0] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ),
                                                                           static_cast<double> ( std::ceil ( (modCoords[1] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ),
