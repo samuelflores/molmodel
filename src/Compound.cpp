@@ -59,6 +59,15 @@
 
 using namespace std;
 
+static
+std::string trim_both(const std::string &s) {
+    const auto first = s.find_first_not_of(" ");
+    const auto last = s.find_last_not_of(" ");
+
+    if (first == std::string::npos)
+        return "";
+    return s.substr(first, last - first + 1);
+}
 
 namespace SimTK {
 
@@ -1018,17 +1027,13 @@ void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool i
     gemmiChain.name                                   = chain.getChainId();
     
     //================================================ For each molmodel residue in chain
-    decltype(chain)::Residues::const_iterator residueI;
-    for ( residueI = chain.residues.begin(); residueI != chain.residues.end(); ++residueI)
+    for ( auto residueI = chain.residues.begin(); residueI != chain.residues.end(); ++residueI )
     {
         //============================================ Create new Gemmi residue
         gemmi::Residue gemmiRes;
         
         //============================================ Copy information to residue
-        gemmiRes.name                                 = std::string ( (*residueI).getName() );
-        gemmiRes.name.resize                          ( 3 );
-        if ( gemmiRes.name[3] == ' ' )                { gemmiRes.name.erase ( 2, 3 ); }
-        if ( gemmiRes.name[2] == ' ' )                { gemmiRes.name.erase ( 1, 2 ); }
+        gemmiRes.name                                 = trim_both ( residueI->getName() );
         
         gemmiRes.seqid                                = gemmi::SeqId ( (*residueI).getResidueId().residueNumber, (*residueI).getResidueId().insertionCode );
         gemmiRes.label_seq                            = nextResidueSerialNumber;
