@@ -1033,7 +1033,7 @@ void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool i
         gemmi::Residue gemmiRes;
         
         //============================================ Copy information to residue
-        gemmiRes.name                                 = trim_both ( residueI->getName() );
+        gemmiRes.name                                 = trim_both ( residueI->getName() ); // FIXME: Do we really need to do this?
         
         gemmiRes.seqid                                = gemmi::SeqId ( residueI->getResidueId().residueNumber, residueI->getResidueId().insertionCode );
         gemmiRes.label_seq                            = nextResidueSerialNumber;
