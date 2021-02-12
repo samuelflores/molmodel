@@ -2494,8 +2494,10 @@ const Compound::Name& Biopolymer::getResidueName(ResidueInfo::Index residueIndex
 // Added by Samuel Flores
 Biopolymer& Biopolymer::renumberPdbResidues(int firstPdbResidueNumber) 
 {
-    for (ResidueInfo::Index q(0); q < getNumResidues(); q++)
+    for (ResidueInfo::Index q(0); q < getNumResidues(); q++){
 	    updResidue(q).setPdbResidueNumber(firstPdbResidueNumber+q);
+	    updResidue(q).setPdbInsertionCode(' '); // If we don't do this, the old insertoin codes will remain.
+    }
 
     return *this;
 }
