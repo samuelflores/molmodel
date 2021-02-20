@@ -1,3 +1,4 @@
+/* vim: set sw=4 ts=4 sts=4 expandtab: */
 /* -------------------------------------------------------------------------- *
  *                      SimTK Core: SimTK Molmodel                            *
  * -------------------------------------------------------------------------- *
@@ -33,22 +34,20 @@
 #include "molmodel/internal/Protein.h"
 #include "molmodel/internal/RNA.h"
 #include "molmodel/internal/DNA.h"
-#include "mol.h"
 #include "SimTKsimbody.h"
 #include <cctype>
 #include <cstdlib>
 #include <map>
+#include <string>
 #include <vector>
 #include <algorithm>
 #include <array>
+#include <gemmi/cif.hpp>
+#include <gemmi/gz.hpp>
+#include <gemmi/mmcif.hpp>
+#include <gemmi/pdb.hpp>
 
-#ifdef GEMMI_USAGE
-    //================================================ Include Gemmi headers
-    #include <gemmi/cif.hpp>
-    #include <gemmi/gz.hpp>
-    #include <gemmi/mmcif.hpp>
-    #include <gemmi/pdb.hpp>
-#endif
+#include "Representation.h"
 
 using namespace SimTK;
 using std::map;
@@ -79,7 +78,6 @@ static bool isCif( const std::string extension ) {
     return extension.find("cif") != std::string::npos;
 }
 
-#ifdef GEMMI_USAGE
 static gemmi::Structure getStructureFromFile( const std::string &filename ) {
     if ( isCif ( getFileExtension( filename ) ) ) {
         //======================================== Read in the file into Gemmi document
@@ -102,331 +100,256 @@ static gemmi::Structure getStructureFromFile( const std::string &filename ) {
     // Assume PDB
     return gemmi::read_pdb_file                       ( filename );
 }
-#endif // GEMMI_USAGE
 
 class PDBReader::PDBReaderImpl {
 public:
     PDBReaderImpl(string filename ) : hasBuiltSystem(false) { // second parameter is a vector of strings specifying chain ID, residue combinations to be deleted.  Optional parameter, defaults to an empty vector.
-        
         std::cout<<__FILE__<<":"<<__LINE__<<"  filename.c_str()  >"<< filename.c_str()<<"< "<<std::endl;
-        
         //============================================ Read in PDB or CIF
-	const auto extension = getFileExtension(filename);
+        const auto extension = getFileExtension(filename);
 
-	if ( std::find_if( INPUT_FILE_EXTNS.cbegin(), INPUT_FILE_EXTNS.cend(), [&extension](const std::string &item) { return extension == item; } ) == INPUT_FILE_EXTNS.cend() ) {
-	    std::cerr << "!!! Error !!! This file type is not supported." << std::endl;
-	    std::exit ( EXIT_FAILURE );
-	}
-
-#ifndef GEMMI_USAGE
-        if (extension != ".pdb") {
-            std::cerr << "ERROR: The supplied file has the mmCIF format, but Molmodel was not compiled with the Gemmi library, which is required for the mmCIF support. Please re-run the Molmodel cmake command with the -DUSE_GEMMI=TRUE -DGEMMI_PATH=/path/to/gemmi/include option (and then alse re-run the make install command). Terminating..." << std::endl;
-	        std::exit( EXIT_FAILURE );
+        if ( std::find_if( INPUT_FILE_EXTNS.cbegin(), INPUT_FILE_EXTNS.cend(), [&extension](const std::string &item) { return extension == item; } ) == INPUT_FILE_EXTNS.cend() ) {
+            std::cerr << "!!! Error !!! This file type is not supported." << std::endl;
+            std::exit ( EXIT_FAILURE );
         }
-        mol_DbRead("mol", filename.c_str(), MOL_DB_PDB, &model );
-#else
+
         //======================================== Generate structure from block
         gemmi::Structure gemmiStruct              = getStructureFromFile ( filename );
 
         //======================================== For each model
-        for ( unsigned int moIt = 0; moIt < static_cast<unsigned int> ( gemmiStruct.models.size() ); moIt++ )
+        int modNumGemmi = 0;
+        for ( const auto &mod : gemmiStruct.models )
         {
             //==================================== Initialise the molmodel model
-            std::stringstream molName;
-            molName << "mol" << moIt;
-            mol_MolModelCreate                    ( molName.str().c_str(), &model );
+            std::string modName = "mol" + std::to_string(modNumGemmi++);
+
+            Repr::Model rModel{std::move(modName), {}};
 
             //==================================== For each chain
-            for ( unsigned int chIt = 0; chIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.size() ); chIt++ )
+            for ( const auto &chain : mod.chains)
             {
-                //================================ Get the chain ID
-                std::string chainId               =  std::string ( gemmiStruct.models.at(moIt).chains.at(chIt).name );
+                Repr::Chain rChain{chain.name};
 
                 //================================ For each residue
                 int resNumGemmi                   = 0;
-                for ( unsigned int reIt = 0; reIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.size() ); reIt++ )
+                for ( const auto &residue : chain.residues )
                 {
+                    Repr::Residue rResidue;
+
                     //============================ Get residue insertion code, residueID and residue name
-                    char ICode                    = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.icode;
+                    char ICode                    = residue.seqid.icode;
 
-                    if ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.has_value() ) { resNumGemmi = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).seqid.num.value; }
-                    else                                                                                       { resNumGemmi++; }
+                    if ( residue.seqid.num.has_value() ) { resNumGemmi = residue.seqid.num.value; }
+                    else                                 { resNumGemmi++; }
 
-                    PdbResidueId residueId        ( resNumGemmi, ICode );
-                    std::string residueName       = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).name;
+                    rResidue.id = resNumGemmi;
+                    rResidue.type = Repr::getResidueType(residue.name); // FIXME: Trim!!!
+                    rResidue.prop = Repr::getResidueProp(rResidue.type);
+                    rResidue.insertion_code = ICode;
 
                     //============================ For each atom
-                    for ( unsigned int atIt = 0; atIt < static_cast<unsigned int> ( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.size() ); atIt++ )
+                    for ( const auto &atom : residue.atoms )
                     {
                         //======================== Initialise atom related variables
-                        MolAtom atom;
-                        MolStructure *struc;
+                        Repr::Atom rAtom;
 
                         //======================== Get atom info
-                        char altLoc               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).altloc;
+                        char altLoc               = atom.altloc;
 
                         //======================== Fill in atom information
-                        atom.orig_id              = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).serial;
-                        atom.name                 = mol_StrCopy( gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).name.c_str(), model );
-                        mol_ResTypeConv           ( residueName.c_str(), &atom.res_type );
-                        atom.res_prop             = mol_res_props[atom.res_type];
+                        rAtom.orig_id             = atom.serial;
+                        rAtom.name                = Repr::AtomName{atom.name}; // FIXME: Trim
+                        rAtom.resType             = rResidue.type;
+                        rAtom.resProp             = rResidue.prop;
 
                         if ( !( altLoc == '\0' ) && !( altLoc == 'A' ) )
                             continue;                                                    // This is in keeping with the mol_DbPdbAtomProcLongChainId() function; it allows only the first alt-loc to be added.
 
-                        atom.res_seq              = resNumGemmi;
-                        atom.insertion_code       = ICode;
-                        atom.pos[0]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.x;
-                        atom.pos[1]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.y;
-                        atom.pos[2]               = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).pos.z;
-                        atom.temp                 = gemmiStruct.models.at(moIt).chains.at(chIt).residues.at(reIt).atoms.at(atIt).b_iso;
+                        rAtom.res_seq             = resNumGemmi;
+                        rAtom.insertion_code      = ICode;
+                        rAtom.posX                = atom.pos.x;
+                        rAtom.posY                = atom.pos.y;
+                        rAtom.posZ                = atom.pos.z;
+                        rAtom.temp                = atom.b_iso;
 
-                        atom.het                  = MOL_FALSE;                       // We do not actually know, but let's go with false here ...
+                        rAtom.het                  = false;                       // We do not actually know, but let's go with false here ...
 
-                        if (atom.name[0] != ' ')  { mol_AtomTypeConv ( &atom.name[0], &atom.type ); }
-                        else                      { mol_AtomTypeConv ( &atom.name[1], &atom.type ); }
+                        rAtom.setChainId(chain.name);
 
-                        atom.chain_id             = chainId[0];
-                        atom.long_chain_id        = mol_StrCopy( " ", model );       // We do not have LongChainID, so empty
-
-                        mol_MolModelCurrStrucGet  ( model, &struc );                 // Copies model->curr_struc to struc
-                        mol_StructureAtomAdd      ( struc, false, &atom );           // Saves the atom to the model (through struc)
+                        rResidue.atoms.emplace_back(std::move(rAtom));
                     }
+
+                    rChain.residues.emplace_back(std::move(rResidue));
                 }
+
+                rModel.chains.emplace_back(std::move(rChain));
             }
+
+            rStructure.emplace_back(std::move(rModel));
         }
 
-        //==================================== Build biomolecule from the filled in structs
-        MolStructure *struc;
-        mol_MolModelCurrStrucGet              ( model, &struc ); // Fill in the struc structure
-        mol_StructureChainsBuild              ( struc, 1 );      // Build protein chains
-        mol_StructureChainsBuild              ( struc, 2 );      // Build solvent chains
-#endif
-
-        //============================================ Proceed as normal
-        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<std::endl;
-        MolStructure *structure;
-        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<std::endl;
-        int numStructures;
-        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<std::endl;
-        mol_MolModelStructuresGet ( model, &numStructures, &structure );
-        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<std::endl;
-        SimTK_APIARGCHECK_ALWAYS(numStructures == 1, "PDBReaderImpl", "PDBReaderImpl", "The PDB file must contain exactly one structure");
-        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<std::endl;
-    }
-
-    ~PDBReaderImpl() {
-        mol_MemFreeModel(model);
+        // NOTE:
+        // There used to be a "structure count check"
+        // As far as I can tell this was actually supposed to be "model count check"
+        // Let us do the model count check
+        if (rStructure.size() > 1)
+            throw new std::runtime_error{"Input file must contain only one model"};
     }
 
     void createCompounds( CompoundSystem& system, const String & chainsPrefix  ) {
         SimTK_APIARGCHECK_ALWAYS(!hasBuiltSystem, "PDBReaderImpl", "createSystem", "createSystem() has already been called");
-        MolStructure *structure;
-        int numStructures;
-        mol_MolModelStructuresGet(model, &numStructures, &structure); // numStructures and structure are just copied from corresponding members of model.  But where does model come from?  Apparently it's a private member of PDBReader, set by mol_DbRead above
-        
-        //std::vector<MolAtom> atoms;
-        MolAtom* atoms;
-        int numAtoms;
-        mol_StructureAtomsGet(structure, &numAtoms, &atoms);
-        MolChain* chains;
-        int numChains;
-        mol_StructureChainsGet(structure, &numChains, &chains); // scf: members of structure are simply copied to numChains and chains.
-        
+
         // Loop over chains and create a Biopolymer from each one.
-        while (chains) {
-            MolResidue** chainResidues;
-            int numResidues;
-            mol_ChainResiduesGet(chains, &numResidues, &chainResidues);
-            
-            // Create a string of the sequence.
-            
-            auto firstValidResidueType = MOL_RESIDUE_MAX_NUM;
-            string sequence;
-            for (int i = 0; i < numResidues; ++i) {
-                // Ignore anything that is not a canonal RNA or DNA residue
-                const auto type = chainResidues[i]->type;
-                if ((type >= MOL_RESIDUE_ADENOSINE && type <= MOL_RESIDUE_URIDINE) || // RNA
-                    (type >= MOL_RESIDUE_DEOXYADENOSINE && type <= MOL_RESIDUE_DEOXYTHYMINE) || // DNA
-                    ((type <= MOL_RESIDUE_VALINE && type > MOL_RESIDUE_UNKNOWN) || type == MOL_RESIDUE_DISULPHIDEBRIDGEDCYSTEINE)) { // Protein
-                    sequence += mol_res_names[chainResidues[i]->type].short_name;
+        if (rStructure.size() > 0) {
+            for (const auto &rChain : rStructure.front().chains) {
+                // Create a string of the sequence.
+                auto firstValidResidueType = Repr::ResidueType::UNKNOWN;
+                string sequence;
+                for (const auto &rResidue : rChain.residues) {
+                    // Ignore anything that is not a canonal RNA or DNA residue
+                    const auto type = rResidue.type;
+                    if (Repr::residueIsDNA(type) || Repr::residueIsProtein(type) || Repr::residueIsRNA(type)) {
+                        sequence += Repr::getResidueSpecifier(rResidue.type).shortName;
 
-                    if (firstValidResidueType == MOL_RESIDUE_MAX_NUM)
-                        firstValidResidueType = type;
+                        if (firstValidResidueType == Repr::ResidueType::UNKNOWN)
+                            firstValidResidueType = rResidue.type;
+                    }
+                }
+
+                if (sequence.length() < 1)
+                    continue;
+
+                std::transform(sequence.begin(), sequence.end(), sequence.begin(), ::toupper);
+
+                if (Repr::residueIsRNA(firstValidResidueType)) {
+                    std::cout<<__FILE__<<":"<<__LINE__<<"Creating an RNA"<<std::endl;
+                    // Create an RNA.
+                    std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
+                    RNA rna(sequence);
+                    //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
+                    for (int i = 0; i < rna.getNumResidues(); i ++) {
+                        const auto &r = rChain.residues.at(i);
+                        rna.updResidue(ResidueInfo::Index(i)).setPdbResidueNumber(r.id);
+                        rna.updResidue(ResidueInfo::Index(i)).setPdbInsertionCode(r.insertion_code);//    ('101A');
+                    }
+                    rna.assignBiotypes();
+                    std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).id >"<<rChain.getId()<<"< "<<std::endl;
+                    std::cout<<__FILE__<<":"<<__LINE__<<" created an RNA"<<std::endl;
+                    std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<rna.getPdbChainId()<<"< "<<std::endl;
+                    compounds.push_back(rna);
+                } else if (Repr::residueIsDNA(firstValidResidueType)) {
+                    std::cout<<__FILE__<<":"<<__LINE__<<"Creating a DNA"<<std::endl;
+                    // Create a  DNA.
+                    DNA dna(sequence);
+                    for (int i = 0; i < dna.getNumResidues(); i ++) {
+                        const auto &r = rChain.residues.at(i);
+                        dna.updResidue(ResidueInfo::Index(i)).setPdbResidueNumber(r.id);
+                        dna.updResidue(ResidueInfo::Index(i)).setPdbInsertionCode(r.insertion_code);
+                    }
+                    dna.assignBiotypes();
+                    compounds.push_back(dna);
+                } else if (Repr::residueIsProtein(firstValidResidueType)) {
+                    std::cout<<__FILE__<<":"<<__LINE__<<"Creating a protein"<<std::endl;
+                    // Create a Protein.
+                    // scf changed this to use one more parameter in the Protein constructor, set to "Torsion".  Default is "Rigid".  Now the peptide bond will not be rigid.
+                    std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
+                    Protein protein(sequence,BondMobility::Torsion);
+                    //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
+
+                        protein.updResidue(ResidueInfo::Index(0)).setPdbResidueNumber(rChain.residues.at(0).id);
+                        protein.updResidue(ResidueInfo::Index(0)).setPdbInsertionCode(' ');
+                        //std::cout<<__FILE__<<":"<<__LINE__<<" i, residue number, insertion code, residue type : "<< protein.updResidue(ResidueInfo::Index(0)).getPdbResidueNumber()  <<", "<< protein.updResidue(ResidueInfo::Index(0)).getPdbInsertionCode()<<", "<<protein.updResidue(ResidueInfo::Index(0)).getOneLetterCode()<<std::endl;
+                        //std::cout<<__FILE__<<":"<<__LINE__<<" i, residue number, insertion code, residue type : "<<chainResidues[0]->id<<", "<<chainResidues[0]->insertion_code<<", "<< protein.updResidue(ResidueInfo::Index(0)).getOneLetterCode()<<std::endl;
+                    for (int i = 1; i < protein.getNumResidues() - 1; i++) { // assume protein capping is ON.  this means first and last residues are end caps, we ignore at this stage.
+                        const auto &r = rChain.residues.at(i - 1);
+                        protein.updResidue(ResidueInfo::Index(i)).setPdbResidueNumber(r.id);
+                        protein.updResidue(ResidueInfo::Index(i)).setPdbInsertionCode(r.insertion_code);
+                        //std::cout<<__FILE__<<":"<<__LINE__<<" i, residue number, insertion code, residue type : "<< protein.updResidue(ResidueInfo::Index(i)).getPdbResidueNumber()  <<", "<< protein.updResidue(ResidueInfo::Index(i)).getPdbInsertionCode()<<", "<<protein.updResidue(ResidueInfo::Index(i)).getOneLetterCode()<<std::endl;
+                    }
+                    // was unable to retrieve C-terminal end cap for some reason:
+                        // protein.updResidue(ResidueInfo::Index((protein.getNumResidues() - 1) )).setPdbResidueNumber(chainResidues[(protein.getNumResidues() - 1) ]->id+1);
+                        // protein.updResidue(ResidueInfo::Index((protein.getNumResidues() - 1) )).setPdbInsertionCode(' ');
+                        //std::cout<<__FILE__<<":"<<__LINE__<<" i, residue number, insertion code, residue type : "<< protein.updResidue(ResidueInfo::Index((protein.getNumResidues() - 1) )).getPdbResidueNumber()  <<", "<< protein.updResidue(ResidueInfo::Index( (protein.getNumResidues() - 1) )).getPdbInsertionCode()<<", "<<protein.updResidue(ResidueInfo::Index( (protein.getNumResidues() - 1) )).getOneLetterCode()<<std::endl;
+                    protein.assignBiotypes();
+                    std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).id >"<<rChain.getId()<<"< "<<std::endl;
+                    std::cout<<__FILE__<<":"<<__LINE__<<" created an RNA"<<std::endl;
+                    std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<protein.getPdbChainId()<<"< "<<std::endl;
+                    compounds.push_back(protein);
+                } else {
+                    const auto &r = rChain.residues.at(0);
+                    std::cout<<__FILE__<<":"<<__LINE__<<" Did not recognize chainResidues[0]->type "<<r.type<<" ("<<Repr::getResidueSpecifier(r.type).longName<<" - "<<"). Please use only canonical RNA, DNA, and protein residue names"<<std::endl;
+                    exit(EXIT_FAILURE);
+                }
+                std::cout<<__FILE__<<":"<<__LINE__<<" setPdbChainId(String("<<rChain.getId()<<") "<<std::endl;
+                if (std::strlen(rChain.getId()))
+                    std::cout << "!!! WARNING: Chain Id is longer than one character !!!" << std::endl;
+
+                compounds[compounds.size()-1].setPdbChainId(rChain.getId());
+
+                // Prepend chainId prefix if needed
+                String chainId = rChain.getId();
+                if ( !chainsPrefix.empty() ) {
+                    chainId.insert( 0, chainsPrefix );
+                    std::cout << __FILE__<< ":" << __LINE__ << " Chain: " << chainId << std::endl;
+                    compounds[compounds.size() - 1].setPdbChainId(chainId);
                 }
             }
+	    }
 
-            if (sequence.length() < 1) {
-                chains = chains->next;
-                continue;
-            }
-
-            std::transform(sequence.begin(), sequence.end(), sequence.begin(), (int(*)(int)) std::toupper);
-
-            if (firstValidResidueType >= MOL_RESIDUE_ADENOSINE && firstValidResidueType <= MOL_RESIDUE_URIDINE)
-            {
-                std::cout<<__FILE__<<":"<<__LINE__<<"Creating an RNA"<<std::endl;
-                // Create an RNA.
-                std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-                RNA rna(sequence);
-                //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-                for (int i = 0; i < rna.getNumResidues(); i ++) {
-                    rna.updResidue(ResidueInfo::Index(i)).setPdbResidueNumber(chainResidues[i]->id);
-                    rna.updResidue(ResidueInfo::Index(i)).setPdbInsertionCode(chainResidues[i]->insertion_code);//    ('101A');
-                }
-                rna.assignBiotypes();
-                std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).name >"<<(*chains).name<<"< "<<std::endl;
-                std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).id >"<<(*chains).id<<"< "<<std::endl;
-                std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).long_chain_id >"<<(*chains).long_chain_id<<"< "<<std::endl;
-                std::cout<<__FILE__<<":"<<__LINE__<<" created an RNA"<<std::endl; 
-                std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<rna.getPdbChainId()<<"< "<<std::endl;
-                compounds.push_back(rna);
-            }
-            else if (firstValidResidueType >= MOL_RESIDUE_DEOXYADENOSINE && firstValidResidueType <= MOL_RESIDUE_DEOXYTHYMINE) {
-                std::cout<<__FILE__<<":"<<__LINE__<<"Creating a DNA"<<std::endl;
-                // Create a  DNA.
-
-                DNA dna(sequence);
-                for (int i = 0; i < dna.getNumResidues(); i ++) {
-                    dna.updResidue(ResidueInfo::Index(i)).setPdbResidueNumber(chainResidues[i]->id);
-                    dna.updResidue(ResidueInfo::Index(i)).setPdbInsertionCode(chainResidues[i]->insertion_code);
-                }
-                dna.assignBiotypes();
-                compounds.push_back(dna);
-            }
-            else if ((firstValidResidueType <= MOL_RESIDUE_VALINE && firstValidResidueType > MOL_RESIDUE_UNKNOWN) || firstValidResidueType == MOL_RESIDUE_DISULPHIDEBRIDGEDCYSTEINE) { // Protein
-                std::cout<<__FILE__<<":"<<__LINE__<<"Creating a protein"<<std::endl;
-                // Create a Protein.
-                // scf changed this to use one more parameter in the Protein constructor, set to "Torsion".  Default is "Rigid".  Now the peptide bond will not be rigid.
-                std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-                Protein protein(sequence,BondMobility::Torsion);
-                //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-
-                    protein.updResidue(ResidueInfo::Index(0)).setPdbResidueNumber(chainResidues[0]->id-1);
-                    protein.updResidue(ResidueInfo::Index(0)).setPdbInsertionCode(' ');
-                    //std::cout<<__FILE__<<":"<<__LINE__<<" i, residue number, insertion code, residue type : "<< protein.updResidue(ResidueInfo::Index(0)).getPdbResidueNumber()  <<", "<< protein.updResidue(ResidueInfo::Index(0)).getPdbInsertionCode()<<", "<<protein.updResidue(ResidueInfo::Index(0)).getOneLetterCode()<<std::endl;
-                    //std::cout<<__FILE__<<":"<<__LINE__<<" i, residue number, insertion code, residue type : "<<chainResidues[0]->id<<", "<<chainResidues[0]->insertion_code<<", "<< protein.updResidue(ResidueInfo::Index(0)).getOneLetterCode()<<std::endl;
-                for (int i = 1; i < (protein.getNumResidues() - 1); i ++) { // assume protein capping is ON.  this means first and last residues are end caps, we ignore at this stage.
-                    protein.updResidue(ResidueInfo::Index(i)).setPdbResidueNumber(chainResidues[i-1]->id);
-                    protein.updResidue(ResidueInfo::Index(i)).setPdbInsertionCode(chainResidues[i-1]->insertion_code);
-                    //std::cout<<__FILE__<<":"<<__LINE__<<" i, residue number, insertion code, residue type : "<< protein.updResidue(ResidueInfo::Index(i)).getPdbResidueNumber()  <<", "<< protein.updResidue(ResidueInfo::Index(i)).getPdbInsertionCode()<<", "<<protein.updResidue(ResidueInfo::Index(i)).getOneLetterCode()<<std::endl;
-                }
-	            // was unable to retrieve C-terminal end cap for some reason:	 	
-                    // protein.updResidue(ResidueInfo::Index((protein.getNumResidues() - 1) )).setPdbResidueNumber(chainResidues[(protein.getNumResidues() - 1) ]->id+1);
-                    // protein.updResidue(ResidueInfo::Index((protein.getNumResidues() - 1) )).setPdbInsertionCode(' ');
-                    //std::cout<<__FILE__<<":"<<__LINE__<<" i, residue number, insertion code, residue type : "<< protein.updResidue(ResidueInfo::Index((protein.getNumResidues() - 1) )).getPdbResidueNumber()  <<", "<< protein.updResidue(ResidueInfo::Index( (protein.getNumResidues() - 1) )).getPdbInsertionCode()<<", "<<protein.updResidue(ResidueInfo::Index( (protein.getNumResidues() - 1) )).getOneLetterCode()<<std::endl;
-                protein.assignBiotypes();
-                std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).name >"<<(*chains).name<<"< "<<std::endl;
-                std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).id >"<<(*chains).id<<"< "<<std::endl;
-                std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).long_chain_id >"<<(*chains).long_chain_id<<"< "<<std::endl;
-                std::cout<<__FILE__<<":"<<__LINE__<<" created an RNA"<<std::endl; 
-                std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<protein.getPdbChainId()<<"< "<<std::endl;
-                compounds.push_back(protein);
-            } else {
-                std::cout<<__FILE__<<":"<<__LINE__<<" Did not recognize chainResidues[0]->type "<<chainResidues[0]->type<<" ("<<mol_res_names[chainResidues[0]->type].long_name<<" - "<<mol_ResTypeAsString(chainResidues[0]->type)<<"). Please use only canonical RNA, DNA, and protein residue names"<<std::endl;
-                exit(1);
-            }   
-            std::cout<<__FILE__<<":"<<__LINE__<<" setPdbChainId(String("<<(*chains).long_chain_id <<") "<<std::endl;
-            if (std::string((*chains).long_chain_id).compare(std::string(" ")) != 0) {// if we are using a long chain ID
-                std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).long_chain_id = >"<<(*chains).long_chain_id<<"< "<<std::endl;
-                std::cout<<__FILE__<<":"<<__LINE__<<" it would appear  a long chain ID is desired"<<std::endl;
-                std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).id = >"<<(*chains).id<<"< "<<std::endl;
-                if (((*chains).id) != ((' ')) ) {
-                    std::cout<<__FILE__<<":"<<__LINE__<<" But your PDB chain ID is not \" \" as it should be! "<<std::endl; exit(1);
-                }
-            }
-            if (std::string((*chains).long_chain_id).compare(std::string(" ")) != 0) {
-                std::cout<<__FILE__<<":"<<__LINE__<<" Detected that your (*chains).long_chain_id = >"<<(*chains).long_chain_id<<"< is NOT a blank space, >"<<std::string(" ")<<"< "<<std::endl;
-                compounds[compounds.size()-1].setPdbChainId(String((*chains).long_chain_id ));
-                std::cout<<__FILE__<<":"<<__LINE__<<std::endl;//" Detected that your (*chains).long_chain_id = >"<<(*chains).long_chain_id<<"< is NOT a blank space, >"<<std::string(" ")<<"< "<<std::endl;
-            } else {
-                std::cout<<__FILE__<<":"<<__LINE__<<" Detected that your (*chains).long_chain_id = >"<<(*chains).long_chain_id<<"< is a blank space, >"<<std::string(" ")<<"< "<<  std::endl;
-                compounds[compounds.size()-1].setPdbChainId(String((*chains).id ));
-            }
-            // Prepend chainId prefix if needed
-            String chainId = String((*chains).id);
-            if ( !chainsPrefix.empty() ) {
-                chainId.insert( 0, chainsPrefix );
-                std::cout << __FILE__<< ":" << __LINE__ << " Chain: " << chainId << std::endl;
-                compounds[compounds.size()-1].setPdbChainId( chainId );
-            }
-            chains = chains->next;
-        }
-        
         // Add them to the system.
-        
-        for (int i = 0; i < (int)compounds.size(); ++i)
+        for (size_t i = 0; i < compounds.size(); i++)
             system.adoptCompound(compounds[i]);
         hasBuiltSystem = true;
     }
-    
+
     Real createState(const CompoundSystem& system, State& state) const {
         SimTK_APIARGCHECK_ALWAYS(hasBuiltSystem, "PDBReaderImpl", "createState", "createSystem() has not yet been called");
-
-        MolStructure *structure;
-        int numStructures;
-        mol_MolModelStructuresGet(model, &numStructures, &structure);
-        //std::vector<MolAtom> atoms;
-        MolAtom* atoms;
-        int numAtoms;
-        mol_StructureAtomsGet(structure, &numAtoms, &atoms);
-        MolChain* chains;
-        int numChains;
-        mol_StructureChainsGet(structure, &numChains, &chains);
 
         // Loop over atoms, match each one to the appropriate mobilized body, and
         // create a list of stations that will be used for fitting the State.
 
-        map<MobilizedBodyIndex, vector<Vec3> > stations;
-        map<MobilizedBodyIndex, vector<Vec3> > targetLocations;
-        int proteinIndex = 0;
-        while (chains) {
-            MolResidue** chainResidues;
-            int numResidues;
-            mol_ChainResiduesGet(chains, &numResidues, &chainResidues);
-            for (int res = 0; res < numResidues; ++res) {
-                MolAtomList resAtoms = chainResidues[res]->atoms;
-                char resName[32];
-                sprintf(resName, "%d", res);
-                const Biopolymer& compound = compounds[proteinIndex];
-                const ResidueInfo::Index resIx = compound.getResidue(resName).getIndex();
-                const ResidueInfo& residue = compound.getResidue(resName);
-// residue.setBondMobility(
-                for (int i = 0; i < resAtoms.num; ++i) {
-                    MolAtom atom = atoms[resAtoms.list[i]];
-                    string atomName = atom.name;
-                    atomName = atomName.erase(atomName.find_last_not_of(' ')+1);
-                    atomName.erase(0, atomName.find_first_not_of(' '));
-                    for (ResidueInfo::AtomIndex atomId(0); atomId < residue.getNumAtoms(); ++atomId) {
-                        if (atomName == residue.getAtomName(atomId)) {
-                            MobilizedBodyIndex bodyId = compound.getResidueAtomMobilizedBodyIndex(resIx, atomId);
-                            stations[bodyId].push_back(compound.getResidueAtomLocationInMobilizedBodyFrame(resIx, atomId));
-                            targetLocations[bodyId].push_back(Vec3(atom.pos[0], atom.pos[1], atom.pos[2]));
+        map<MobilizedBodyIndex, vector<Vec3>> stations;
+        map<MobilizedBodyIndex, vector<Vec3>> targetLocations;
+
+        if (rStructure.size() > 0) {
+            int proteinIndex = 0;
+            for (const auto &rChain : rStructure.front().chains) {
+                for (const auto &rResidue : rChain.residues) {
+                    const auto &resName = std::to_string(rResidue.id);
+                    const Biopolymer& compound = compounds[proteinIndex];
+                    const ResidueInfo::Index resIx = compound.getResidue(resName).getIndex();
+                    const ResidueInfo& residue = compound.getResidue(resName);
+
+                    for (const auto &rAtom : rResidue.atoms) {
+                        for (ResidueInfo::AtomIndex atomId(0); atomId < residue.getNumAtoms(); atomId++) {
+                            if (rAtom.name.name == residue.getAtomName(atomId)) {
+                                MobilizedBodyIndex bodyId = compound.getResidueAtomMobilizedBodyIndex(resIx, atomId);
+                                stations[bodyId].push_back(compound.getResidueAtomLocationInMobilizedBodyFrame(resIx, atomId));
+                                targetLocations[bodyId].push_back(Vec3(rAtom.posX, rAtom.posY, rAtom.posZ));
+                            }
                         }
                     }
                 }
+                proteinIndex++;
             }
-            proteinIndex++;
-            chains = chains->next;
         }
 
         // Now perform the fitting.
-        
         vector<MobilizedBodyIndex> bodyList;
         vector<vector<Vec3> > stationList;
         vector<vector<Vec3> > targetList;
-        for (map<MobilizedBodyIndex, vector<Vec3> >::const_iterator iter = stations.begin(); iter != stations.end(); iter++) {
-            bodyList.push_back(iter->first);
-            stationList.push_back(iter->second);
-            targetList.push_back(targetLocations.find(iter->first)->second);
+        for (const auto &it : stations) {
+            bodyList.push_back(it.first);
+            stationList.push_back(it.second);
+            targetList.push_back(targetLocations.find(it.first)->second);
         }
         // sherm 100307: Optimizers now use relative tolerance.
         Real tolerance = .001; // 0.1%
         return ObservedPointFitter::findBestFit(system, state, bodyList, stationList, targetList, tolerance);
     }
-        
+
 private:
-    MolModel *model;
+    Repr::Structure rStructure;
     vector<Biopolymer> compounds;
     bool hasBuiltSystem;
 };

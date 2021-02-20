@@ -1013,7 +1013,6 @@ std::ostream& CompoundRep::writeDefaultPdb(std::ostream& os, int& nextSerialNumb
     return os;
 }
 
-#ifdef GEMMI_USAGE
 void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, int decimal_places = 8, const Transform& transform = Transform() ) const
 {
     //================================================ Initialise local variables
@@ -1080,7 +1079,6 @@ void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool i
     //================================================ Done
     return;
 }
-#endif
 
 ostream& CompoundRep::writePdb(const State& state, ostream& os, const Transform& transform) const  
 {
@@ -2029,13 +2027,11 @@ void Compound::writeDefaultPdb(const char* outFileName, const Transform& transfo
     os.close();
 }
 
-#ifdef GEMMI_USAGE
 void Compound::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, int decimal_places, const Transform& transform ) const
 {
     getImpl().buildCif ( state, gemmiModel, isPolymer, decimal_places, transform );
     return ;
 }
-#endif
 
 ostream& Compound::writePdb(const SimTK::State& state, ostream& os, const Transform& transform) const  
 {

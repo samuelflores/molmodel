@@ -44,13 +44,11 @@
 
 #include <iosfwd> // declare ostream without all the definitions
 
-#ifdef GEMMI_USAGE
-    #include <gemmi/mmread.hpp>
-    #include <gemmi/it92.hpp>
-    #include <gemmi/cif.hpp>
-    #include <gemmi/model.hpp>
-    #include <gemmi/cifdoc.hpp>
-#endif
+#include <gemmi/mmread.hpp>
+#include <gemmi/it92.hpp>
+#include <gemmi/cif.hpp>
+#include <gemmi/model.hpp>
+#include <gemmi/cifdoc.hpp>
 
 namespace SimTK {
 class CompoundSystem;

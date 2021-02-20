@@ -1758,7 +1758,6 @@ public:
     //    const Transform& transform
     //    ) const;
 
-#ifdef GEMMI_USAGE
   /**
    * \brief Create the gemmi Structure object structure for mmCIF writing..
    *
@@ -1771,8 +1770,7 @@ public:
       int decimal_places, ///< Number of decimal place to which the co-ordinates to to be rounded to.
       const Transform& transform ///< optional change to location and orientation of molecule
       ) const;
-#endif
-    
+
     std::ostream& writePdb(
         const State& state, 
         std::ostream& os, 
