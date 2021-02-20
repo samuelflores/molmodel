@@ -42,6 +42,7 @@
 
 
 #include "CompoundRep.h"
+#include "Util.h"
 #include "SimTKcommon/internal/PrivateImplementation_Defs.h"
 
 #include "molmodel/internal/CompoundSystem.h"
@@ -58,16 +59,6 @@
 #include <regex>
 
 using namespace std;
-
-static
-std::string trim_both(const std::string &s) {
-    const auto first = s.find_first_not_of(" ");
-    const auto last = s.find_last_not_of(" ");
-
-    if (first == std::string::npos)
-        return "";
-    return s.substr(first, last - first + 1);
-}
 
 namespace SimTK {
 

@@ -48,6 +48,7 @@
 #include <gemmi/pdb.hpp>
 
 #include "Representation.h"
+#include "Util.h"
 
 using namespace SimTK;
 using std::map;
@@ -128,7 +129,7 @@ public:
             //==================================== For each chain
             for ( const auto &chain : mod.chains)
             {
-                Repr::Chain rChain{chain.name};
+                Repr::Chain rChain{trim_both(chain.name)};
 
                 //================================ For each residue
                 int resNumGemmi                   = 0;
@@ -143,7 +144,7 @@ public:
                     else                                 { resNumGemmi++; }
 
                     rResidue.id = resNumGemmi;
-                    rResidue.type = Repr::getResidueType(residue.name); // FIXME: Trim!!!
+                    rResidue.type = Repr::getResidueType(trim_both(residue.name));
                     rResidue.prop = Repr::getResidueProp(rResidue.type);
                     rResidue.insertion_code = ICode;
 
@@ -158,7 +159,7 @@ public:
 
                         //======================== Fill in atom information
                         rAtom.orig_id             = atom.serial;
-                        rAtom.name                = Repr::AtomName{atom.name}; // FIXME: Trim
+                        rAtom.name                = Repr::AtomName{trim_both(atom.name)};
                         rAtom.resType             = rResidue.type;
                         rAtom.resProp             = rResidue.prop;
 
