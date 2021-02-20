@@ -282,7 +282,7 @@ public:
                     exit(EXIT_FAILURE);
                 }
                 std::cout<<__FILE__<<":"<<__LINE__<<" setPdbChainId(String("<<rChain.getId()<<") "<<std::endl;
-                if (std::strlen(rChain.getId()))
+                if (std::strlen(rChain.getId()) > 1)
                     std::cout << "!!! WARNING: Chain Id is longer than one character !!!" << std::endl;
 
                 compounds[compounds.size()-1].setPdbChainId(rChain.getId());
