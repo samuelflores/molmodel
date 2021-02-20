@@ -20,9 +20,9 @@
 
 #define VMDSOCKINTERNAL 1
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #if defined(_MSC_VER) 
 #include <winsock2.h>
@@ -127,13 +127,13 @@ void *vmdsock_accept(void * v) {
   int rc;
   vmdsocket *new_s = NULL, *s = (vmdsocket *) v;
 #if defined(ARCH_AIX5) || defined(ARCH_AIX5_64)
-  unsigned int len;
+  socklen_t len;
 #elif defined(SOCKLEN_T)
   SOCKLEN_T len;
 #elif defined(ARCH_LINUXALPHA) || defined(__APPLE__) || defined(ARCH_LINUX)
   socklen_t len;
 #else
-  int len;
+  socklen_t len;
 #endif
   
   len = sizeof(s->addr);

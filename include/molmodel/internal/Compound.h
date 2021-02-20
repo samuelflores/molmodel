@@ -844,8 +844,7 @@ public:
       * This function writes the poly_seq loop into the supplied MMDB2 mmCIF file object. This is required for a proper
       * mmCIF file to be created.
       */
-    
-#ifdef GEMMI_USAGE
+
      /** \brief Create the Gemmi Structure object structure for mmCIF writing..
       *
       * Starting with the first atom's serial number as one(1), this function will fill in the Gemmi structure objects structure with the structural
@@ -858,8 +857,7 @@ public:
          int decimal_places = 8, ///< Number of decimal places to which the co-ordinates are to be rounded to.
          const Transform& transform = Transform() ///< optional change to location and orientation of molecule
          ) const;
-#endif
-    
+
     /**
      * \brief Write the dynamic Compound configuration in Protein Data Bank (PDB) format.
      *
