@@ -179,23 +179,22 @@ const ResidueSpecifier & getResidueSpecifier(const ResidueType type);
 ResidueType getResidueType(const std::string &name);
 
 inline
-bool residueIsDNA(const ResidueType type) {
+bool residueIsRNA(const ResidueType type) {
     const auto n = std::underlying_type_t<ResidueType>(type);
-
+    // For reference, look at the list of residue types in Representation.cpp
     return std::underlying_type_t<ResidueType>(ResidueType::ADENOSINE) <= n &&
-           n <= std::underlying_type_t<ResidueType>(ResidueType::THYMINE);
+           n <= std::underlying_type_t<ResidueType>(ResidueType::URIDINE);
 }
 
 inline
 bool residueIsProtein(const ResidueType type) {
     const auto n = std::underlying_type_t<ResidueType>(type);
-
     return std::underlying_type_t<ResidueType>(ResidueType::ALANINE) <= n &&
            n <= std::underlying_type_t<ResidueType>(ResidueType::DISULPHIDEBRIDGEDCYSTEINE);
 }
 
 inline
-bool residueIsRNA(const ResidueType type) {
+bool residueIsDNA(const ResidueType type) {
     const auto n = std::underlying_type_t<ResidueType>(type);
 
     return std::underlying_type_t<ResidueType>(ResidueType::DEOXYADENOSINE) <= n &&

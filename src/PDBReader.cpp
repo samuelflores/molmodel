@@ -146,6 +146,7 @@ public:
                     rResidue.id = resNumGemmi;
                     rResidue.type = Repr::getResidueType(trim_both(residue.name));
                     rResidue.prop = Repr::getResidueProp(rResidue.type);
+                    //std::cout<<__FILE__<<":"<<__LINE__<<"res num = "<<rResidue.id<<" res type = "<<rResidue.type<< "residue name untrimmed = "<<residue.name<<"trimmmed residue name = >"<<trim_both(residue.name) <<"<"<<std::endl;
                     rResidue.insertion_code = ICode;
 
                     //============================ For each atom
@@ -193,8 +194,10 @@ public:
         // There used to be a "structure count check"
         // As far as I can tell this was actually supposed to be "model count check"
         // Let us do the model count check
+        std::cout<<__FILE__<<":"<<__LINE__<<" rStructure.size()  = "<< rStructure.size() <<std::endl;
         if (rStructure.size() > 1)
             throw new std::runtime_error{"Input file must contain only one model"};
+        //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
     }
 
     void createCompounds( CompoundSystem& system, const String & chainsPrefix  ) {
@@ -212,20 +215,20 @@ public:
                     if (Repr::residueIsDNA(type) || Repr::residueIsProtein(type) || Repr::residueIsRNA(type)) {
                         sequence += Repr::getResidueSpecifier(rResidue.type).shortName;
 
-                        if (firstValidResidueType == Repr::ResidueType::UNKNOWN)
-                            firstValidResidueType = rResidue.type;
+                        if (firstValidResidueType == Repr::ResidueType::UNKNOWN){
+                            firstValidResidueType = rResidue.type;}
                     }
                 }
 
-                if (sequence.length() < 1)
-                    continue;
+                if (sequence.length() < 1){
+                    std::cout<<__FILE__<<":"<<__LINE__<<""<<std::endl;
+                    continue;}
 
                 std::transform(sequence.begin(), sequence.end(), sequence.begin(), ::toupper);
 
                 if (Repr::residueIsRNA(firstValidResidueType)) {
                     std::cout<<__FILE__<<":"<<__LINE__<<"Creating an RNA"<<std::endl;
                     // Create an RNA.
-                    std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
                     RNA rna(sequence);
                     //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
                     for (int i = 0; i < rna.getNumResidues(); i ++) {
