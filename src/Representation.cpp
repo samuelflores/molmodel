@@ -169,12 +169,7 @@ ResidueType getResidueType(const std::string &name) {
             if (lcaseName[0] == it.shortName)
                 return it.type;
         }
-    } else if (len == 2) { //SCF added
-        for (const auto &it : RESIDUE_SPECIFIERS) {
-            if (lcaseName.compare(it.abbrevName) == 0)
-                return it.type;
-        }                  // end SCF 
-    } else if (len == 3) {
+    } else if (len <= 3) {
         for (const auto &it : RESIDUE_SPECIFIERS) {
             if (lcaseName.compare(it.abbrevName) == 0)
                 return it.type;
