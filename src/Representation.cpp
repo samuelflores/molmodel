@@ -13,8 +13,11 @@
     assert(idf.front() != ' '); \
     assert(idf.back() != ' ')
 
+#define NUM_RESIDUE_TYPES 45
+
 #define MK_RESIDUE_SPECIFIER(longName, abbrevName, shortName, prop, type) \
-    arr.at(std::underlying_type_t<ResidueType>(ResidueType::type)) = ResidueSpecifier{longName, abbrevName, shortName, ResidueProp::prop, ResidueType::type}
+    static_assert(std::underlying_type_t<ResidueType>(ResidueType::type) < NUM_RESIDUE_TYPES, "Residue type out of range, check NUM_RESIDUE_TYPES"); \
+    arr.at(std::underlying_type_t<ResidueType>(ResidueType::type)) = ResidueSpecifier{longName, abbrevName, shortName, ResidueProp::prop, ResidueType::type}; \
 
 template <size_t N>
 void charArrayFromString(char dst[N], const std::string &src) {
@@ -51,57 +54,57 @@ ResidueSpecifier & ResidueSpecifier::operator=(const ResidueSpecifier &other) {
     return *this;
 }
 
-using ResidueSpecifiers = std::array<ResidueSpecifier, 45>;
+using ResidueSpecifiers = std::array<ResidueSpecifier, NUM_RESIDUE_TYPES>;
 
 ResidueSpecifiers initResidueSpecifiers() {
     ResidueSpecifiers arr{};
 
     MK_RESIDUE_SPECIFIER("unknown",        "unk", ' ', UNKNOWN, UNKNOWN);
-    MK_RESIDUE_SPECIFIER("alanine",        "ala", 'a', HYDROPHOBIC, ALANINE),
-    MK_RESIDUE_SPECIFIER("arginine",       "arg", 'r', BASIC, ARGININE),
-    MK_RESIDUE_SPECIFIER("asparagine",     "asn", 'n', POLAR, ASPARAGINE),
-    MK_RESIDUE_SPECIFIER("aspartic acid",  "asp", 'd', ACIDIC, ASPARTIC_ACID),
-    MK_RESIDUE_SPECIFIER("cysteine",       "cys", 'c', HYDROPHOBIC, CYSTEINE),
-    MK_RESIDUE_SPECIFIER("glutamic acid",  "glu", 'e', ACIDIC, GLUTAMIC_ACID),
-    MK_RESIDUE_SPECIFIER("glutamine",      "gln", 'q', POLAR, GLUTAMINE),
-    MK_RESIDUE_SPECIFIER("glycine",        "gly", 'g', HYDROPHOBIC, GLYCINE),
-    MK_RESIDUE_SPECIFIER("histidine",      "his", 'h', BASIC, HISTIDINE),
-    MK_RESIDUE_SPECIFIER("isoleucine",     "ile", 'i', HYDROPHOBIC, ISOLEUCINE),
-    MK_RESIDUE_SPECIFIER("leucine",        "leu", 'l', HYDROPHOBIC, LEUCINE),
-    MK_RESIDUE_SPECIFIER("lysine",         "lys", 'k', BASIC, LYSINE),
-    MK_RESIDUE_SPECIFIER("methionine",     "met", 'm', HYDROPHOBIC, METHIONINE),
-    MK_RESIDUE_SPECIFIER("phenylalanine",  "phe", 'f', HYDROPHOBIC, PHENYLALANINE),
-    MK_RESIDUE_SPECIFIER("proline",        "pro", 'p', HYDROPHOBIC, PROLINE),
-    MK_RESIDUE_SPECIFIER("serine",         "ser", 's', POLAR, SERINE),
-    MK_RESIDUE_SPECIFIER("threonine",      "thr", 't', POLAR, THREONINE),
-    MK_RESIDUE_SPECIFIER("tryptophan",     "trp", 'w', HYDROPHOBIC, TRYPTOPHAN),
-    MK_RESIDUE_SPECIFIER("tyrosine",       "tyr", 'y', HYDROPHOBIC, TYROSINE),
-    MK_RESIDUE_SPECIFIER("valine",         "val", 'v', HYDROPHOBIC, VALINE),
-    MK_RESIDUE_SPECIFIER("solvent",        "sol", 'h', UNKNOWN, SOLV),
-    MK_RESIDUE_SPECIFIER("adp",            "adp", 'h', UNKNOWN, ADP),
-    MK_RESIDUE_SPECIFIER("cl",             "cli", 'h', UNKNOWN, CHLORINE),
-    MK_RESIDUE_SPECIFIER("hoh",            "hoh", 'h', UNKNOWN, HOH),
-    MK_RESIDUE_SPECIFIER("adenosine",      "adn", 'A', UNKNOWN, ADENOSINE),
-    MK_RESIDUE_SPECIFIER("guanosine",      "gua", 'G', UNKNOWN, GUANOSINE),
-    MK_RESIDUE_SPECIFIER("cytosine",       "cyt", 'C', UNKNOWN, CYTOSINE),
-    MK_RESIDUE_SPECIFIER("uridine",        "ura", 'U', UNKNOWN, URIDINE),
-    MK_RESIDUE_SPECIFIER("thymine",        "thy", 'T', UNKNOWN, THYMINE),
-    MK_RESIDUE_SPECIFIER("uridine",        "h2u", 'U', UNKNOWN, URIDINE2),
-    MK_RESIDUE_SPECIFIER("cytosine",       "omc", 'C', UNKNOWN, CYTOSINE2),
-    MK_RESIDUE_SPECIFIER("guanosine",      "omg", 'G', UNKNOWN, GUANOSINE2),
-    MK_RESIDUE_SPECIFIER("uridine",        "psu", 'U', UNKNOWN, URIDINE3),
-    MK_RESIDUE_SPECIFIER("cytosine",       "5mc", 'C', UNKNOWN, CYTOSINE3),
-    MK_RESIDUE_SPECIFIER("guanosine",      "7mg", 'G', UNKNOWN, GUANOSINE3),
-    MK_RESIDUE_SPECIFIER("uridine",        "5mu", 'U', UNKNOWN, URIDINE4),
-    MK_RESIDUE_SPECIFIER("adenosine",      "1ma", 'A', UNKNOWN, ADENOSINE2),
-    MK_RESIDUE_SPECIFIER("guanosine",      "2mg", 'G', UNKNOWN, GUANOSINE4),
-    MK_RESIDUE_SPECIFIER("guanosine",      "m2g", 'G', UNKNOWN, GUANOSINE5),
+    MK_RESIDUE_SPECIFIER("alanine",        "ala", 'a', HYDROPHOBIC, ALANINE);
+    MK_RESIDUE_SPECIFIER("arginine",       "arg", 'r', BASIC, ARGININE);
+    MK_RESIDUE_SPECIFIER("asparagine",     "asn", 'n', POLAR, ASPARAGINE);
+    MK_RESIDUE_SPECIFIER("aspartic acid",  "asp", 'd', ACIDIC, ASPARTIC_ACID);
+    MK_RESIDUE_SPECIFIER("cysteine",       "cys", 'c', HYDROPHOBIC, CYSTEINE);
+    MK_RESIDUE_SPECIFIER("glutamic acid",  "glu", 'e', ACIDIC, GLUTAMIC_ACID);
+    MK_RESIDUE_SPECIFIER("glutamine",      "gln", 'q', POLAR, GLUTAMINE);
+    MK_RESIDUE_SPECIFIER("glycine",        "gly", 'g', HYDROPHOBIC, GLYCINE);
+    MK_RESIDUE_SPECIFIER("histidine",      "his", 'h', BASIC, HISTIDINE);
+    MK_RESIDUE_SPECIFIER("isoleucine",     "ile", 'i', HYDROPHOBIC, ISOLEUCINE);
+    MK_RESIDUE_SPECIFIER("leucine",        "leu", 'l', HYDROPHOBIC, LEUCINE);
+    MK_RESIDUE_SPECIFIER("lysine",         "lys", 'k', BASIC, LYSINE);
+    MK_RESIDUE_SPECIFIER("methionine",     "met", 'm', HYDROPHOBIC, METHIONINE);
+    MK_RESIDUE_SPECIFIER("phenylalanine",  "phe", 'f', HYDROPHOBIC, PHENYLALANINE);
+    MK_RESIDUE_SPECIFIER("proline",        "pro", 'p', HYDROPHOBIC, PROLINE);
+    MK_RESIDUE_SPECIFIER("serine",         "ser", 's', POLAR, SERINE);
+    MK_RESIDUE_SPECIFIER("threonine",      "thr", 't', POLAR, THREONINE);
+    MK_RESIDUE_SPECIFIER("tryptophan",     "trp", 'w', HYDROPHOBIC, TRYPTOPHAN);
+    MK_RESIDUE_SPECIFIER("tyrosine",       "tyr", 'y', HYDROPHOBIC, TYROSINE);
+    MK_RESIDUE_SPECIFIER("valine",         "val", 'v', HYDROPHOBIC, VALINE);
+    MK_RESIDUE_SPECIFIER("solvent",        "sol", 'h', UNKNOWN, SOLV);
+    MK_RESIDUE_SPECIFIER("adp",            "adp", 'h', UNKNOWN, ADP);
+    MK_RESIDUE_SPECIFIER("cl",             "cli", 'h', UNKNOWN, CHLORINE);
+    MK_RESIDUE_SPECIFIER("hoh",            "hoh", 'h', UNKNOWN, HOH);
+    MK_RESIDUE_SPECIFIER("adenosine",      "adn", 'A', UNKNOWN, ADENOSINE);
+    MK_RESIDUE_SPECIFIER("guanosine",      "gua", 'G', UNKNOWN, GUANOSINE);
+    MK_RESIDUE_SPECIFIER("cytosine",       "cyt", 'C', UNKNOWN, CYTOSINE);
+    MK_RESIDUE_SPECIFIER("uridine",        "ura", 'U', UNKNOWN, URIDINE);
+    MK_RESIDUE_SPECIFIER("thymine",        "thy", 'T', UNKNOWN, THYMINE);
+    MK_RESIDUE_SPECIFIER("uridine",        "h2u", 'U', UNKNOWN, URIDINE2);
+    MK_RESIDUE_SPECIFIER("cytosine",       "omc", 'C', UNKNOWN, CYTOSINE2);
+    MK_RESIDUE_SPECIFIER("guanosine",      "omg", 'G', UNKNOWN, GUANOSINE2);
+    MK_RESIDUE_SPECIFIER("uridine",        "psu", 'U', UNKNOWN, URIDINE3);
+    MK_RESIDUE_SPECIFIER("cytosine",       "5mc", 'C', UNKNOWN, CYTOSINE3);
+    MK_RESIDUE_SPECIFIER("guanosine",      "7mg", 'G', UNKNOWN, GUANOSINE3);
+    MK_RESIDUE_SPECIFIER("uridine",        "5mu", 'U', UNKNOWN, URIDINE4);
+    MK_RESIDUE_SPECIFIER("adenosine",      "1ma", 'A', UNKNOWN, ADENOSINE2);
+    MK_RESIDUE_SPECIFIER("guanosine",      "2mg", 'G', UNKNOWN, GUANOSINE4);
+    MK_RESIDUE_SPECIFIER("guanosine",      "m2g", 'G', UNKNOWN, GUANOSINE5);
 
     // scf added DNA residues
-    MK_RESIDUE_SPECIFIER("deoxyadenosine", "da",  'A', UNKNOWN, DEOXYADENOSINE),
-    MK_RESIDUE_SPECIFIER("deoxyguanosine", "dg",  'G', UNKNOWN, DEOXYGUANOSINE),
-    MK_RESIDUE_SPECIFIER("deoxycytosine",  "dc",  'C', UNKNOWN, DEOXYCYTOSINE),
-    MK_RESIDUE_SPECIFIER("deoxythymidine", "dt",  'T', UNKNOWN, DEOXYTHYMINE),
+    MK_RESIDUE_SPECIFIER("deoxyadenosine", "da",  'A', UNKNOWN, DEOXYADENOSINE);
+    MK_RESIDUE_SPECIFIER("deoxyguanosine", "dg",  'G', UNKNOWN, DEOXYGUANOSINE);
+    MK_RESIDUE_SPECIFIER("deoxycytosine",  "dc",  'C', UNKNOWN, DEOXYCYTOSINE);
+    MK_RESIDUE_SPECIFIER("deoxythymidine", "dt",  'T', UNKNOWN, DEOXYTHYMINE);
 
     //
     MK_RESIDUE_SPECIFIER("disulphidebridgedcysteine", "cyx", 'x', HYDROPHOBIC, DISULPHIDEBRIDGEDCYSTEINE);
