@@ -8,6 +8,8 @@
 #include <cctype>
 #include <gemmi/gz.hpp>
 
+#include <cassert>
+
 // uncomment this if you want debug flags to be printed
 //#define _DEBUG_FLAGS_ON_
 #ifdef _DEBUG_FLAGS_ON_
@@ -847,6 +849,8 @@ PdbStructure::PdbStructure( const std::string &fileName, const std::string &chai
         //============================================ Create molmodel model (first and only)
         models.emplace_back                              ( PdbModel ( models.size() + 1 ) );
 
+        auto &model = models.back();
+
         //============================================ For each chain
         for ( const auto &ch : mo.chains )
         {
@@ -860,11 +864,14 @@ PdbStructure::PdbStructure( const std::string &fileName, const std::string &chai
             String chainIdWithPrefix                  =  chainsPrefix + std::string ( ch.name );
 
             //======================================== Add the chain to molmodel unless it already exists
-            if ( !models.back().hasChain ( chainIdWithoutPrefix ) )
+            if ( !model.hasChain ( chainIdWithoutPrefix ) )
             {
-                models.back().chainIndicesById[chainIdWithPrefix] = models.back().chains.size();
-                models.back().chains.emplace_back                 ( PdbChain ( chainIdWithoutPrefix ) );
+                model.chainIndicesById[chainIdWithPrefix] = models.back().chains.size();
+                model.chains.emplace_back                 ( PdbChain ( chainIdWithoutPrefix ) );
             }
+
+            assert ( model.chainIndicesById.find (chainIdWithPrefix) != model.chainIndicesById.end () );
+            auto &chain                                   = model.chains[ model.chainIndicesById.at ( chainIdWithPrefix ) ];
 
             //======================================== For each residue
             int resNumGemmi                           = 0;
@@ -880,11 +887,14 @@ PdbStructure::PdbStructure( const std::string &fileName, const std::string &chai
                 String residueName                    = std::string ( re.name );
 
                 //==================================== Add it to molmodel unless it already exists
-                if ( !models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].hasResidue ( residueId ) )
+                if ( !chain.hasResidue ( residueId ) )
                 {
-                    models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId] = models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues.size();
-                    models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues.push_back ( PdbResidue ( residueName, residueId ) );
+                    chain.residueIndicesById[residueId] = chain.residues.size();
+                    chain.residues.emplace_back         ( residueName, residueId );
                 }
+
+                assert ( chain.residueIndicesById.find (residueId) != chain.residueIndicesById.end () );
+                auto &residue                           = chain.residues[ chain.residueIndicesById.at (residueId) ];
 
                 //==================================== For each atom
                 for ( const auto &at : re.atoms )
@@ -896,29 +906,34 @@ PdbStructure::PdbStructure( const std::string &fileName, const std::string &chai
                     if ( atomName.length() == 1 ) { atomName = " " + atomName + "  "; }
 
                     //================================ If this atom does not yet exist in molmodel, add it
-                    if ( !models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].hasAtom( atomName ) )
+                    if ( !residue.hasAtom( at.name ) )
                     {
                         //============================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
-                        String elementSymbol          = std::string ( at.element.name() );
+                        String elementSymbol                 = std::string ( at.element.name() );
                         //============================ Add the atom
-                        const Element& element        = Element::getBySymbol ( elementSymbol );
-                        models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].addAtom ( PdbAtom ( atomName, element ) );
+                        const Element& element               = Element::getBySymbol ( elementSymbol );
+
+                        residue.atomIndicesByName[ at.name ] = residue.atoms.size();
+                        residue.addAtom                      ( PdbAtom ( at.name, element ) );
                     }
 
+                    assert ( residue.atomIndicesByName.find ( at.name ) != residue.atomIndicesByName.end () );
+                    auto &atom                               = residue.atoms[ residue.atomIndicesByName.at ( at.name ) ];
+
                     //================================ Find alternative location indication
-                    char altLoc                       = at.altloc;
+                    char altLoc                              = at.altloc;
 
                     //================================ If this alt location is not in the molmodel structure, add it
-                    if ( !models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atomIndicesByName[atomName]].hasLocation(altLoc) )
+                    if ( !atom.hasLocation( altLoc ) )
                     {
-                        double x                      = at.pos.x;
-                        double y                      = at.pos.y;
-                        double z                      = at.pos.z;
-                        SimTK::Real tempFac           = at.b_iso;
-                        SimTK::Real occ               = at.occ;
+                        double x                             = at.pos.x;
+                        double y                             = at.pos.y;
+                        double z                             = at.pos.z;
+                        SimTK::Real tempFac                  = at.b_iso;
+                        SimTK::Real occ                      = at.occ;
 
-                        models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locationIndicesById[altLoc] = models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.size();
-                        models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atoms[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residues[models.back().chains[models.back().chainIndicesById[chainIdWithPrefix]].residueIndicesById[residueId]].atomIndicesByName[atomName]].locations.push_back ( PdbAtomLocation ( 0.1 * SimTK::Vec3 ( x,y,z ), altLoc, tempFac, occ ) );
+                        atom.locationIndicesById[ altLoc ]   = atom.locations.size();
+                        atom.locations.emplace_back          ( 0.1 * SimTK::Vec3 ( x,y,z ), altLoc, tempFac, occ );
                     }
                 }
             }
