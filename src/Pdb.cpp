@@ -3,6 +3,7 @@
 //
 #include "molmodel/internal/Pdb.h"
 #include "molmodel/internal/Compound.h"
+#include <cstdlib>
 #include <stdexcept>
 #include <algorithm>
 #include <cctype>
@@ -17,6 +18,62 @@ bool verbose = 1;
 #else
 bool verbose = 0;
 #endif
+
+std::string toLwr(std::string str) {
+    std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+    return str;
+}
+
+std::pair<std::string, std::string> splitAtSuffix(const std::string &fileName) {
+    auto delim = fileName.find_last_of('.');
+    if (delim == std::string::npos)
+        return { fileName, "" };
+
+    return { fileName.substr(0, delim), fileName.substr(delim + 1) };
+}
+
+gemmi::Structure gemmiStructFromFile(const std::string &fileName) {
+    auto split = splitAtSuffix(fileName);
+    if (split.second.empty())
+        throw std::runtime_error{"!!! Error !!! Input file has no suffix. Molmodel cannot guess its type."};
+
+    SimTK::PdbStructure::InputType iType;
+    bool isGZipped = false;
+
+    if (toLwr(split.second) == "gz") {
+        isGZipped = true;
+        auto splitTwo = splitAtSuffix(split.first);
+        if (split.second.empty()) {
+            std::cout << "!!! Error !!! Input file is GZipped but there is no secondary suffix. Molmodel cannot guess its type." << std::endl;
+        }
+
+        const auto lwr = toLwr(splitTwo.second);
+        iType = SimTK::PdbStructure::inputTypeFromSuffix(lwr);
+    } else {
+        const auto lwr = toLwr(split.second);
+        iType = SimTK::PdbStructure::inputTypeFromSuffix(lwr);
+    }
+
+    if (iType == SimTK::PdbStructure::InputType::CIF) {
+        auto doc = isGZipped ?
+            gemmi::cif::read(gemmi::MaybeGzipped(fileName))
+            :
+            gemmi::cif::read_file(fileName);
+        if (doc.blocks.empty())
+            throw std::runtime_error{"Input file does not contain any blocks"};
+        else if (doc.blocks.size() > 1)
+            std::cerr << "!!! Warning !!! The file " << fileName << " contains multiple blocks. Molmodel will use the first block named " << doc.blocks.at(0).name << " and ignore the rest." << std::endl;
+
+        return gemmi::impl::make_structure_from_block(doc.blocks.front());
+    } else if (iType == SimTK::PdbStructure::InputType::PDB) {
+        return isGZipped ?
+            gemmi::read_pdb(gemmi::MaybeGzipped(fileName))
+            :
+            gemmi::read_pdb_file(fileName);
+    }
+
+    throw std::logic_error{"Input file type was not determined"};
+}
 
 namespace SimTK {
 
@@ -824,24 +881,8 @@ PdbStructure::PdbStructure( ) {
 }
 
 
-PdbStructure::PdbStructure( const std::string &fileName, const std::string &chainsPrefix )
-{
-    //================================================ Read in the file into Gemmi document
-    gemmi::cif::Document gemmiDoc                     = gemmi::cif::read ( gemmi::MaybeGzipped ( fileName ) );
-
-    //================================================ Check the number of blocks
-    if ( gemmiDoc.blocks.size() < 1 )
-    {
-        std::cerr << "!!! Error !!! The file " << fileName << " contains 0 blocks. Nothing the be read." << std::endl;
-        exit                                          ( EXIT_FAILURE );
-    }
-    else if ( gemmiDoc.blocks.size() > 1 )
-    {
-        std::cerr << "!!! Warning !!! The file " << fileName << " contains multiple blocks. Molmodel will use the first block named " << gemmiDoc.blocks.at(0).name << " and ignore the rest." << std::endl;
-    }
-
-    //================================================ Generate structure from block
-    gemmi::Structure gemmiStruct                      = gemmi::impl::make_structure_from_block ( gemmiDoc.blocks.at(0) );
+PdbStructure::PdbStructure(const std::string& fileName, const std::string& chainsPrefix) try {
+    auto gemmiStruct = gemmiStructFromFile(fileName);
 
     //================================================ For each model
     for ( const auto &mo : gemmiStruct.models )
@@ -939,6 +980,12 @@ PdbStructure::PdbStructure( const std::string &fileName, const std::string &chai
             }
         }
     }
+} catch (const std::runtime_error &ex) {
+    std::cout << "!!! Error !!! " << ex.what() << std::endl;
+    std::exit(EXIT_FAILURE);
+} catch (const std::logic_error &ex) {
+    std::cout << "!!! Logic Error !!! " << ex.what() << std::endl;
+    std::exit(EXIT_FAILURE);
 }
 
 PdbStructure::PdbStructure( std::istream &pdbFile, const std::string &chainsPrefix )
