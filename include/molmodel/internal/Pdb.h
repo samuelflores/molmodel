@@ -5,6 +5,7 @@
 #include <cctype>
 #include "molmodel/internal/Compound.h"
 #include <map>
+#include <stdexcept>
 
 namespace SimTK {
 
@@ -454,6 +455,10 @@ private:
 /// molecular dynamics trajectories
 class SimTK_MOLMODEL_EXPORT PdbStructure {
 public:
+    enum class InputType {
+        CIF,
+        PDB
+    };
 
     /// Construct PdbStructure based on initial default configuration of a Compound
     explicit PdbStructure(
@@ -465,10 +470,8 @@ public:
         const State& state, 
         const Compound& compound,
         const Transform& transform = Transform());
-    //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-    // This Constructor handles PDB formatted files:
-    explicit PdbStructure( std::istream &pdbFile, const std::string &chainsPrefix = "" );
-    explicit PdbStructure( const std::string &pdbFileName, const std::string &chainsPrefix = "" );
+    explicit PdbStructure(std::istream& pdbFile, const std::string& chainsPrefix = "");
+    explicit PdbStructure(const std::string& pdbFileName, const std::string& chainsPrefix = "");
 
     /// Empty constructor to allow later initialisation
     explicit PdbStructure();
@@ -486,8 +489,16 @@ public:
         return models[modelIx];
     }
 
-private:
+    static
+    InputType inputTypeFromSuffix(const std::string &suffix) {
+        if (suffix == "cif")
+            return InputType::CIF;
+        else if (suffix == "pdb")
+            return InputType::PDB;
+        throw std::runtime_error{"Unknown input file type"};
+    }
 
+private:
     // avoid dll export warnings for these private types
 #if defined(_MSC_VER)
 #pragma warning(push)
