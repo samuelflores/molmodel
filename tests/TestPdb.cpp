@@ -62,7 +62,7 @@ void testInputMatchesOutput() {
     "END\n";
 
     istringstream inStream(inputPdb);
-    PdbStructure pdbStructure(inStream);
+    PdbStructure pdbStructure(inStream, PdbStructure::InputType::PDB);
 
     ostringstream outStream;
     pdbStructure.write(outStream);
@@ -111,7 +111,7 @@ void testMatchDefaultBreaksPlanarity() {
     "ATOM     33  OP2 A       1       2.103   0.698  -1.208  1.00  0.00           O\n"
     "ATOM     34  OP3 A       1       2.103  -1.395   0.000  1.00  0.00           O\n";
     istringstream pdbStream(pdbString);
-	PdbStructure pdbStructure(pdbStream);
+    PdbStructure pdbStructure(pdbStream, PdbStructure::InputType::PDB);
 
     // 1) First reproduce undesired behavior
     RNA mol1("A");

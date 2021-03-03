@@ -321,7 +321,7 @@ void testProteinDihedrals() {
     std::string pdbString(gbpFrag1String);
 
     std::istringstream inFileStream( pdbString );
-    PdbStructure pdbStructure(inFileStream);
+    PdbStructure pdbStructure(inFileStream, PdbStructure::InputType::PDB);
 
     // Protein myProtein("LVVATDTAFVPFEFKQGDLYVGFDVDLW");
     Protein myProtein(pdbStructure);

@@ -60,7 +60,7 @@ int main()
     // std::ifstream inFileStream( "1UUD.pdb"); 
     std::istringstream inFileStream(uudPdbString);
 
-    PdbStructure pdbStructure(inFileStream);
+    PdbStructure pdbStructure(inFileStream, PdbStructure::InputType::PDB);
     RNA myRNA("G");// GGC");
 
     Compound::AtomTargetLocations atomTargets = myRNA.createAtomTargets(pdbStructure);

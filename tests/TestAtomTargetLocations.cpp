@@ -63,7 +63,7 @@ try
 
 
       std::istringstream inStream(inputPdb);
-      PdbStructure pdbStructure(inStream);
+      PdbStructure pdbStructure(inStream, PdbStructure::InputType::PDB);
 
       Protein protein("HS");
       protein.writeDefaultPdb(cout); // OK

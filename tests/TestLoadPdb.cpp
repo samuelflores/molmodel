@@ -2,6 +2,7 @@
 #include "molmodel/internal/Compound.h"
 
 #include "SimTKmolmodel.h"
+#include "molmodel/internal/Pdb.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -26,7 +27,7 @@ void testExactMatch(const std::string& pdbFileName)
     assert(pdbInputStream.is_open());
     
     // Check speed of various pdb file matching operations
-    PdbStructure inputPdbStructure(pdbInputStream);
+    PdbStructure inputPdbStructure(pdbInputStream, PdbStructure::InputType::PDB);
     pdbInputStream.close();
     
     time_t endTime = time(NULL);
@@ -129,7 +130,7 @@ void testIdealizedMatch(const std::string& pdbFileName)
     assert(pdbInputStream.is_open());
     
     // Check speed of various pdb file matching operations
-    PdbStructure inputPdbStructure(pdbInputStream);
+    PdbStructure inputPdbStructure(pdbInputStream, PdbStructure::InputType::PDB);
     pdbInputStream.close();
     
     time_t endTime = time(NULL);

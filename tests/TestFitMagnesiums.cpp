@@ -29,10 +29,10 @@ void testFitMagnesiums()
 
     istringstream previousFrameFile (inPdbString);
     assert(previousFrameFile.good());
-    PdbStructure pdbStructure(previousFrameFile);
+    PdbStructure pdbStructure(previousFrameFile, PdbStructure::InputType::PDB);
     pdbStructure.write(std::cout);
     for (int i = 0; i < (2); i++) {
-        Compound::AtomTargetLocations magnesiumAtomTargets = myMagnesiumIonVec[i].createAtomTargets(pdbStructure); 
+        Compound::AtomTargetLocations magnesiumAtomTargets = myMagnesiumIonVec[i].createAtomTargets(pdbStructure);
         cout << "[Repel.h] magnesiumAtomTargets: " << magnesiumAtomTargets[Compound::AtomIndex(0)]<<endl;
         cout << "[Repel.h] magnesiumAtomTargets: " << magnesiumAtomTargets.size()       <<endl;
         myMagnesiumIonVec[i].fitDefaultConfiguration(magnesiumAtomTargets,.3);
@@ -86,7 +86,7 @@ ATOM   2283  O6  G   A  71       5.574  14.827 144.472  1.00  0.00           O\n
 
     istringstream inString(input_pdb_string);
     Compound::AtomTargetLocations atomTargets = 
-        rna.createAtomTargets(PdbStructure(inString));
+        rna.createAtomTargets(PdbStructure(inString, PdbStructure::InputType::PDB));
 
     for (Compound::AtomIndex t(0); t < atomTargets.size(); ++t) {
         // cout << "atom " << t << ": " << rna.getAtomName(t) << endl;
