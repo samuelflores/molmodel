@@ -4,6 +4,11 @@
 #include "molmodel/internal/Pdb.h"
 #include "molmodel/internal/Compound.h"
 #include <cstdlib>
+#include <gemmi/cif.hpp>
+#include <gemmi/cifdoc.hpp>
+#include <gemmi/mmread.hpp>
+#include <gemmi/model.hpp>
+#include <gemmi/pdb.hpp>
 #include <stdexcept>
 #include <algorithm>
 #include <cctype>
@@ -30,6 +35,15 @@ std::pair<std::string, std::string> splitAtSuffix(const std::string &fileName) {
         return { fileName, "" };
 
     return { fileName.substr(0, delim), fileName.substr(delim + 1) };
+}
+
+gemmi::Structure gemmiStructFromDoc(const gemmi::cif::Document &doc) {
+    if (doc.blocks.empty())
+        throw std::runtime_error{"Input file does not contain any blocks"};
+    else if (doc.blocks.size() > 1)
+        std::cerr << "!!! Warning !!! Cif input contains multiple blocks. Molmodel will use the first block named " << doc.blocks.at(0).name << " and ignore the rest." << std::endl;
+
+    return gemmi::impl::make_structure_from_block(doc.blocks.front());
 }
 
 gemmi::Structure gemmiStructFromFile(const std::string &fileName) {
@@ -59,12 +73,7 @@ gemmi::Structure gemmiStructFromFile(const std::string &fileName) {
             gemmi::cif::read(gemmi::MaybeGzipped(fileName))
             :
             gemmi::cif::read_file(fileName);
-        if (doc.blocks.empty())
-            throw std::runtime_error{"Input file does not contain any blocks"};
-        else if (doc.blocks.size() > 1)
-            std::cerr << "!!! Warning !!! The file " << fileName << " contains multiple blocks. Molmodel will use the first block named " << doc.blocks.at(0).name << " and ignore the rest." << std::endl;
-
-        return gemmi::impl::make_structure_from_block(doc.blocks.front());
+        return gemmiStructFromDoc(doc);
     } else if (iType == SimTK::PdbStructure::InputType::PDB) {
         return isGZipped ?
             gemmi::read_pdb(gemmi::MaybeGzipped(fileName))
@@ -882,10 +891,41 @@ PdbStructure::PdbStructure( ) {
 
 
 PdbStructure::PdbStructure(const std::string& fileName, const std::string& chainsPrefix) try {
-    auto gemmiStruct = gemmiStructFromFile(fileName);
+    initialize(gemmiStructFromFile(fileName), chainsPrefix);
+} catch (const std::runtime_error &ex) {
+    std::cout << "!!! Error !!! " << ex.what() << std::endl;
+    std::exit(EXIT_FAILURE);
+} catch (const std::logic_error &ex) {
+    std::cout << "!!! Logic Error !!! " << ex.what() << std::endl;
+    std::exit(EXIT_FAILURE);
+}
 
+PdbStructure::PdbStructure(std::istream &input, const InputType iType, const std::string &chainsPrefix)
+{
+    if (iType == InputType::CIF) {
+        auto doc = gemmi::cif::read_istream(input, 512, "cif_stream");
+        initialize(gemmiStructFromDoc(doc), chainsPrefix);
+    } else if (iType == InputType::PDB) {
+        std::string pdb{};
+        while (input.good())
+            input >> pdb;
+        initialize(gemmi::read_pdb_string(pdb, "pdb_stream"), chainsPrefix);
+    }
+}
+
+bool PdbStructure::hasAtom(String atomName, PdbResidueId residueId, String chainId) const {
+    if (models.size() < 1) return false;
+    return models[0].hasAtom(atomName, residueId, chainId);
+}
+
+const PdbAtom& PdbStructure::getAtom(String atomName, PdbResidueId residueId, String chainId) const {
+    assert(models.size() > 0);
+    return models[0].getAtom(atomName, residueId, chainId);
+}
+
+void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &chainsPrefix) {
     //================================================ For each model
-    for ( const auto &mo : gemmiStruct.models )
+    for ( const auto &mo : gs.models )
     {
         //============================================ Create molmodel model (first and only)
         models.emplace_back                              ( PdbModel ( models.size() + 1 ) );
@@ -980,111 +1020,6 @@ PdbStructure::PdbStructure(const std::string& fileName, const std::string& chain
             }
         }
     }
-} catch (const std::runtime_error &ex) {
-    std::cout << "!!! Error !!! " << ex.what() << std::endl;
-    std::exit(EXIT_FAILURE);
-} catch (const std::logic_error &ex) {
-    std::cout << "!!! Logic Error !!! " << ex.what() << std::endl;
-    std::exit(EXIT_FAILURE);
-}
-
-PdbStructure::PdbStructure( std::istream &pdbFile, const std::string &chainsPrefix )
-{
-    std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-    char lineBuffer[300];
-    SimTK_ASSERT_ALWAYS(pdbFile.good(),
-        "PdbStructure::ctor(): can't read pdb file -- was it missing?");
-    String longChainId (" ");
-    std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-    while (pdbFile.good()) 
-    {
-        pdbFile.getline(lineBuffer, 200);
-        String line(lineBuffer);
-        // Create a new PdbModel if MODEL card is seen
-        // (ignore ENDMDL records)
-        // SCF this line was:
-        //if (line.substr(0, 6) == String("MODEL")) // I have no idea why it was 6 but "MODEL" was a  five characters long string. Fixed now, with extra space:
-        if (line.substr(0, 6) == String("MODEL "))
-        {
-            std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" Found MODEL card. Currently (models.size() = "<<(models.size())<<std::endl;
-            // If previous model is still empty, don't create a new one
-            if ( (models.size() > 0) && (models.back().chains.size() == 0) ) {
-                std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<std::endl;//" Found MODEL card but "
-                //previous model is still empty. Will NOT create additional model now. "<<std::endl;
-            }
-
-            // Otherwise, create a new model
-            else {
-                std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" Creating a new model now"<<std::endl;
-                models.push_back( PdbModel(models.size() + 1) );}
-        }
-
-        // Stop reading if "END" record is seen (but not "ENDMDL").
-        else if ( (line.substr(0, 3) == "END") && (line.substr(0, 6) != "ENDMDL") ) 
-        {
-            break;
-        }
-
-
-       	else if  (line.substr(0,25) == "REMARK-SimTK-long-chainId") {
-            std::stringstream u;
-            u.str(line);
-	    std::vector <String> mystring;
-            mystring.clear();
-            mystring.push_back(""); // must create three vector elements.
-            mystring.push_back("");
-            mystring.push_back("");
-	    u>>mystring[0]>>mystring[1]>>mystring[2]	;
-	    if (mystring[2].length()>0) { // There should only be one argument following "REMARK-SimTK-long-chainId"
-		std::cout<<__FILE__<<":"<<__LINE__<<" Bad syntax!  REMARK-SimTK-long-chainId should be followed by either nothing, or a whitespace and then a multi-character chain ID.  If you provide a multi-character chain ID, this overrides the chain ID specified in column 22 of subsequent ATOM records.  If you do not provide a multi-character chain ID, then you turn off this override feature, and go back to reading the chain ID from column 22 of the ATOM record. "<<std::endl; 
-		std::cout<<__FILE__<<":"<<__LINE__<<" In this case you have provided an additional argument, "<<mystring[2]<<", which is not permitted."<<std::endl;
-		exit(1);
-	    }
-            
-	    if (mystring[1].length() == 1) { // a long chain ID should not be exactly one character long.
-		std::cout<<__FILE__<<":"<<__LINE__<<" Bad syntax!  REMARK-SimTK-long-chainId should be followed by either nothing, or a whitespace and then a multi-character chain ID.  If you provide a multi-character chain ID, this overrides the chain ID specified in column 22 of subsequent ATOM records.  If you do not provide a multi-character chain ID, then you turn off this override feature, and go back to reading the chain ID from column 22 of the ATOM record. "<<std::endl; 
-		std::cout<<__FILE__<<":"<<__LINE__<<" In this case you have provided a single-character chain ID, "<<mystring[1]<<", which is not permitted. You should just use column 22 as per the PDB ATOM record format. Long chain ID's should be 2 characters or longer."<<std::endl;
-		exit(1);
-	    }
-       
-            else if (mystring[1].length() == 0) { // no arguments means set long chain ID back to default value of " ".
-                longChainId = " ";
-            } else if (mystring[1].length() > 1) { //everything is OK!
-	    } else {std::cout<<__FILE__<<":"<<__LINE__<<" Unexplained error!"<<std::endl; exit(1);} // just being paranoid..
-
-            // If we got this far, the long chain ID is kosher.
-	    longChainId = mystring[1];
-        }
-
-
-        else if ( (line.substr(0, 6) == "ATOM  ") || (line.substr(0, 6) == "HETATM") ||
-                  (line.substr(0,19) == "REMARK-SIMTK-COORDS"))                        
-        {
-            #ifdef _DEBUG_FLAGS_ON_
-            if (verbose) std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-            #endif
-            if (models.size() < 1) models.push_back(PdbModel(1));
-            #ifdef _DEBUG_FLAGS_ON_
-            if (verbose) std::cout<<__FILE__<<":"<<__LINE__<< " line : "<<line<<std::endl;
-            if (verbose) std::cout<<__FILE__<<":"<<__LINE__<< " longChainId : "<<longChainId<<std::endl;
-            if (verbose) std::cout<<__FILE__<<":"<<__LINE__<< " chainsPrefix : "<<chainsPrefix<<std::endl;
-            #endif
-            models.back().parsePdbLine( line, longChainId, chainsPrefix ); // back() returns a ref to the last element in the vector
-            #ifdef _DEBUG_FLAGS_ON_
-            if (verbose) std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-            #endif
-        }
-    }
-}
-
-bool PdbStructure::hasAtom(String atomName, PdbResidueId residueId, String chainId) const {
-    if (models.size() < 1) return false;
-    return models[0].hasAtom(atomName, residueId, chainId);
-}
-
-const PdbAtom& PdbStructure::getAtom(String atomName, PdbResidueId residueId, String chainId) const {
-    assert(models.size() > 0);
-    return models[0].getAtom(atomName, residueId, chainId);
 }
 
 PdbAtom& PdbStructure::updAtom(String atomName, PdbResidueId residueId, String chainId) {
