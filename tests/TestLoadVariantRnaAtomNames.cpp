@@ -147,7 +147,7 @@ try
 
 
      std::istringstream inStream(inputPdb);
-     PdbStructure pdbStructure(inStream);
+     PdbStructure pdbStructure(inStream, PdbStructure::InputType::PDB);
      RNA myRNA("GGC");
      myRNA.setPdbChainId("B");
      myRNA.writeDefaultPdb(cout); // OK

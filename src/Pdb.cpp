@@ -16,14 +16,6 @@
 
 #include <cassert>
 
-// uncomment this if you want debug flags to be printed
-//#define _DEBUG_FLAGS_ON_
-#ifdef _DEBUG_FLAGS_ON_
-bool verbose = 1;                                         
-#else
-bool verbose = 0;
-#endif
-
 std::string toLwr(std::string str) {
     std::transform(str.begin(), str.end(), str.begin(), ::tolower);
     return str;
@@ -907,9 +899,12 @@ PdbStructure::PdbStructure(std::istream &input, const InputType iType, const std
         initialize(gemmiStructFromDoc(doc), chainsPrefix);
     } else if (iType == InputType::PDB) {
         std::string pdb{};
-        while (input.good())
-            input >> pdb;
-        initialize(gemmi::read_pdb_string(pdb, "pdb_stream"), chainsPrefix);
+        while (input.good()) {
+	    std::string buf;
+	    std::getline(input, buf);
+	    pdb += buf + '\n';;
+	}
+        initialize(gemmi::read_pdb_string(pdb, ""), chainsPrefix);
     }
 }
 

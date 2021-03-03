@@ -10,7 +10,7 @@ void testCompletePdbLineShouldBeOK()
 {
     // Truncate at character 57; has coordinates but nothing after
     istringstream completeLine("ATOM    866  CA  LEU A 112      30.133  37.313  21.927  0.90 34.39           C  ");
-    PdbStructure pdbStructure(completeLine);
+    PdbStructure pdbStructure(completeLine, PdbStructure::InputType::PDB);
 
     const PdbAtom& atom = pdbStructure.getAtom(" CA ", PdbResidueId(112, ' '), "A");
     SimTK_ASSERT_ALWAYS(atom.getOccupancy() == 0.90, "Atom occupancy incorrectly parsed");
@@ -21,7 +21,7 @@ void testCoordinatesButNoOccupancyShouldBeOK()
 {
     // Truncate at character 57; has coordinates but nothing after
     istringstream trunc57("ATOM      1  N   ALA A   1     -52.630  -1.437  23.003");
-    PdbStructure pdbStructure(trunc57);
+    PdbStructure pdbStructure(trunc57, PdbStructure::InputType::PDB);
 
     const PdbAtom& atom = pdbStructure.getAtom(" N  ", PdbResidueId(1, ' '), "A");
     SimTK_ASSERT_ALWAYS(atom.getOccupancy() == 1.00, "Atom occupancy incorrectly parsed");
@@ -33,7 +33,7 @@ void testMissingZCoordinateShouldRaiseException()
 {
     try {
         istringstream trunc("ATOM      1  N   ALA A   1     -52.630  -1.437");
-        PdbStructure pdbStructure(trunc);
+        PdbStructure pdbStructure(trunc, PdbStructure::InputType::PDB);
     }
     catch (...) {
         return;
