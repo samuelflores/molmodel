@@ -2241,7 +2241,7 @@ Compound& Compound::fitDefaultConfiguration(
 	compoundCopy.writePdb(state, observedPointFittedPdbStringOut);
 	// Create another PdbStructure, and match the dihedral angles to that 
 	std::istringstream observedPointFittedPdbStringIn(observedPointFittedPdbStringOut.str());
-	PdbStructure observedPointFittedStructure(observedPointFittedPdbStringIn);
+	PdbStructure observedPointFittedStructure(observedPointFittedPdbStringIn, PdbStructure::InputType::PDB);
 	//Compound::AtomTargetLocations observedPointFittedAtomTargets = 
         std::ofstream observedPointFittedOfstream("match1c.pdb");
         observedPointFittedStructure.write(observedPointFittedOfstream, SimTK::Transform(Vec3(0)));
@@ -2278,7 +2278,7 @@ Compound& Compound::fitDefaultConfiguration(
 	compoundCopy.writePdb(state, observedPointFitted2PdbStringOut);
 	// Create another PdbStructure, and match the dihedral angles to that 
 	std::istringstream observedPointFitted2PdbStringIn(observedPointFitted2PdbStringOut.str());
-	PdbStructure observedPointFitted2Structure(observedPointFitted2PdbStringIn);
+	PdbStructure observedPointFitted2Structure(observedPointFitted2PdbStringIn, PdbStructure::InputType::PDB);
 	//Compound::AtomTargetLocations observedPointFitted2AtomTargets = 
         std::ofstream observedPointFitted2Ofstream("match1d.pdb");
         observedPointFitted2Structure.write(observedPointFitted2Ofstream, SimTK::Transform(Vec3(0)));
@@ -2294,7 +2294,7 @@ Compound& Compound::fitDefaultConfiguration(
 	    compoundCopy.writePdb(state, optimizedPdbStringOut);
 	    // Create another PdbStructure, and match the dihedral angles to that
 	    std::istringstream optimizedPdbStringIn(optimizedPdbStringOut.str());
-	    PdbStructure optimizedStructure(optimizedPdbStringIn);
+	    PdbStructure optimizedStructure(optimizedPdbStringIn, PdbStructure::InputType::PDB);
 	    //Compound::AtomTargetLocations optimizedAtomTargets = 
 	    //        createAtomTargets(optimizedStructure,false); // scf set guessCoordinates to false here to make sure it's done exactly as before
         std::ofstream myofstream("match1e.pdb");

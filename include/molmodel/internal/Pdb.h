@@ -7,6 +7,10 @@
 #include <map>
 #include <stdexcept>
 
+namespace gemmi {
+    class Structure;
+}
+
 namespace SimTK {
 
 namespace Pdb {
@@ -470,7 +474,7 @@ public:
         const State& state, 
         const Compound& compound,
         const Transform& transform = Transform());
-    explicit PdbStructure(std::istream& pdbFile, const std::string& chainsPrefix = "");
+    explicit PdbStructure(std::istream& pdbFile, const InputType iType, const std::string& chainsPrefix = "");
     explicit PdbStructure(const std::string& pdbFileName, const std::string& chainsPrefix = "");
 
     /// Empty constructor to allow later initialisation
@@ -511,6 +515,8 @@ private:
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif
+
+    void initialize(const gemmi::Structure &gs, const std::string &chainsPrefix);
 
 private:
     // OBSOLETE; use getNumModels() instead

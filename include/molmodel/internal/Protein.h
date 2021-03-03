@@ -1038,9 +1038,9 @@ public:
     
     void loadFromPdbChain(const PdbChain& pdbChain, SimTK::Real targetRms);
     
-    explicit Protein(std::istream& pdbStream, SimTK::Real targetRms = 0.02)
+    explicit Protein(std::istream& pdbStream, PdbStructure::InputType iType, SimTK::Real targetRms = 0.02)
     {
-        PdbStructure pdbStructure(pdbStream);
+        PdbStructure pdbStructure(pdbStream, iType);
         loadFromPdbStructure(pdbStructure, targetRms);
     }
     
