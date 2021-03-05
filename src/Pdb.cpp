@@ -461,6 +461,8 @@ void PdbAtom::parsePdbLine(const String& line)
 PdbResidue::PdbResidue(String name, PdbResidueId id)
     : residueId(id)
 {
+    name.resize(3, '\0');
+
     residueName[0] = name[0];
     residueName[1] = name[1];
     residueName[2] = name[2];
