@@ -1760,10 +1760,15 @@ private:
     //ThreadLocal< Real >                                 localEnergy;
     //ThreadLocal< Array_<Real, DuMM::NonbondAtomIndex> > localVdwScale;
     //ThreadLocal< Array_<Real, DuMM::NonbondAtomIndex> > localCoulombScale;
-    Real                                  localEnergy;
-    Array_<Real, DuMM::NonbondAtomIndex>  localVdwScale;
-    Array_<Real, DuMM::NonbondAtomIndex>  localCoulombScale;
+    static thread_local Real                                 localEnergy;
+    static thread_local Array_<Real, DuMM::NonbondAtomIndex> localVdwScale;
+    static thread_local Array_<Real, DuMM::NonbondAtomIndex> localCoulombScale;
 };
+
+thread_local Real                                 NonbondedForceTask::localEnergy;
+thread_local Array_<Real, DuMM::NonbondAtomIndex> NonbondedForceTask::localVdwScale;
+thread_local Array_<Real, DuMM::NonbondAtomIndex> NonbondedForceTask::localCoulombScale;
+
 //..........................class NonbondedForceTask............................
 
 
