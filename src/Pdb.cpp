@@ -473,6 +473,7 @@ PdbResidue::PdbResidue(const Compound& compound, int resNum, const Transform& tr
     : residueId(resNum)
 {
     const String& name = compound.getPdbResidueName();
+    assert(name.length() >= 3);
 
     residueName[0] = name[0];
     residueName[1] = name[1];
@@ -495,6 +496,7 @@ PdbResidue::PdbResidue(
     : residueId(resNum)
 {
     const String& name = compound.getPdbResidueName();
+    assert(name.length() >= 3);
 
     residueName[0] = name[0];
     residueName[1] = name[1];
