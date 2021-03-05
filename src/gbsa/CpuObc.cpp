@@ -526,12 +526,13 @@ private:
     RealOpenMM&              obcEnergy;
     RealOpenMM*              bornForces;
     RealOpenMM* const*       forces;
-    Real                     energy;
-    // SCF replaced thius with a regular variable
-    //ThreadLocal<Real>        energy;
+
+    static thread_local Real energy;
 
     const RealOpenMM one, four, half, fourth, preFactor;
 };
+
+thread_local Real ParallelTask1::energy;
 
 /**
  * This performs the second main loop of the force calculation in parallel.
