@@ -13,8 +13,8 @@ void testCompletePdbLineShouldBeOK()
     PdbStructure pdbStructure(completeLine, PdbStructure::InputType::PDB);
 
     const PdbAtom& atom = pdbStructure.getAtom(" CA ", PdbResidueId(112, ' '), "A");
-    SimTK_ASSERT_ALWAYS(atom.getOccupancy() == 0.90, "Atom occupancy incorrectly parsed");
-    SimTK_ASSERT_ALWAYS(atom.getTemperatureFactor() == 34.39, "Atom temperature factor inorrectly parsed");
+    SimTK_TEST_EQ_TOL(atom.getOccupancy(), 0.90, 1e-7);
+    SimTK_TEST_EQ_TOL(atom.getTemperatureFactor(),  34.39, 1e-7);
 }
 
 void testCoordinatesButNoOccupancyShouldBeOK() 
