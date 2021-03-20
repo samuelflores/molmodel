@@ -92,6 +92,11 @@ SET(BUILD_VERSIONED_LIBRARIES FALSE CACHE BOOL
 
 SET(GEMMI_PATH "" CACHE PATH "Where is the Gemmi library installed?")
 
+IF(WIN32)
+    SET(zlib_INSTALL_DIR "" CACHE PATH
+	    "Where to find zlib files")
+ENDIF()
+
 SET(NS)
 IF(BUILD_USING_NAMESPACE)
     SET(NS "${BUILD_USING_NAMESPACE}_")
@@ -149,6 +154,14 @@ ELSE()
     SET(PLATFORM_ABI x86)
 ENDIF()
 
+IF(WIN32)
+    ADD_DEFINITIONS(-DNOMINMAX -DWIN32_LEAN_AND_MEAN -D_USE_MATH_DEFINES -D_WIN32_WINNT=0x0501)
+
+	IF(MSVC)
+	    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+	ENDIF()
+ENDIF()
+
 SET(BUILD_PLATFORM "${CMAKE_HOST_SYSTEM_NAME}:${PLATFORM_ABI}" CACHE STRING
     "This is the platform and ABI we're building for. Not changeable here; use a different CMake generator instead."
     FORCE)
@@ -157,6 +170,15 @@ SET(BUILD_PLATFORM "${CMAKE_HOST_SYSTEM_NAME}:${PLATFORM_ABI}" CACHE STRING
 find_package(Simbody REQUIRED)
 include_directories(${Simbody_INCLUDE_DIR})
 link_directories(${Simbody_LIB_DIR})
+
+IF(WIN32)
+    IF (zlib_INSTALL_DIR STREQUAL "")
+        MESSAGE(FATAL_ERROR "Path to zlib is not set")
+	ENDIF()
+
+	INCLUDE_DIRECTORIES(${zlib_INSTALL_DIR}/include)
+	LINK_DIRECTORIES(${zlib_INSTALL_DIR}/lib)
+ENDIF()
 
 # If CMAKE_INSTALL_PREFIX is /usr/local, then the LIBDIR should necessarily be
 # lib/. Sometimes (on Linux), LIBDIR is something like x86_64-linux-gnu. The
@@ -342,16 +364,6 @@ ELSE(BUILD_UNVERSIONED_LIBRARIES)
 	SET(TEST_SHARED_TARGET ${SHARED_TARGET_VN})
 	SET(TEST_STATIC_TARGET ${STATIC_TARGET_VN})
 ENDIF(BUILD_UNVERSIONED_LIBRARIES)
-
-IF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    SET(ADDITIONAL_LINK_LIBRARIES)
-ELSE(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    ## Assume Microsoft Visual Studio
-	## ws2_32 is for socket calls in VMD connection
-    SET(ADDITIONAL_LINK_LIBRARIES ws2_32)
-ENDIF(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-
-SET(ADDITIONAL_LINK_LIBRARIES ${ADDITIONAL_LINK_LIBRARIES} "-lz")
 
 # These are all the places to search for header files which are
 # to be part of the API.
