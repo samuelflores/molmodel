@@ -64,7 +64,7 @@ ResidueSpecifier::ResidueSpecifier(const char _longName[28], const char _abbrevN
     strcpy_s(const_cast<char *>(longName), 28, _longName);
     strcpy_s(const_cast<char *>(abbrevName), 4, _abbrevName);
 }
-#endif _MSC_VER
+#endif // _MSC_VER
 
 ResidueSpecifier & ResidueSpecifier::operator=(const ResidueSpecifier &other) {
     std::strcpy((char *)this->longName, other.longName);
