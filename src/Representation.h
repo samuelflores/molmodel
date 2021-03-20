@@ -90,6 +90,11 @@ class RepresentationException : std::runtime_error {
 
 class ResidueSpecifier {
 public:
+#ifdef _MSC_VER
+    ResidueSpecifier();
+    ResidueSpecifier(const char longName[28], const char abbrevName[4], const char shortName, const ResidueProp prop, const ResidueType type);
+#endif // _MSC_VER
+
     const char longName[28];
     const char abbrevName[4];
     const char shortName;

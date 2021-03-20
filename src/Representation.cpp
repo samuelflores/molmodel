@@ -44,6 +44,28 @@ void charArrayFromString(char dst[N], const std::string &src) {
 
 namespace Repr {
 
+#ifdef _MSC_VER
+ResidueSpecifier::ResidueSpecifier() :
+    longName{ '\0' },
+    abbrevName{ '\0' },
+    shortName('\0'),
+    prop(ResidueProp::UNKNOWN),
+    type(ResidueType::UNKNOWN)
+{
+}
+
+ResidueSpecifier::ResidueSpecifier(const char _longName[28], const char _abbrevName[4], const char shortName, const ResidueProp prop, const ResidueType type) :
+    longName{ '\0' },
+    abbrevName{ '\0' },
+    shortName(shortName),
+    prop(prop),
+    type(type)
+{
+    strcpy_s(const_cast<char *>(longName), 28, _longName);
+    strcpy_s(const_cast<char *>(abbrevName), 4, _abbrevName);
+}
+#endif _MSC_VER
+
 ResidueSpecifier & ResidueSpecifier::operator=(const ResidueSpecifier &other) {
     std::strcpy((char *)this->longName, other.longName);
     std::strcpy((char *)this->abbrevName, other.abbrevName);

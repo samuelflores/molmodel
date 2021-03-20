@@ -132,6 +132,8 @@ void *vmdsock_accept(void * v) {
   SOCKLEN_T len;
 #elif defined(ARCH_LINUXALPHA) || defined(__APPLE__) || defined(ARCH_LINUX)
   socklen_t len;
+#elif defined(_MSC_VER)
+  int len;
 #else
   socklen_t len;
 #endif
