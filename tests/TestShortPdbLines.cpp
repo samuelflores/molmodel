@@ -17,15 +17,17 @@ void testCompletePdbLineShouldBeOK()
     SimTK_TEST_EQ_TOL(atom.getTemperatureFactor(),  34.39, 1e-7);
 }
 
-void testCoordinatesButNoOccupancyShouldBeOK() 
+void testCoordinatesButNoOccupancyShouldRaiseException()
 {
-    // Truncate at character 57; has coordinates but nothing after
-    istringstream trunc57("ATOM      1  N   ALA A   1     -52.630  -1.437  23.003");
-    PdbStructure pdbStructure(trunc57, PdbStructure::InputType::PDB);
+    try {
+        // Truncate at character 57; has coordinates but nothing after
+        istringstream trunc57("ATOM      1  N   ALA A   1     -52.630  -1.437  23.003");
+        PdbStructure pdbStructure(trunc57, PdbStructure::InputType::PDB);
+    } catch (...) {
+        return;
+    }
 
-    const PdbAtom& atom = pdbStructure.getAtom(" N  ", PdbResidueId(1, ' '), "A");
-    SimTK_ASSERT_ALWAYS(atom.getOccupancy() == 1.00, "Atom occupancy incorrectly parsed");
-    SimTK_ASSERT_ALWAYS(atom.getTemperatureFactor() == 0.00, "Atom temperature factor inorrectly parsed");
+    throw std::logic_error("Missing occupancy failed to raise an exception");
 }
 
 // Lack of coordinates should raise exception
@@ -46,7 +48,7 @@ int main()
 {
 try {
     testCompletePdbLineShouldBeOK();
-    testCoordinatesButNoOccupancyShouldBeOK();
+    testCoordinatesButNoOccupancyShouldRaiseException();
     testMissingZCoordinateShouldRaiseException();
 
     cout << "PASSED" << endl;
