@@ -1069,12 +1069,17 @@ protected:
     void initialize( const Sequence& seq, const BondMobility::Mobility mobility , bool addEndCaps = true) 
     {
         Biotype::initializePopularBiotypes();
-        
+
+	int resi = 0;
         // TODO - provide alternatives for end caps
         String previousResidueName = "acetyl0";
-        if (addEndCaps) appendResidue(previousResidueName, AcetylResidue());
+        if (addEndCaps) {
+                auto residue = AcetylResidue();
+                residue.setPdbResidueNumber(resi);
+                appendResidue(previousResidueName, residue);
+        }
 
-        for (int resi = 0; resi < (int)seq.size(); ++resi)
+        for (; resi < (int)seq.size(); ++resi)
         {
             AminoAcidResidue residue = AminoAcidResidue::create(seq[resi]);
             residue.setPdbResidueNumber(resi + 1);
@@ -1108,7 +1113,9 @@ protected:
         // Create C-terminal end cap, if we are producing end caps
         if (addEndCaps) {
             String cCapName = String("nme") + String((int)seq.size());
-            appendResidue(cCapName, NMethylAmideResidue());
+            auto residue = NMethylAmideResidue();
+            residue.setPdbResidueNumber(resi + 1);
+            appendResidue(cCapName, residue);
             // Rigidify end cap's omega angle (regardless of setting above).
             String omegaAngleName = String("omega") + String(cCapName);
             defineDihedralAngle(

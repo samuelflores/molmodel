@@ -105,7 +105,7 @@ void testConstructRna() {
 
 int main() {
 try
-  { 
+  {
       testConstructArgon();
       testConstructMethane();
       testConstructEthane();
