@@ -126,7 +126,8 @@ int main() {
         testFitWonkyNucleotideChirality();
         cout << "PASSED" << endl;
         return 0;
-    } catch (exception exc) {
+    } catch (const exception &exc) {
+	cout << exc.what() << endl;
         cout << "FAILED" << endl;
         return 1;
     }
