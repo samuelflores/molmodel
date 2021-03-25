@@ -118,6 +118,7 @@ void testMatchDefaultBreaksPlanarity() {
 
     // 1) First reproduce undesired behavior
     RNA mol1("A");
+    mol1.setPdbChainId("A");
     Compound::AtomTargetLocations atomTargets = mol1.createAtomTargets(pdbStructure); 
     double myMaxObservedSinePlaneDeviation;
     mol1.matchDefaultAtomChirality(atomTargets, myMaxObservedSinePlaneDeviation);
@@ -138,6 +139,7 @@ void testMatchDefaultBreaksPlanarity() {
     // 2) Repair with extra parameter on matchDefaultAtomChirality
 
     RNA mol2("A");
+    mol2.setPdbChainId("A");
     atomTargets = mol2.createAtomTargets(pdbStructure); 
 
     mol2.matchDefaultAtomChirality(atomTargets,myMaxObservedSinePlaneDeviation, 0.20);
