@@ -2198,7 +2198,7 @@ Compound& Compound::fitDefaultConfiguration(
     matchingSystem.adoptCompound(compoundCopy);
     matchingSystem.modelCompounds();
     matchingSystem.realizeTopology();
-    State& state = matchingSystem.updDefaultState();
+    State state = matchingSystem.getDefaultState();
     matchingSystem.realize(state, Stage::Position);
     // cout << "Number of atom matches(2) = " << optimizationAtomTargets.size() << endl;
     std::map<MobilizedBodyIndex, std::vector<Vec3> > stations;
@@ -3010,7 +3010,7 @@ void Protein::loadFromPdbChain(const PdbChain& pdbChain, SimTK::Real targetRms)
     matchingSystem.adoptCompound(proteinCopy);
     matchingSystem.modelCompounds();
     matchingSystem.realizeTopology();
-    State& state = matchingSystem.updDefaultState();
+    State state = matchingSystem.getDefaultState();
     matchingSystem.realize(state, Stage::Position);
     Compound::AtomTargetLocations optimizationAtomTargets = proteinCopy.createAtomTargets(pdbChain,false);
     std::map<MobilizedBodyIndex, std::vector<Vec3> > stations;
