@@ -82,6 +82,8 @@ int main()
     Vec3 errVec = finalLocH3 - initialLocH3;
     Real error = std::sqrt( dot(errVec, errVec) );
 
+    myRNA.writeDefaultPdb(std::cout, myRNA.getTopLevelTransform());
+
     if (error < 0.01) 
     {
         cout << "PASSED" << endl;
