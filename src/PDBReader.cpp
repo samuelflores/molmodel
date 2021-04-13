@@ -146,7 +146,7 @@ public:
                     rResidue.id = resNumGemmi;
                     rResidue.type = Repr::getResidueType(trim_both(residue.name));
                     rResidue.prop = Repr::getResidueProp(rResidue.type);
-                    //std::cout<<__FILE__<<":"<<__LINE__<<"res num = "<<rResidue.id<<" res type = "<<rResidue.type<< "residue name untrimmed = "<<residue.name<<"trimmmed residue name = >"<<trim_both(residue.name) <<"<"<<std::endl;
+                    std::cout<<__FILE__<<":"<<__LINE__<<"res num = "<<rResidue.id<<" res type = "<<rResidue.type<< "residue name untrimmed = "<<residue.name<<"trimmmed residue name = >"<<trim_both(residue.name) <<"<"<<std::endl;
                     rResidue.insertion_code = ICode;
 
                     //============================ For each atom

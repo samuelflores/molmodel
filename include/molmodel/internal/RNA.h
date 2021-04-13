@@ -645,7 +645,7 @@ private:
     void initializeFromPdbChain(
             const PdbChain& pdbChain, 
             Compound::MatchStratagem matchStratagem = 
-                    Compound::Match_TopologyOnly)
+                    Compound::Match_TopologyOnly)  // Match_TopologyOnl means: Don't match atom positions, only topology. Alternatives are Match_Idealized, Match_Exact
     {
         setPdbChainId( pdbChain.getChainId() );
         

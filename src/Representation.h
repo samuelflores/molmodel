@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
+#include <iostream>
 namespace Repr {
 
 enum class AtomType : uint8_t {
@@ -202,6 +202,8 @@ inline
 bool residueIsRNA(const ResidueType type) {
     const auto n = std::underlying_type_t<ResidueType>(type);
     // For reference, look at the list of residue types in Representation.cpp
+    std::cout<<__FILE__<<__LINE__<<"n = "<<unsigned(n)<<std::endl;
+    std::cout<<__FILE__<<__LINE__<<" std::underlying_type_t<ResidueType>(ResidueType::ADENOSINE) = "<<unsigned(std::underlying_type_t<ResidueType>(ResidueType::ADENOSINE))<<std::endl;
     return std::underlying_type_t<ResidueType>(ResidueType::ADENOSINE) <= n &&
            n <= std::underlying_type_t<ResidueType>(ResidueType::URIDINE);
 }

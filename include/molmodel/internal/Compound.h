@@ -739,6 +739,7 @@ public:
             Real minimizerTolerance = 150.0
             ) 
     {
+        std::cout<<__FILE__<<":"<<__LINE__<<" check ZZZ  "<<std::endl;		
         double maxObservedSinePlaneDeviation;
         if (matchStratagem == Compound::Match_TopologyOnly)
             // do nothing, topology is already there
@@ -746,10 +747,12 @@ public:
         
         else if (matchStratagem == Compound::Match_Exact) 
         {
+            std::cout<<__FILE__<<":"<<__LINE__<<" check ZZZ  "<<std::endl;		
             // low tolerance breaks planarity just about everywhere
             matchDefaultAtomChirality(atomTargets,maxObservedSinePlaneDeviation, 0.01, false);
 
-            matchDefaultBondLengths(atomTargets);
+	    // The following two lines appear in the case of Match_Exact but not Match_Idealized:
+            matchDefaultBondLengths(atomTargets); 
             matchDefaultBondAngles(atomTargets);
             
             // Set dihedral angles even when bonded atoms are planar
@@ -758,12 +761,15 @@ public:
             matchDefaultTopLevelTransform(atomTargets);
             
             // No further optimization should be needed
+	    // Here Match_Idealized would call fitDefaultConfiguration
+            std::cout<<__FILE__<<":"<<__LINE__<<" check ZZZ  "<<std::endl;		
             
             return *this;
         }
         
-        else if (matchStratagem == Compound::Match_Idealized) 
+        else if (matchStratagem == Compound::Match_Idealized)  // Interestingly, MMB allows both matchIdealized and matchExact to be true simultaneously. that is probably relevant to recent segfault issues.
         {
+            std::cout<<__FILE__<<":"<<__LINE__<<" check ZZZ  "<<std::endl;		
             // Break planarity constraint only when input atoms are 90 degrees out of plane
             matchDefaultAtomChirality(atomTargets, maxObservedSinePlaneDeviation,  90*Deg2Rad, true);
             
@@ -775,7 +781,9 @@ public:
             // At this point the structure match is approximate and may have
             // many bad contacts.  Optimization is needed
             // TODO - ObservedPointFitter on internal coordinates
-            fitDefaultConfiguration(atomTargets, 0.005,useObservedPointFitter,minimizerTolerance);
+            std::cout<<__FILE__<<":"<<__LINE__<<"  "<<std::endl;		
+            fitDefaultConfiguration(atomTargets, 0.005,useObservedPointFitter,minimizerTolerance); // this is the one line that appears in Match_Idealized but not Match_Exact. 
+            std::cout<<__FILE__<<":"<<__LINE__<<"  "<<std::endl;		
             
             return *this;
         }

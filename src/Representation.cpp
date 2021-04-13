@@ -190,8 +190,13 @@ ResidueType getResidueType(const std::string &name) {
     const auto len = name.length();
 
     if (len == 1) {
+	// SCF 2021-apr-13 added:    
         for (const auto &it : RESIDUE_SPECIFIERS) {
-            if (lcaseName[0] == it.shortName)
+            if (std::string(name).compare( std::string(1,it.shortName)) ==0)      // Try with the given case first. RNA is conventionally uppercase AUGC.              
+                return it.type;
+        } // end SCF
+        for (const auto &it : RESIDUE_SPECIFIERS) {
+            if (lcaseName[0] == it.shortName)       // Doing only this, would often return an amino acid when really we have an RNA
                 return it.type;
         }
     } else if (len <= 3) {
