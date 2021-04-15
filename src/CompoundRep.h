@@ -46,6 +46,7 @@
 #include <map>
 #include <string>
 #include <set>
+#include <iostream>
 using std::string;
 
 namespace SimTK {
@@ -1509,8 +1510,11 @@ public:
 
     CompoundRep& matchDefaultTopLevelTransform(const Compound::AtomTargetLocations& atomTargets) 
     {
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__  << " about to get adjustment "<<std::endl;
         Transform adjustment = getTransformAndResidual(atomTargets).transform;
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__  << " adjustment ="<<adjustment <<std::endl;
         setTopLevelTransform( adjustment * getTopLevelTransform() );
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__  << "  done getting adjustment "<<std::endl;
 
         return *this;
     }
@@ -1522,10 +1526,13 @@ public:
         // Try for more efficient calculation of atom starting locations
         std::vector<Transform> atomSourceFrames(getNumAtoms());
         invalidateAtomFrameCache(atomSourceFrames, getNumAtoms());
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__  << " "<<std::endl;
         calcDefaultAtomFramesInCompoundFrame(atomSourceFrames);
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__  << " "<<std::endl;
         Real weight = 1.0;
         
         Compound::AtomTargetLocations::const_iterator tI;
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__  << " "<<std::endl;
         for (tI = atomTargets.begin(); tI != atomTargets.end(); ++tI) 
         {
             Compound::AtomIndex atomIndex = tI->first;
@@ -1537,10 +1544,12 @@ public:
             // faster
             const Vec3 source = 
                     getTopLevelTransform() * atomSourceFrames[atomIndex].T();
+            std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__  << " "<<std::endl;
 
             vecPairs.push_back(Vec3Pair(source, target, weight));
         }
 
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__  << " "<<std::endl;
         return Kabsch78::superpose(vecPairs);
     }
 

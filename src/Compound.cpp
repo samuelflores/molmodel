@@ -1442,22 +1442,35 @@ const Transform& CompoundRep::calcDefaultAtomFrameInCompoundFrame(Compound::Atom
 {
     // Is it already cached?
     Transform& candidate = atomFrameCache[atomId];
-    if (! isNaN(candidate.p()[0])) 
-        return candidate;
+    std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" cached Transform & candidate =  "<<candidate<<std::endl;
+    if (! isNaN(candidate.p()[0])) {
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" candidate.p() = "<<candidate.p()<<std::endl;
+        return candidate;}
+    else {
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"  "<<std::endl;
+    }
 
     const AtomInfo& atomInfo = getAtomInfo(atomId);
+    std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"  "<<std::endl;
     const CompoundAtom& atom = atomInfo.getAtom();
+    std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"  "<<std::endl;
 
     Transform parent_X_atom; // atom frame in this compound's frame
     if (atomInfo.isBaseAtom()) {
         parent_X_atom = atom.getDefaultFrameInCompoundFrame();
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"  "<<std::endl;
     }
     else {
         // Delegate frame to inboard bond center
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"  "<<std::endl;
         Transform inboard_X_atom = atom.calcDefaultFrameInInboardCenterFrame();
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"  "<<std::endl;
         const BondCenterInfo& center = getBondCenterInfo(atomId, atom.getInboardBondCenterIndex());
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"  "<<std::endl;
         Transform parent_X_inboard = calcDefaultBondCenterFrameInCompoundFrame(center, atomFrameCache);
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"  "<<std::endl;
         parent_X_atom = parent_X_inboard * inboard_X_atom;
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<"  "<<std::endl;
     }
 
     candidate = parent_X_atom;
@@ -1494,20 +1507,24 @@ Transform CompoundRep::calcDefaultAtomFrameInCompoundFrame(Compound::AtomIndex a
 void CompoundRep::calcDefaultAtomFramesInCompoundFrame(std::vector<Transform>& atomFrameCache) const 
 {
     std::vector<AtomInfo>::const_iterator aI;
+    std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" calculating default atom frame for atom "<<std::endl;
     for (aI = allAtoms.begin(); aI != allAtoms.end(); ++aI) {
         Transform& transform = atomFrameCache[aI->getIndex()];
+        std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" calculating default atom frame for atom "<<std::endl;
         if (isNaN(transform.p()[0])) {
-            //std::cout<<__FILE__<<":"<<__LINE__<<" calculating default atom frame for atom ";
+            std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" calculating default atom frame for atom "<<std::endl;
             AtomInfo myAtomInfo = *aI;
             std::set <Compound::AtomName>   tempSet    =myAtomInfo.getNames();
-            for ( std::set <Compound::AtomName>::iterator tempSetIterator = tempSet.begin(); tempSetIterator != tempSet.end(); tempSetIterator++){
+            std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" calculating default atom frame for atom "<<std::endl;
+            //for ( std::set <Compound::AtomName>::iterator tempSetIterator = tempSet.begin(); tempSetIterator != tempSet.end(); tempSetIterator++){
                 //std::cout<<(*tempSetIterator)<<", ";
-            }
+            //}
             //std::cout<<std::endl;
             //String tempString = String(aI->getNames()); //<<std::endl;
             transform = calcDefaultAtomFrameInCompoundFrame(aI->getIndex(), atomFrameCache);
+            std::cout<<__FILE__<<":"<<__FUNCTION__<<":"<<__LINE__<<" calculating default atom frame for atom "<<std::endl;
             if (isNaN(transform.p()[0])) {
-                //std::cout<<__FILE__<<":"<<__LINE__<<" Failed to compute atom frame in compound frame!"<<std::endl;
+                std::cout<<__FILE__<<":"<<__LINE__<<" Failed to compute atom frame in compound frame!"<<std::endl;
             }
         }
     }
