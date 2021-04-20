@@ -2778,7 +2778,7 @@ public:
         }
         // In case of residue number conflicts, find a new number
         if (pdbChain.hasResidue(PdbResidueId(residueNumber,insertionCode))) {
-            std::cout<<__FILE__<<":"<<__LINE__<<" The residue ID passed on by the compound, "<< residueNumber<<insertionCode<<" conflicts with an existing residue ID in pdbChain.  In the past we would invent a new residueNumber, but this probably indicates a deeper underlying problem. "    <<std::endl; exit(1);
+            //std::cout<<__FILE__<<":"<<__LINE__<<" The residue ID passed on by the compound, "<< residueNumber<<insertionCode<<" conflicts with an existing residue ID in pdbChain.  In the past we would invent a new residueNumber, but this probably indicates a deeper underlying problem. "    <<std::endl; exit(1);
             ++residueNumber;
             insertionCode = ' '; // make sure insertion code goes back to the default of ' '.
         }

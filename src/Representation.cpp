@@ -184,22 +184,17 @@ const ResidueSpecifier & getResidueSpecifier(const ResidueType type) {
 ResidueType getResidueType(const std::string &name) {
     CHK_IDENTIFIER(name);
 
-    std::string lcaseName{};
-    std::transform(name.cbegin(), name.cend(), std::back_inserter(lcaseName), ::tolower);
-
     const auto len = name.length();
 
     if (len == 1) {
-	// SCF 2021-apr-13 added:    
         for (const auto &it : RESIDUE_SPECIFIERS) {
-            if (std::string(name).compare( std::string(1,it.shortName)) ==0)      // Try with the given case first. RNA is conventionally uppercase AUGC.              
-                return it.type;
-        } // end SCF
-        for (const auto &it : RESIDUE_SPECIFIERS) {
-            if (lcaseName[0] == it.shortName)       // Doing only this, would often return an amino acid when really we have an RNA
+            if (name[0] == it.shortName)
                 return it.type;
         }
     } else if (len <= 3) {
+        std::string lcaseName{};
+        std::transform(name.cbegin(), name.cend(), std::back_inserter(lcaseName), ::tolower);
+
         for (const auto &it : RESIDUE_SPECIFIERS) {
             if (lcaseName.compare(it.abbrevName) == 0)
                 return it.type;
@@ -215,6 +210,9 @@ ResidueType getResidueType(const std::string &name) {
                 return it.type;
         }
     } else {
+        std::string lcaseName{};
+        std::transform(name.cbegin(), name.cend(), std::back_inserter(lcaseName), ::tolower);
+
         for (const auto &it : RESIDUE_SPECIFIERS) {
             if (lcaseName.compare(it.longName) == 0)
                 return it.type;
