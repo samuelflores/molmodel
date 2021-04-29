@@ -19,7 +19,7 @@ IF(BUILD_UNVERSIONED_LIBRARIES)
 			PRIVATE ws2_32)
     ELSE()
         TARGET_LINK_LIBRARIES(${STATIC_TARGET} 
-            PRIVATE ${Simbody_LIBRARIES}
+            PRIVATE ${Simbody_STATIC_LIBRARIES}
             PRIVATE z)
     ENDIF()
 
