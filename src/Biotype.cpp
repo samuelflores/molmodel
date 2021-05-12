@@ -6975,163 +6975,163 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Final
             );
 
-    if (! Biotype::exists("Adenosine", "O5*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "O5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1001)
             , Element::Oxygen()
             , 2
             , "Adenosine"
-            , "O5*"
+            , "O5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "C5*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "C5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1002)
             , Element::Carbon()
             , 4
             , "Adenosine"
-            , "C5*"
+            , "C5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "H5*1", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "H5'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1003)
             , Element::Hydrogen()
             , 1
             , "Adenosine"
-            , "H5*1"
+            , "H5'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "H5*2", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "H5'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1004)
             , Element::Hydrogen()
             , 1
             , "Adenosine"
-            , "H5*2"
+            , "H5'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "C4*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "C4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1005)
             , Element::Carbon()
             , 4
             , "Adenosine"
-            , "C4*"
+            , "C4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "H4*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "H4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1006)
             , Element::Hydrogen()
             , 1
             , "Adenosine"
-            , "H4*"
+            , "H4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "O4*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "O4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1007)
             , Element::Oxygen()
             , 2
             , "Adenosine"
-            , "O4*"
+            , "O4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "C1*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "C1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1008)
             , Element::Carbon()
             , 4
             , "Adenosine"
-            , "C1*"
+            , "C1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "H1*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "H1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1009)
             , Element::Hydrogen()
             , 1
             , "Adenosine"
-            , "H1*"
+            , "H1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "C3*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "C3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1010)
             , Element::Carbon()
             , 4
             , "Adenosine"
-            , "C3*"
+            , "C3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "H3*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "H3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1011)
             , Element::Hydrogen()
             , 1
             , "Adenosine"
-            , "H3*"
+            , "H3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "C2*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "C2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1012)
             , Element::Carbon()
             , 4
             , "Adenosine"
-            , "C2*"
+            , "C2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "H2*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "H2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1013)
             , Element::Hydrogen()
             , 1
             , "Adenosine"
-            , "H2*"
+            , "H2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "O2*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "O2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1014)
             , Element::Oxygen()
             , 2
             , "Adenosine"
-            , "O2*"
+            , "O2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "HO*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "HO'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1015)
             , Element::Hydrogen()
             , 1
             , "Adenosine"
-            , "HO*"
+            , "HO'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Adenosine", "O3*", Ordinality::Any) )
+    if (! Biotype::exists("Adenosine", "O3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1016)
             , Element::Oxygen()
             , 2
             , "Adenosine"
-            , "O3*"
+            , "O3'"
             , Ordinality::Any
             );
 
@@ -7275,163 +7275,163 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "O5*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "O5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1031)
             , Element::Oxygen()
             , 2
             , "Guanosine"
-            , "O5*"
+            , "O5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "C5*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "C5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1032)
             , Element::Carbon()
             , 4
             , "Guanosine"
-            , "C5*"
+            , "C5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "H5*1", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "H5'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1033)
             , Element::Hydrogen()
             , 1
             , "Guanosine"
-            , "H5*1"
+            , "H5'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "H5*2", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "H5'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1034)
             , Element::Hydrogen()
             , 1
             , "Guanosine"
-            , "H5*2"
+            , "H5'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "C4*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "C4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1035)
             , Element::Carbon()
             , 4
             , "Guanosine"
-            , "C4*"
+            , "C4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "H4*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "H4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1036)
             , Element::Hydrogen()
             , 1
             , "Guanosine"
-            , "H4*"
+            , "H4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "O4*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "O4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1037)
             , Element::Oxygen()
             , 2
             , "Guanosine"
-            , "O4*"
+            , "O4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "C1*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "C1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1038)
             , Element::Carbon()
             , 4
             , "Guanosine"
-            , "C1*"
+            , "C1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "H1*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "H1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1039)
             , Element::Hydrogen()
             , 1
             , "Guanosine"
-            , "H1*"
+            , "H1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "C3*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "C3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1040)
             , Element::Carbon()
             , 4
             , "Guanosine"
-            , "C3*"
+            , "C3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "H3*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "H3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1041)
             , Element::Hydrogen()
             , 1
             , "Guanosine"
-            , "H3*"
+            , "H3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "C2*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "C2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1042)
             , Element::Carbon()
             , 4
             , "Guanosine"
-            , "C2*"
+            , "C2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "H2*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "H2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1043)
             , Element::Hydrogen()
             , 1
             , "Guanosine"
-            , "H2*"
+            , "H2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "O2*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "O2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1044)
             , Element::Oxygen()
             , 2
             , "Guanosine"
-            , "O2*"
+            , "O2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "HO*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "HO'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1045)
             , Element::Hydrogen()
             , 1
             , "Guanosine"
-            , "HO*"
+            , "HO'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Guanosine", "O3*", Ordinality::Any) )
+    if (! Biotype::exists("Guanosine", "O3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1046)
             , Element::Oxygen()
             , 2
             , "Guanosine"
-            , "O3*"
+            , "O3'"
             , Ordinality::Any
             );
 
@@ -7585,163 +7585,163 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "O5*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "O5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1062)
             , Element::Oxygen()
             , 2
             , "Cytidine"
-            , "O5*"
+            , "O5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "C5*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "C5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1063)
             , Element::Carbon()
             , 4
             , "Cytidine"
-            , "C5*"
+            , "C5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "H5*1", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "H5'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1064)
             , Element::Hydrogen()
             , 1
             , "Cytidine"
-            , "H5*1"
+            , "H5'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "H5*2", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "H5'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1065)
             , Element::Hydrogen()
             , 1
             , "Cytidine"
-            , "H5*2"
+            , "H5'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "C4*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "C4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1066)
             , Element::Carbon()
             , 4
             , "Cytidine"
-            , "C4*"
+            , "C4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "H4*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "H4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1067)
             , Element::Hydrogen()
             , 1
             , "Cytidine"
-            , "H4*"
+            , "H4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "O4*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "O4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1068)
             , Element::Oxygen()
             , 2
             , "Cytidine"
-            , "O4*"
+            , "O4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "C1*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "C1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1069)
             , Element::Carbon()
             , 4
             , "Cytidine"
-            , "C1*"
+            , "C1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "H1*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "H1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1070)
             , Element::Hydrogen()
             , 1
             , "Cytidine"
-            , "H1*"
+            , "H1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "C3*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "C3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1071)
             , Element::Carbon()
             , 4
             , "Cytidine"
-            , "C3*"
+            , "C3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "H3*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "H3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1072)
             , Element::Hydrogen()
             , 1
             , "Cytidine"
-            , "H3*"
+            , "H3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "C2*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "C2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1073)
             , Element::Carbon()
             , 4
             , "Cytidine"
-            , "C2*"
+            , "C2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "H2*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "H2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1074)
             , Element::Hydrogen()
             , 1
             , "Cytidine"
-            , "H2*"
+            , "H2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "O2*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "O2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1075)
             , Element::Oxygen()
             , 2
             , "Cytidine"
-            , "O2*"
+            , "O2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "HO*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "HO'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1076)
             , Element::Hydrogen()
             , 1
             , "Cytidine"
-            , "HO*"
+            , "HO'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Cytidine", "O3*", Ordinality::Any) )
+    if (! Biotype::exists("Cytidine", "O3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1077)
             , Element::Oxygen()
             , 2
             , "Cytidine"
-            , "O3*"
+            , "O3'"
             , Ordinality::Any
             );
 
@@ -7865,163 +7865,163 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "O5*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "O5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1090)
             , Element::Oxygen()
             , 2
             , "Uridine"
-            , "O5*"
+            , "O5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "C5*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "C5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1091)
             , Element::Carbon()
             , 4
             , "Uridine"
-            , "C5*"
+            , "C5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "H5*1", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "H5'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1092)
             , Element::Hydrogen()
             , 1
             , "Uridine"
-            , "H5*1"
+            , "H5'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "H5*2", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "H5'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1093)
             , Element::Hydrogen()
             , 1
             , "Uridine"
-            , "H5*2"
+            , "H5'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "C4*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "C4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1094)
             , Element::Carbon()
             , 4
             , "Uridine"
-            , "C4*"
+            , "C4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "H4*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "H4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1095)
             , Element::Hydrogen()
             , 1
             , "Uridine"
-            , "H4*"
+            , "H4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "O4*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "O4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1096)
             , Element::Oxygen()
             , 2
             , "Uridine"
-            , "O4*"
+            , "O4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "C1*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "C1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1097)
             , Element::Carbon()
             , 4
             , "Uridine"
-            , "C1*"
+            , "C1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "H1*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "H1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1098)
             , Element::Hydrogen()
             , 1
             , "Uridine"
-            , "H1*"
+            , "H1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "C3*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "C3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1099)
             , Element::Carbon()
             , 4
             , "Uridine"
-            , "C3*"
+            , "C3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "H3*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "H3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1100)
             , Element::Hydrogen()
             , 1
             , "Uridine"
-            , "H3*"
+            , "H3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "C2*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "C2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1101)
             , Element::Carbon()
             , 4
             , "Uridine"
-            , "C2*"
+            , "C2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "H2*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "H2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1102)
             , Element::Hydrogen()
             , 1
             , "Uridine"
-            , "H2*"
+            , "H2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "O2*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "O2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1103)
             , Element::Oxygen()
             , 2
             , "Uridine"
-            , "O2*"
+            , "O2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "HO*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "HO'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1104)
             , Element::Hydrogen()
             , 1
             , "Uridine"
-            , "HO*"
+            , "HO'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Uridine", "O3*", Ordinality::Any) )
+    if (! Biotype::exists("Uridine", "O3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1105)
             , Element::Oxygen()
             , 2
             , "Uridine"
-            , "O3*"
+            , "O3'"
             , Ordinality::Any
             );
 
@@ -8135,153 +8135,153 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "O5*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "O5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1117)
             , Element::Oxygen()
             , 2
             , "Deoxyadenosine"
-            , "O5*"
+            , "O5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "C5*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "C5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1118)
             , Element::Carbon()
             , 4
             , "Deoxyadenosine"
-            , "C5*"
+            , "C5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "H5*1", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "H5'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1119)
             , Element::Hydrogen()
             , 1
             , "Deoxyadenosine"
-            , "H5*1"
+            , "H5'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "H5*2", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "H5'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1120)
             , Element::Hydrogen()
             , 1
             , "Deoxyadenosine"
-            , "H5*2"
+            , "H5'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "C4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "C4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1121)
             , Element::Carbon()
             , 4
             , "Deoxyadenosine"
-            , "C4*"
+            , "C4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "H4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "H4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1122)
             , Element::Hydrogen()
             , 1
             , "Deoxyadenosine"
-            , "H4*"
+            , "H4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "O4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "O4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1123)
             , Element::Oxygen()
             , 2
             , "Deoxyadenosine"
-            , "O4*"
+            , "O4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "C1*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "C1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1124)
             , Element::Carbon()
             , 4
             , "Deoxyadenosine"
-            , "C1*"
+            , "C1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "H1*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "H1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1125)
             , Element::Hydrogen()
             , 1
             , "Deoxyadenosine"
-            , "H1*"
+            , "H1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "C3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "C3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1126)
             , Element::Carbon()
             , 4
             , "Deoxyadenosine"
-            , "C3*"
+            , "C3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "H3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "H3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1127)
             , Element::Hydrogen()
             , 1
             , "Deoxyadenosine"
-            , "H3*"
+            , "H3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "C2*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "C2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1128)
             , Element::Carbon()
             , 4
             , "Deoxyadenosine"
-            , "C2*"
+            , "C2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "H2*1", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "H2'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1129)
             , Element::Hydrogen()
             , 1
             , "Deoxyadenosine"
-            , "H2*1"
+            , "H2'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "H2*2", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "H2'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1130)
             , Element::Hydrogen()
             , 1
             , "Deoxyadenosine"
-            , "H2*2"
+            , "H2'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyadenosine", "O3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyadenosine", "O3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1131)
             , Element::Oxygen()
             , 2
             , "Deoxyadenosine"
-            , "O3*"
+            , "O3'"
             , Ordinality::Any
             );
 
@@ -8425,153 +8425,153 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "O5*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "O5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1146)
             , Element::Oxygen()
             , 2
             , "Deoxyguanosine"
-            , "O5*"
+            , "O5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "C5*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "C5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1147)
             , Element::Carbon()
             , 4
             , "Deoxyguanosine"
-            , "C5*"
+            , "C5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "H5*1", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "H5'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1148)
             , Element::Hydrogen()
             , 1
             , "Deoxyguanosine"
-            , "H5*1"
+            , "H5'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "H5*2", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "H5'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1149)
             , Element::Hydrogen()
             , 1
             , "Deoxyguanosine"
-            , "H5*2"
+            , "H5'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "C4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "C4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1150)
             , Element::Carbon()
             , 4
             , "Deoxyguanosine"
-            , "C4*"
+            , "C4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "H4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "H4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1151)
             , Element::Hydrogen()
             , 1
             , "Deoxyguanosine"
-            , "H4*"
+            , "H4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "O4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "O4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1152)
             , Element::Oxygen()
             , 2
             , "Deoxyguanosine"
-            , "O4*"
+            , "O4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "C1*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "C1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1153)
             , Element::Carbon()
             , 4
             , "Deoxyguanosine"
-            , "C1*"
+            , "C1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "H1*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "H1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1154)
             , Element::Hydrogen()
             , 1
             , "Deoxyguanosine"
-            , "H1*"
+            , "H1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "C3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "C3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1155)
             , Element::Carbon()
             , 4
             , "Deoxyguanosine"
-            , "C3*"
+            , "C3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "H3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "H3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1156)
             , Element::Hydrogen()
             , 1
             , "Deoxyguanosine"
-            , "H3*"
+            , "H3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "C2*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "C2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1157)
             , Element::Carbon()
             , 4
             , "Deoxyguanosine"
-            , "C2*"
+            , "C2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "H2*1", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "H2'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1158)
             , Element::Hydrogen()
             , 1
             , "Deoxyguanosine"
-            , "H2*1"
+            , "H2'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "H2*2", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "H2'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1159)
             , Element::Hydrogen()
             , 1
             , "Deoxyguanosine"
-            , "H2*2"
+            , "H2'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxyguanosine", "O3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxyguanosine", "O3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1160)
             , Element::Oxygen()
             , 2
             , "Deoxyguanosine"
-            , "O3*"
+            , "O3'"
             , Ordinality::Any
             );
 
@@ -8725,153 +8725,153 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "O5*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "O5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1176)
             , Element::Oxygen()
             , 2
             , "Deoxycytidine"
-            , "O5*"
+            , "O5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "C5*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "C5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1177)
             , Element::Carbon()
             , 4
             , "Deoxycytidine"
-            , "C5*"
+            , "C5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "H5*1", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "H5'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1178)
             , Element::Hydrogen()
             , 1
             , "Deoxycytidine"
-            , "H5*1"
+            , "H5'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "H5*2", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "H5'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1179)
             , Element::Hydrogen()
             , 1
             , "Deoxycytidine"
-            , "H5*2"
+            , "H5'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "C4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "C4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1180)
             , Element::Carbon()
             , 4
             , "Deoxycytidine"
-            , "C4*"
+            , "C4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "H4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "H4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1181)
             , Element::Hydrogen()
             , 1
             , "Deoxycytidine"
-            , "H4*"
+            , "H4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "O4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "O4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1182)
             , Element::Oxygen()
             , 2
             , "Deoxycytidine"
-            , "O4*"
+            , "O4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "C1*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "C1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1183)
             , Element::Carbon()
             , 4
             , "Deoxycytidine"
-            , "C1*"
+            , "C1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "H1*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "H1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1184)
             , Element::Hydrogen()
             , 1
             , "Deoxycytidine"
-            , "H1*"
+            , "H1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "C3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "C3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1185)
             , Element::Carbon()
             , 4
             , "Deoxycytidine"
-            , "C3*"
+            , "C3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "H3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "H3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1186)
             , Element::Hydrogen()
             , 1
             , "Deoxycytidine"
-            , "H3*"
+            , "H3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "C2*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "C2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1187)
             , Element::Carbon()
             , 4
             , "Deoxycytidine"
-            , "C2*"
+            , "C2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "H2*1", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "H2'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1188)
             , Element::Hydrogen()
             , 1
             , "Deoxycytidine"
-            , "H2*1"
+            , "H2'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "H2*2", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "H2'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1189)
             , Element::Hydrogen()
             , 1
             , "Deoxycytidine"
-            , "H2*2"
+            , "H2'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxycytidine", "O3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxycytidine", "O3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1190)
             , Element::Oxygen()
             , 2
             , "Deoxycytidine"
-            , "O3*"
+            , "O3'"
             , Ordinality::Any
             );
 
@@ -8995,153 +8995,153 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "O5*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "O5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1203)
             , Element::Oxygen()
             , 2
             , "Deoxythymidine"
-            , "O5*"
+            , "O5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "C5*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "C5'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1204)
             , Element::Carbon()
             , 4
             , "Deoxythymidine"
-            , "C5*"
+            , "C5'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "H5*1", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "H5'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1205)
             , Element::Hydrogen()
             , 1
             , "Deoxythymidine"
-            , "H5*1"
+            , "H5'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "H5*2", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "H5'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1206)
             , Element::Hydrogen()
             , 1
             , "Deoxythymidine"
-            , "H5*2"
+            , "H5'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "C4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "C4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1207)
             , Element::Carbon()
             , 4
             , "Deoxythymidine"
-            , "C4*"
+            , "C4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "H4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "H4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1208)
             , Element::Hydrogen()
             , 1
             , "Deoxythymidine"
-            , "H4*"
+            , "H4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "O4*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "O4'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1209)
             , Element::Oxygen()
             , 2
             , "Deoxythymidine"
-            , "O4*"
+            , "O4'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "C1*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "C1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1210)
             , Element::Carbon()
             , 4
             , "Deoxythymidine"
-            , "C1*"
+            , "C1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "H1*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "H1'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1211)
             , Element::Hydrogen()
             , 1
             , "Deoxythymidine"
-            , "H1*"
+            , "H1'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "C3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "C3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1212)
             , Element::Carbon()
             , 4
             , "Deoxythymidine"
-            , "C3*"
+            , "C3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "H3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "H3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1213)
             , Element::Hydrogen()
             , 1
             , "Deoxythymidine"
-            , "H3*"
+            , "H3'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "C2*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "C2'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1214)
             , Element::Carbon()
             , 4
             , "Deoxythymidine"
-            , "C2*"
+            , "C2'"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "H2*1", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "H2'1", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1215)
             , Element::Hydrogen()
             , 1
             , "Deoxythymidine"
-            , "H2*1"
+            , "H2'1"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "H2*2", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "H2'2", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1216)
             , Element::Hydrogen()
             , 1
             , "Deoxythymidine"
-            , "H2*2"
+            , "H2'2"
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Deoxythymidine", "O3*", Ordinality::Any) )
+    if (! Biotype::exists("Deoxythymidine", "O3'", Ordinality::Any) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1217)
             , Element::Oxygen()
             , 2
             , "Deoxythymidine"
-            , "O3*"
+            , "O3'"
             , Ordinality::Any
             );
 
@@ -9285,13 +9285,13 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Hydroxyl, RNA", "O5*", Ordinality::Initial) )
+    if (! Biotype::exists("Hydroxyl, RNA", "O5'", Ordinality::Initial) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1232)
             , Element::Oxygen()
             , 2
             , "Hydroxyl, RNA"
-            , "O5*"
+            , "O5'"
             , Ordinality::Initial
             );
 
@@ -9305,13 +9305,13 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Initial
             );
 
-    if (! Biotype::exists("Phosphate, RNA", "O5*", Ordinality::Initial) )
+    if (! Biotype::exists("Phosphate, RNA", "O5'", Ordinality::Initial) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1234)
             , Element::Oxygen()
             , 2
             , "Phosphate, RNA"
-            , "O5*"
+            , "O5'"
             , Ordinality::Initial
             );
 
@@ -9335,13 +9335,13 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Initial
             );
 
-    if (! Biotype::exists("Hydroxyl, RNA", "O3*", Ordinality::Final) )
+    if (! Biotype::exists("Hydroxyl, RNA", "O3'", Ordinality::Final) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1237)
             , Element::Oxygen()
             , 2
             , "Hydroxyl, RNA"
-            , "O3*"
+            , "O3'"
             , Ordinality::Final
             );
 
@@ -9355,13 +9355,13 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Final
             );
 
-    if (! Biotype::exists("Phosphate, RNA", "O3*", Ordinality::Final) )
+    if (! Biotype::exists("Phosphate, RNA", "O3'", Ordinality::Final) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1239)
             , Element::Oxygen()
             , 2
             , "Phosphate, RNA"
-            , "O3*"
+            , "O3'"
             , Ordinality::Final
             );
 
@@ -9405,13 +9405,13 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Any
             );
 
-    if (! Biotype::exists("Hydroxyl, DNA", "O5*", Ordinality::Initial) )
+    if (! Biotype::exists("Hydroxyl, DNA", "O5'", Ordinality::Initial) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1244)
             , Element::Oxygen()
             , 2
             , "Hydroxyl, DNA"
-            , "O5*"
+            , "O5'"
             , Ordinality::Initial
             );
 
@@ -9425,13 +9425,13 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Initial
             );
 
-    if (! Biotype::exists("Phosphate, DNA", "O5*", Ordinality::Initial) )
+    if (! Biotype::exists("Phosphate, DNA", "O5'", Ordinality::Initial) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1246)
             , Element::Oxygen()
             , 2
             , "Phosphate, DNA"
-            , "O5*"
+            , "O5'"
             , Ordinality::Initial
             );
 
@@ -9455,13 +9455,13 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Initial
             );
 
-    if (! Biotype::exists("Hydroxyl, DNA", "O3*", Ordinality::Final) )
+    if (! Biotype::exists("Hydroxyl, DNA", "O3'", Ordinality::Final) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1249)
             , Element::Oxygen()
             , 2
             , "Hydroxyl, DNA"
-            , "O3*"
+            , "O3'"
             , Ordinality::Final
             );
 
@@ -9475,13 +9475,13 @@ std::ostream& Biotype::generateSelfCode(std::ostream& os) const
             , Ordinality::Final
             );
 
-    if (! Biotype::exists("Phosphate, DNA", "O3*", Ordinality::Final) )
+    if (! Biotype::exists("Phosphate, DNA", "O3'", Ordinality::Final) )
         Biotype::defineTinkerBiotype(
             TinkerBiotypeIndex(1251)
             , Element::Oxygen()
             , 2
             , "Phosphate, DNA"
-            , "O3*"
+            , "O3'"
             , Ordinality::Final
             );
 
