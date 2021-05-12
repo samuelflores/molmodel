@@ -46,17 +46,17 @@ public:
         : RiboseCore(name, threeLetterCode, oneLetterCode)
     {
         // 2' hydroxyl group present in RNA but not in DNA
-        bondAtom(AliphaticHydrogen("H2*"), "C2*/bond3");
-        //#bondAtom(AliphaticHydrogen("H2*2"), "C2*/bond4");
+        bondAtom(AliphaticHydrogen("H2'"), "C2'/bond3");
+        //#bondAtom(AliphaticHydrogen("H2'2"), "C2'/bond4");
 
-        bondAtom(BivalentAtom("O2*", Element::Oxygen(), 108.50*Deg2Rad), "C2*/bond4", 0.1413, -60*Deg2Rad);
-        bondAtom(UnivalentAtom("2HO*", Element::Hydrogen()), "O2*/bond2", 0.0960);
+        bondAtom(BivalentAtom("O2'", Element::Oxygen(), 108.50*Deg2Rad), "C2'/bond4", 0.1413, -60*Deg2Rad);
+        bondAtom(UnivalentAtom("2HO'", Element::Hydrogen()), "O2'/bond2", 0.0960);
 
         // alternate atom name
-        nameAtom("H2'", "H2*");
+        nameAtom("H2'", "H2'");
 
-        nameAtom("O2'", "O2*");
-        nameAtom("HO2'", "2HO*");
+        nameAtom("O2'", "O2'");
+        nameAtom("HO2'", "2HO'");
     }
     
     // Create larger residue with phosphodiester prepended
@@ -73,7 +73,7 @@ public:
         po2.setPdbResidueNumber(residue.getPdbResidueNumber());
         po2.setPdbChainId(residue.getPdbChainId());
 
-        po2.defineDihedralAngle("alpha", "bondPrevious", "O5*/bond2");
+        po2.defineDihedralAngle("alpha", "bondPrevious", "O5'/bond2");
         po2.setDefaultDihedralAngle("alpha", 295.0*Deg2Rad); // A-RNA (Schneider et al 2004)
 
         return po2;
@@ -90,19 +90,19 @@ public:
     explicit RibonucleotideResidue(String name, String threeLetterCode = "Unk", char oneLetterCode = '?')
         : RibonucleosideResidue(name, threeLetterCode, oneLetterCode)
     {
-        defineDihedralAngle("beta", "O5*/bond1", "C5*/bond2");
+        defineDihedralAngle("beta", "O5'/bond1", "C5'/bond2");
         setDefaultDihedralAngle("beta", 173.0*Deg2Rad); //  A-RNA (Schneider et al 2004)
 
-        defineDihedralAngle("gamma", "C5*/bond1", "C4*/bond3");
+        defineDihedralAngle("gamma", "C5'/bond1", "C4'/bond3");
         setDefaultDihedralAngle("gamma", 54.0*Deg2Rad); //  A-RNA (Schneider et al 2004)
 
-        defineDihedralAngle("delta", "C4*/bond1", "C3*/bond2");
+        defineDihedralAngle("delta", "C4'/bond1", "C3'/bond2");
         setDefaultDihedralAngle("delta", 80.0*Deg2Rad); //  A-RNA (Schneider et al 2004)
 
-        defineDihedralAngle("epsilon", "C3*/bond1", "O3*/bond2");
+        defineDihedralAngle("epsilon", "C3'/bond1", "O3'/bond2");
         setDefaultDihedralAngle("epsilon", 210.0*Deg2Rad); //  A-RNA (Schneider et al 2004)
 
-        nameBondCenter("bondBase", "C1*/bond3");
+        nameBondCenter("bondBase", "C1'/bond3");
     }
 
 
@@ -268,7 +268,7 @@ public:
         bondCompound("base", AdenineBase(), "bondBase", 0.14750, 200*Deg2Rad, BondMobility::Torsion);
         inheritAtomNames("base");
 
-        defineDihedralAngle("chi", "O4*", "C1*", "N9", "C4");
+        defineDihedralAngle("chi", "O4'", "C1'", "N9", "C4");
         setDefaultDihedralAngle("chi", 199.0*Deg2Rad);
 
         addCompoundSynonym("Adenosine"); // for resolving biotypes
@@ -282,7 +282,7 @@ public:
         bondCompound("base", GuanineBase(), "bondBase", 0.14710, 200*Deg2Rad, BondMobility::Torsion);
         inheritAtomNames("base");
 
-        defineDihedralAngle("chi", "O4*", "C1*", "N9", "C4");
+        defineDihedralAngle("chi", "O4'", "C1'", "N9", "C4");
         setDefaultDihedralAngle("chi", 199.0*Deg2Rad);
 
         addCompoundSynonym("Guanosine"); // for resolving biotypes
@@ -296,7 +296,7 @@ public:
         bondCompound("base", CytosineBase(), "bondBase", 0.14710, 200*Deg2Rad, BondMobility::Torsion);
         inheritAtomNames("base");
 
-        defineDihedralAngle("chi", "O4*", "C1*", "N1", "C2");
+        defineDihedralAngle("chi", "O4'", "C1'", "N1", "C2");
         setDefaultDihedralAngle("chi", 199.0*Deg2Rad);
 
         addCompoundSynonym("Cytidine"); // for resolving biotypes
@@ -310,7 +310,7 @@ public:
         bondCompound("base", UracilBase(), "bondBase", 0.14710, 200*Deg2Rad, BondMobility::Torsion);
         inheritAtomNames("base");
 
-        defineDihedralAngle("chi", "O4*", "C1*", "N1", "C2");
+        defineDihedralAngle("chi", "O4'", "C1'", "N1", "C2");
         setDefaultDihedralAngle("chi", 199.0*Deg2Rad);
 
         addCompoundSynonym("Uridine"); // for resolving biotypes
@@ -435,7 +435,7 @@ public:
         bondCompound("base", TwoNMethylGuanidineGroup(), "bondBase", 0.14750, 200*Deg2Rad, BondMobility::Torsion);
         inheritAtomNames("base");
 
-        defineDihedralAngle("chi", "O4*", "C1*", "N9", "C4");
+        defineDihedralAngle("chi", "O4'", "C1'", "N9", "C4");
         setDefaultDihedralAngle("chi", 210*Deg2Rad);
 
         addCompoundSynonym("TwoNMethylGuanidineGroup"); // for resolving biotypes
@@ -513,8 +513,8 @@ public:
                                     0.0960);
             residue.inheritAtomNames("3PrimeHydroxyl");
                     // Oxygen biotype must be changed for the amber atom types to come out correctly
-            if ( (residue.hasAtom("O3*")) && ( Biotype::exists("Hydroxyl, RNA", "O3*", SimTK::Ordinality::Final)) )
-                    residue.setBiotypeIndex( "O3*", Biotype::get("Hydroxyl, RNA", "O3*", SimTK::Ordinality::Final).getIndex() );
+            if ( (residue.hasAtom("O3'")) && ( Biotype::exists("Hydroxyl, RNA", "O3'", SimTK::Ordinality::Final)) )
+                    residue.setBiotypeIndex( "O3'", Biotype::get("Hydroxyl, RNA", "O3'", SimTK::Ordinality::Final).getIndex() );
             }
 
  if (resi == 0) {
@@ -528,8 +528,8 @@ public:
                                             "bondPrevious", 
                                                     0.0960);
                             residue.inheritAtomNames("5PrimeHydroxyl");
-                            if ( (residue.hasAtom("O5*")) && ( Biotype::exists("Hydroxyl, RNA", "O5*", SimTK::Ordinality::Initial)) )
-                                    residue.setBiotypeIndex( "O5*", Biotype::get("Hydroxyl, RNA", "O5*", SimTK::Ordinality::Initial).getIndex() );
+                            if ( (residue.hasAtom("O5'")) && ( Biotype::exists("Hydroxyl, RNA", "O5'", SimTK::Ordinality::Initial)) )
+                                    residue.setBiotypeIndex( "O5'", Biotype::get("Hydroxyl, RNA", "O5'", SimTK::Ordinality::Initial).getIndex() );
                             }
 
                             else { // 5' phosphate
@@ -548,7 +548,7 @@ public:
 
                 // Define zeta angle
                 String zetaName = String("zeta") + String(resi - 1);
-                defineDihedralAngle(zetaName, previousResidueName + "/O3*/bond1", residueName + "/P/bond2");
+                defineDihedralAngle(zetaName, previousResidueName + "/O3'/bond1", residueName + "/P/bond2");
                 setDefaultDihedralAngle(zetaName, 287.0*Deg2Rad); // (Schneider et al 2004)
             }
 
@@ -573,7 +573,7 @@ public:
             // (updResidue(ResidueInfo::Index(q))).setCompoundBondMobility(mobility);
             if (q>startResidue) {
                 std::stringstream ss1;
-                ss1<<q-1<<"/O3*";
+                ss1<<q-1<<"/O3'";
                 std::stringstream ss2;
                 ss2<<q<<"/P";
                 setBondMobility(mobility ,ss1.str() ,ss2.str()  ); 
@@ -673,7 +673,7 @@ private:
 
                 // Define zeta angle
                 String zetaName = String("zeta") + String(residue.getPdbResidueNumber());
-                defineDihedralAngle(zetaName, previousResidueName + "/O3*/bond1", residueName + "/P/bond2");
+                defineDihedralAngle(zetaName, previousResidueName + "/O3'/bond1", residueName + "/P/bond2");
                 setDefaultDihedralAngle(zetaName, 287.0*Deg2Rad); // (Schneider et al 2004)
             } 
             

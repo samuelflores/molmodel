@@ -39,63 +39,63 @@
 namespace SimTK {
 
 // RiboseCore leaves 4 bond centers open:
-// 1) inboard center at O5* atom, for binding 5' phosphate
+// 1) inboard center at O5' atom, for binding 5' phosphate
 // 2) 
 class SimTK_MOLMODEL_EXPORT RiboseCore : public BiopolymerResidue {
 public:
     RiboseCore(const String& name, const String& tlc, char olc) 
         : BiopolymerResidue(name, tlc, olc)
     {
-        setBaseAtom(BivalentAtom("O5*", Element::Oxygen(), 120.90*Deg2Rad));
+        setBaseAtom(BivalentAtom("O5'", Element::Oxygen(), 120.90*Deg2Rad));
 
-        bondAtom(AliphaticCarbon("C5*"), "O5*/bond2", 0.1423, 180*Deg2Rad);
-        bondAtom(AliphaticHydrogen("H5*1"), "C5*/bond4");
-        bondAtom(AliphaticHydrogen("H5*2"), "C5*/bond3");
+        bondAtom(AliphaticCarbon("C5'"), "O5'/bond2", 0.1423, 180*Deg2Rad);
+        bondAtom(AliphaticHydrogen("H5'1"), "C5'/bond4");
+        bondAtom(AliphaticHydrogen("H5'2"), "C5'/bond3");
 
-        bondAtom(AliphaticCarbon("C4*"), "C5*/bond2", 0.1510); // length from (Gelbin et al 1996)
-        bondAtom(AliphaticHydrogen("H4*"), "C4*/bond4");
+        bondAtom(AliphaticCarbon("C4'"), "C5'/bond2", 0.1510); // length from (Gelbin et al 1996)
+        bondAtom(AliphaticHydrogen("H4'"), "C4'/bond4");
 
-        bondAtom(BivalentAtom("O4*", Element::Oxygen(), 112.0*Deg2Rad), "C4*/bond2", 0.1453);
+        bondAtom(BivalentAtom("O4'", Element::Oxygen(), 112.0*Deg2Rad), "C4'/bond2", 0.1453);
 
-        bondAtom(AliphaticCarbon("C3*"), "C4*/bond3", 0.1524);
-        bondAtom(AliphaticHydrogen("H3*"), "C3*/bond4");
+        bondAtom(AliphaticCarbon("C3'"), "C4'/bond3", 0.1524);
+        bondAtom(AliphaticHydrogen("H3'"), "C3'/bond4");
 
-        bondAtom(BivalentAtom("O3*", Element::Oxygen(), 119.7*Deg2Rad), "C3*/bond2", 0.1423);
+        bondAtom(BivalentAtom("O3'", Element::Oxygen(), 119.7*Deg2Rad), "C3'/bond2", 0.1423);
  
-        bondAtom(AliphaticCarbon("C2*"), "C3*/bond3", 0.1525);
-        //bondAtom(AliphaticHydrogen("H2*"), "C2*/bond3");
-        //bondAtom(AliphaticHydrogen("H2*2"), "C2*/bond4");
+        bondAtom(AliphaticCarbon("C2'"), "C3'/bond3", 0.1525);
+        //bondAtom(AliphaticHydrogen("H2'"), "C2'/bond3");
+        //bondAtom(AliphaticHydrogen("H2'2"), "C2'/bond4");
 
-        bondAtom(AliphaticCarbon("C1*"), "C2*/bond2", 0.1528);
-        bondAtom(AliphaticHydrogen("H1*"), "C1*/bond4");
+        bondAtom(AliphaticCarbon("C1'"), "C2'/bond2", 0.1528);
+        bondAtom(AliphaticHydrogen("H1'"), "C1'/bond4");
 
-        addRingClosingBond("C1*/bond2", "O4*/bond2", 0.1414);
+        addRingClosingBond("C1'/bond2", "O4'/bond2", 0.1414);
 
         // Ring strain reduces ring bond angles
-        setDefaultBondAngle(109.6*Deg2Rad, "C1*", "O4*", "C4*"); 
-        setDefaultBondAngle(105.5*Deg2Rad, "O4*", "C4*", "C3*"); 
-        setDefaultBondAngle(102.7*Deg2Rad, "C4*", "C3*", "C2*"); 
-        setDefaultBondAngle(101.5*Deg2Rad, "C3*", "C2*", "C1*"); 
-        setDefaultBondAngle(106.4*Deg2Rad, "C2*", "C1*", "O4*");
+        setDefaultBondAngle(109.6*Deg2Rad, "C1'", "O4'", "C4'"); 
+        setDefaultBondAngle(105.5*Deg2Rad, "O4'", "C4'", "C3'"); 
+        setDefaultBondAngle(102.7*Deg2Rad, "C4'", "C3'", "C2'"); 
+        setDefaultBondAngle(101.5*Deg2Rad, "C3'", "C2'", "C1'"); 
+        setDefaultBondAngle(106.4*Deg2Rad, "C2'", "C1'", "O4'");
 
-        nameBondCenter("bondO5", "O5*/bond1");
-        nameBondCenter("bondO3", "O3*/bond2");
-        nameBondCenter("bondC1", "C1*/bond3");
+        nameBondCenter("bondO5", "O5'/bond1");
+        nameBondCenter("bondO3", "O3'/bond2");
+        nameBondCenter("bondC1", "C1'/bond3");
 
         // NA backbone dihedral angles
         // defineDihedralAngle("alpha", "bondO5", ""); // TODO requires phosphate
-        //defineDihedralAngle("beta", "bondO5", "C5*/bond2");
-        //defineDihedralAngle("gamma", "O5*", "C5*", "C4*", "C3*");
-        //defineDihedralAngle("delta", "C5*", "C4*", "C3*", "C2*");
-        //defineDihedralAngle("epsilon", "bondO3", "C3*/bond1");
+        //defineDihedralAngle("beta", "bondO5", "C5'/bond2");
+        //defineDihedralAngle("gamma", "O5'", "C5'", "C4'", "C3'");
+        //defineDihedralAngle("delta", "C5'", "C4'", "C3'", "C2'");
+        //defineDihedralAngle("epsilon", "bondO3", "C3'/bond1");
         // TODO zeta requires next phosphate
 
         // ribose ring dihedral angles
-        defineDihedralAngle( "nu0", "C4*", "O4*", "C1*", "C2*" );
-        defineDihedralAngle( "nu1", "O4*", "C1*", "C2*", "C3*" );
-        defineDihedralAngle( "nu2", "C1*", "C2*", "C3*", "C4*" );
-        defineDihedralAngle( "nu3", "C2*", "C3*", "C4*", "O4*" );
-        defineDihedralAngle( "nu4", "C3*", "C4*", "O4*", "C1*" );
+        defineDihedralAngle( "nu0", "C4'", "O4'", "C1'", "C2'" );
+        defineDihedralAngle( "nu1", "O4'", "C1'", "C2'", "C3'" );
+        defineDihedralAngle( "nu2", "C1'", "C2'", "C3'", "C4'" );
+        defineDihedralAngle( "nu3", "C2'", "C3'", "C4'", "O4'" );
+        defineDihedralAngle( "nu4", "C3'", "C4'", "O4'", "C1'" );
 
         // Guestimated from Figure 2 of 
         // Schneider, B; Moravek, Z; and Berman, H.M. (2004)
@@ -121,22 +121,22 @@ public:
         setDefaultInboardBondLength(0.16100);
 
         // alternate atom names
-        nameAtom("O5'", "O5*");
-        nameAtom("C5'", "C5*");
-        nameAtom("H5'", "H5*1");
-        nameAtom("H5''", "H5*2");
-        nameAtom("C4'", "C4*");
-        nameAtom("H4'", "H4*");
-        nameAtom("O4'", "O4*");
-        nameAtom("C3'", "C3*");
-        nameAtom("H3'", "H3*");
-        nameAtom("O3'", "O3*");
-        nameAtom("C2'", "C2*");
-        //nameAtom("H2'", "H2*");
-        //nameAtom("H2'1", "H2*");
-        //nameAtom("H2*1", "H2*");
-        nameAtom("C1'", "C1*");
-        nameAtom("H1'", "H1*");
+        nameAtom("O5'", "O5'");
+        nameAtom("C5'", "C5'");
+        nameAtom("H5'", "H5'1");
+        nameAtom("H5''", "H5'2");
+        nameAtom("C4'", "C4'");
+        nameAtom("H4'", "H4'");
+        nameAtom("O4'", "O4'");
+        nameAtom("C3'", "C3'");
+        nameAtom("H3'", "H3'");
+        nameAtom("O3'", "O3'");
+        nameAtom("C2'", "C2'");
+        //nameAtom("H2'", "H2'");
+        //nameAtom("H2'1", "H2'");
+        //nameAtom("H2'1", "H2'");
+        nameAtom("C1'", "C1'");
+        nameAtom("H1'", "H1'");
     }
 
 };
@@ -164,8 +164,8 @@ public:
 			Biotype::defineBiotype(Element::Hydrogen(), 1, "Hydroxyl, RNA", "H5T", SimTK::Ordinality::Initial);
 		
 		// This oxygen biotype should get applied to the 5' oxygen of the nucleotide this hydroxyl attaches to
-		if ( ! Biotype::exists("Hydroxyl, RNA", "O5*", SimTK::Ordinality::Initial) )
-			Biotype::defineBiotype(Element::Oxygen(), 2, "Hydroxyl, RNA", "O5*", SimTK::Ordinality::Initial);
+		if ( ! Biotype::exists("Hydroxyl, RNA", "O5'", SimTK::Ordinality::Initial) )
+			Biotype::defineBiotype(Element::Oxygen(), 2, "Hydroxyl, RNA", "O5'", SimTK::Ordinality::Initial);
 	}
 	
 };
@@ -271,8 +271,8 @@ public:
 			Biotype::defineBiotype(Element::Hydrogen(), 1, "Hydroxyl, RNA", "H3T", SimTK::Ordinality::Final);
 		
 		// This oxygen biotype should get applied to the 3' oxygen of the nucleotide this hydroxyl attaches to
-		if ( ! Biotype::exists("Hydroxyl, RNA", "O3*", SimTK::Ordinality::Final) )
-			Biotype::defineBiotype(Element::Oxygen(), 2, "Hydroxyl, RNA", "O3*", SimTK::Ordinality::Final);
+		if ( ! Biotype::exists("Hydroxyl, RNA", "O3'", SimTK::Ordinality::Final) )
+			Biotype::defineBiotype(Element::Oxygen(), 2, "Hydroxyl, RNA", "O3'", SimTK::Ordinality::Final);
 	}
 	
 };
