@@ -60,6 +60,10 @@ class CompoundRep;
 // Make sure class is instantiated just once in the library
 #ifndef DO_INSTANTIATE_COMPOUND_PIMPL_HANDLE
     extern template class PIMPLHandle<Compound, CompoundRep>;
+#else
+    #if defined(__GNUC__) && !defined(__clang__)
+        template class SimTK_MOLMODEL_EXPORT PIMPLHandle<Compound, CompoundRep>;
+    #endif
 #endif
 
 /**

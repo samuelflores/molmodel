@@ -1592,7 +1592,11 @@ std::ostream& CompoundRep::dumpCompoundRepToStream(std::ostream& o, int level) c
     return o << "}" << endl;
 }
 
-template class SimTK_MOLMODEL_EXPORT PIMPLHandle<Compound,CompoundRep>; // instantiate everything
+/* GCC behaves wierdly here and needs the explicit instantiation in Compound.h
+ * to export all symbols properly */
+#if !defined(__GNUC__) || defined(__clang__)
+    template class SimTK_MOLMODEL_EXPORT PIMPLHandle<Compound, CompoundRep>;
+#endif
 
 Compound::Compound()
   : HandleBase( new CompoundRep() ) // ensure one-to-one Compound/Rep pairing
