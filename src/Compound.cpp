@@ -1592,7 +1592,7 @@ std::ostream& CompoundRep::dumpCompoundRepToStream(std::ostream& o, int level) c
     return o << "}" << endl;
 }
 
-template class PIMPLHandle<Compound,CompoundRep>; // instantiate everything
+template class SimTK_MOLMODEL_EXPORT PIMPLHandle<Compound,CompoundRep>; // instantiate everything
 
 Compound::Compound()
   : HandleBase( new CompoundRep() ) // ensure one-to-one Compound/Rep pairing

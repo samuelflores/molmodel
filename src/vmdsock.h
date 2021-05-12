@@ -37,34 +37,24 @@ typedef struct {
 
 #endif /* VMDSOCKINTERNAL */
 
-#ifdef _WIN32
-    #if defined(SimTK_MOLMODEL_BUILDING_SHARED_LIBRARY)
-        #define SimTK_MOLMODEL_EXPORT __declspec(dllexport)
-    #elif defined(SimTK_MOLMODEL_BUILDING_STATIC_LIBRARY) || defined(SimTK_USE_STATIC_LIBRARIES)
-        #define SimTK_MOLMODEL_EXPORT
-    #else
-        #define SimTK_MOLMODEL_EXPORT __declspec(dllimport)   // i.e., a client of a shared library
-    #endif
-#else
-    #define SimTK_MOLMODEL_EXPORT // Linux, Mac
-#endif
+#include "molmodel/internal/Linkage.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int  SimTK_MOLMODEL_EXPORT  vmdsock_init(void);
-void SimTK_MOLMODEL_EXPORT *vmdsock_create(void);
-int  SimTK_MOLMODEL_EXPORT  vmdsock_bind(void *, int);
-int  SimTK_MOLMODEL_EXPORT  vmdsock_listen(void *);
-void SimTK_MOLMODEL_EXPORT *vmdsock_accept(void *);  /* return new socket */
-int  SimTK_MOLMODEL_EXPORT  vmdsock_connect(void *, const char *, int);
-int  SimTK_MOLMODEL_EXPORT  vmdsock_write(void *, const void *, int);
-int  SimTK_MOLMODEL_EXPORT  vmdsock_read(void *, void *, int);
-int  SimTK_MOLMODEL_EXPORT  vmdsock_selread(void *, int);
-int  SimTK_MOLMODEL_EXPORT  vmdsock_selwrite(void *, int);
-void SimTK_MOLMODEL_EXPORT  vmdsock_shutdown(void *);
-void SimTK_MOLMODEL_EXPORT  vmdsock_destroy(void *);
+SimTK_MOLMODEL_EXPORT  int  vmdsock_init(void);
+SimTK_MOLMODEL_EXPORT  void *vmdsock_create(void);
+SimTK_MOLMODEL_EXPORT  int  vmdsock_bind(void *, int);
+SimTK_MOLMODEL_EXPORT  int  vmdsock_listen(void *);
+SimTK_MOLMODEL_EXPORT  void *vmdsock_accept(void *);  /* return new socket */
+SimTK_MOLMODEL_EXPORT  int  vmdsock_connect(void *, const char *, int);
+SimTK_MOLMODEL_EXPORT  int  vmdsock_write(void *, const void *, int);
+SimTK_MOLMODEL_EXPORT  int  vmdsock_read(void *, void *, int);
+SimTK_MOLMODEL_EXPORT  int  vmdsock_selread(void *, int);
+SimTK_MOLMODEL_EXPORT  int  vmdsock_selwrite(void *, int);
+SimTK_MOLMODEL_EXPORT  void vmdsock_shutdown(void *);
+SimTK_MOLMODEL_EXPORT  void vmdsock_destroy(void *);
 
 #ifdef __cplusplus
 }

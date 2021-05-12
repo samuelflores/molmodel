@@ -58,9 +58,9 @@ class Compound;
 class CompoundRep;
 
 // Make sure class is instantiated just once in the library
-// #ifndef DO_INSTANTIATE_COMPOUND_PIMPL_HANDLE
-//    template class SimTK_MOLMODEL_EXPORT PIMPLHandle<Compound, CompoundRep>;
-// #endif
+#ifndef DO_INSTANTIATE_COMPOUND_PIMPL_HANDLE
+    extern template class PIMPLHandle<Compound, CompoundRep>;
+#endif
 
 /**
  * \brief Namespace for description of allowed bond motions.
@@ -1215,7 +1215,6 @@ private:
     // OBSOLETE: use getNumBonds()
     size_t getNBonds() const {return getNumBonds();}
 };
-
 
 /**
  * \brief Dump debugging information about compound structure to a stream.

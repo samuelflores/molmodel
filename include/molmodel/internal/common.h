@@ -38,6 +38,7 @@
  */
 
 #include "SimTKcommon.h"
+#include "Linkage.h"
 
 #include <cassert>
 #include <vector>
@@ -61,32 +62,6 @@
 // affect only the molmodel library, meaning that other libraries can
 // be clients of this one. However, we are assuming all-static or all-shared.
 
-#ifdef _WIN32
-
-    // avoid warning about use of non-standard "extern template" constructs
-    // #ifdef _MSC_VER
-    // #pragma warning(disable:4231)
-    // #endif
-
-    #if defined(SimTK_MOLMODEL_BUILDING_SHARED_LIBRARY)
-        #define SimTK_MOLMODEL_EXPORT __declspec(dllexport)
-
-        // Keep MS VC++ quiet when it tries to instantiate incomplete template classes in a DLL.
-        #ifdef _MSC_VER
-        #pragma warning(disable:4661)
-
-        // and lack of dll export of private members
-        #pragma warning(disable:4251)
-        #endif
-
-    #elif defined(SimTK_MOLMODEL_BUILDING_STATIC_LIBRARY) || defined(SimTK_USE_STATIC_LIBRARIES)
-        #define SimTK_MOLMODEL_EXPORT
-    #else
-        #define SimTK_MOLMODEL_EXPORT __declspec(dllimport)   // i.e., a client of a shared library
-    #endif
-#else
-    #define SimTK_MOLMODEL_EXPORT // Linux, Mac
-#endif
 
 // Every SimTK Core library must provide these two routines, with the library
 // name appearing after the "version_" and "about_".

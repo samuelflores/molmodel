@@ -19,6 +19,7 @@
 #define IMD_H__
 
 #include <limits.h>
+#include "molmodel/internal/Linkage.h"
 
 #if ( INT_MAX == 2147483647 )
 typedef int     int32;
@@ -54,55 +55,42 @@ typedef struct {
   float Eimpr;      /**< Improper energy, Kcal/mol                 */
 } IMDEnergies;      /**< IMD simulation energy report structure    */
 
-
-#ifdef _WIN32
-    #if defined(SimTK_MOLMODEL_BUILDING_SHARED_LIBRARY)
-        #define SimTK_MOLMODEL_EXPORT __declspec(dllexport)
-    #elif defined(SimTK_MOLMODEL_BUILDING_STATIC_LIBRARY) || defined(SimTK_USE_STATIC_LIBRARIES)
-        #define SimTK_MOLMODEL_EXPORT
-    #else
-        #define SimTK_MOLMODEL_EXPORT __declspec(dllimport)   // i.e., a client of a shared library
-    #endif
-#else
-    #define SimTK_MOLMODEL_EXPORT // Linux, Mac
-#endif
-
 /* Send control messages - these consist of a header with no subsequent data */
-extern int SimTK_MOLMODEL_EXPORT imd_disconnect(void *);   /**< leave sim running but close IMD  */
-extern int SimTK_MOLMODEL_EXPORT imd_pause(void *);        /**< pause simulation                 */
-extern int SimTK_MOLMODEL_EXPORT imd_kill(void *);         /**< kill simulation, shutdown IMD    */
-extern int SimTK_MOLMODEL_EXPORT imd_handshake(void *);    /**< check endianness, version compat */
-extern int SimTK_MOLMODEL_EXPORT imd_trate(void *, int32); /**< set IMD update transmission rate */
+SimTK_MOLMODEL_EXPORT int imd_disconnect(void *);   /**< leave sim running but close IMD  */
+SimTK_MOLMODEL_EXPORT int imd_pause(void *);        /**< pause simulation                 */
+SimTK_MOLMODEL_EXPORT int imd_kill(void *);         /**< kill simulation, shutdown IMD    */
+SimTK_MOLMODEL_EXPORT int imd_handshake(void *);    /**< check endianness, version compat */
+SimTK_MOLMODEL_EXPORT int imd_trate(void *, int32); /**< set IMD update transmission rate */
 
 /* Send data update messages */
 
 /** Send MDComm compatible forces, units are Kcal/mol/angstrom */
-extern int SimTK_MOLMODEL_EXPORT imd_send_mdcomm(void *, int32, const int32 *, const float *);
+SimTK_MOLMODEL_EXPORT extern int imd_send_mdcomm(void *, int32, const int32 *, const float *);
 
 /** Send energies */
-extern int SimTK_MOLMODEL_EXPORT imd_send_energies(void *, const IMDEnergies *);
+SimTK_MOLMODEL_EXPORT extern int imd_send_energies(void *, const IMDEnergies *);
 
 /** Send atom forces and coordinates, units are Kcal/mol/angstrom */
-extern int SimTK_MOLMODEL_EXPORT imd_send_fcoords(void *, int32, const float *);
+SimTK_MOLMODEL_EXPORT extern int imd_send_fcoords(void *, int32, const float *);
 
 /** 
  *  recv_handshake returns 0 if server and client have the same relative 
  *  endianism; returns 1 if they have opposite endianism, and -1 if there
  *  was an error in the handshake process.
  */
-extern int SimTK_MOLMODEL_EXPORT imd_recv_handshake(void *);
+SimTK_MOLMODEL_EXPORT extern int imd_recv_handshake(void *);
 
 /** Receive header and data */
-extern IMDType SimTK_MOLMODEL_EXPORT imd_recv_header(void *, int32 *);
+SimTK_MOLMODEL_EXPORT extern IMDType imd_recv_header(void *, int32 *);
 
 /** Receive MDComm-style forces, units are Kcal/mol/angstrom */
-extern int SimTK_MOLMODEL_EXPORT imd_recv_mdcomm(void *, int32, int32 *, float *);
+SimTK_MOLMODEL_EXPORT extern int imd_recv_mdcomm(void *, int32, int32 *, float *);
 
 /** Receive energies */
-extern int SimTK_MOLMODEL_EXPORT imd_recv_energies(void *, IMDEnergies *);
+SimTK_MOLMODEL_EXPORT extern int imd_recv_energies(void *, IMDEnergies *);
 
 /** Receive atom coordinates and forces, units are Kcal/mol/angstrom */
-extern int SimTK_MOLMODEL_EXPORT imd_recv_fcoords(void *, int32, float *);
+SimTK_MOLMODEL_EXPORT extern int imd_recv_fcoords(void *, int32, float *);
 
 #endif
 

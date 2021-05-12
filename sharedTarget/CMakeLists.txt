@@ -2,6 +2,13 @@
 ## preprocessor value.
 ADD_DEFINITIONS(-DSimTK_MOLMODEL_BUILDING_SHARED_LIBRARY)
 
+IF(UNIX)
+    IF(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR
+       ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+           SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+    ENDIF()
+ENDIF()
+
 IF(BUILD_UNVERSIONED_LIBRARIES)
 
     # These are dependencies so we know when we have to rebuild.
@@ -18,7 +25,7 @@ IF(BUILD_UNVERSIONED_LIBRARIES)
 	ELSE()
         TARGET_LINK_LIBRARIES(${SHARED_TARGET} 
             PRIVATE ${Simbody_LIBRARIES}
-            z)
+            PRIVATE z)
 	ENDIF()
 			
     SET_TARGET_PROPERTIES(${SHARED_TARGET} PROPERTIES

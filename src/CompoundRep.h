@@ -40,6 +40,7 @@
 #include "molmodel/internal/Superpose.h"
 
 #include "CompoundAtom.h"
+#include "molmodel/internal/common.h"
 #include <fstream>
 
 #include <vector>
