@@ -751,6 +751,9 @@ size_t CompoundRep::getNumBondCenters(Compound::AtomIndex atomIndex) const {
 // nameAtom("methyl1/C", "C1", Biotype::EthaneC());
 CompoundRep& CompoundRep::nameAtom(const Compound::AtomName& newName, const Compound::AtomPathName& oldName)
 {
+    if (newName == oldName)
+        return *this;
+
     const Compound::AtomIndex atomId = getAtomInfo(oldName).getIndex();
     nameAtom(newName, atomId);
 
