@@ -82,7 +82,7 @@ try
 	    
 		system.modelCompounds();
 		
-		cerr << "O3* mobilized body index = " << rna.getAtomMobilizedBodyIndex(rna.getAtomIndex("0/O3*")) << endl;
+		cerr << "O3' mobilized body index = " << rna.getAtomMobilizedBodyIndex(rna.getAtomIndex("0/O3'")) << endl;
 		
 		system.realizeTopology();
 		

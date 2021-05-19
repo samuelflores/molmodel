@@ -119,24 +119,6 @@ public:
         nameBondCenter("bondPrevious", "bondO5");
 
         setDefaultInboardBondLength(0.16100);
-
-        // alternate atom names
-        nameAtom("O5'", "O5'");
-        nameAtom("C5'", "C5'");
-        nameAtom("H5'", "H5'1");
-        nameAtom("H5''", "H5'2");
-        nameAtom("C4'", "C4'");
-        nameAtom("H4'", "H4'");
-        nameAtom("O4'", "O4'");
-        nameAtom("C3'", "C3'");
-        nameAtom("H3'", "H3'");
-        nameAtom("O3'", "O3'");
-        nameAtom("C2'", "C2'");
-        //nameAtom("H2'", "H2'");
-        //nameAtom("H2'1", "H2'");
-        //nameAtom("H2'1", "H2'");
-        nameAtom("C1'", "C1'");
-        nameAtom("H1'", "H1'");
     }
 
 };
