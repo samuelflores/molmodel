@@ -10,8 +10,12 @@
         #define SimTK_MOLMODEL_EXPORT __declspec(dllimport)   // i.e., a client of a shared library
     #endif
 #else
-    #if defined(SimTK_MOLMODEL_BUILDING_SHARED_LIBRARY)
-        #define SimTK_MOLMODEL_EXPORT __attribute__ ((visibility ("default")))
+    #ifdef __GNUC__
+        #if defined(SimTK_MOLMODEL_BUILDING_SHARED_LIBRARY)
+            #define SimTK_MOLMODEL_EXPORT __attribute__ ((visibility ("default")))
+        #else
+            #define SimTK_MOLMODEL_EXPORT
+        #endif
     #else
         #define SimTK_MOLMODEL_EXPORT
     #endif
