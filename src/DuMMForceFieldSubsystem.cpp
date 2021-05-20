@@ -2287,6 +2287,9 @@ void DuMMForceFieldSubsystem::populateFromTinkerParameterFile(std::istream& tink
             	pos1 = residueName.find(" P,");
             	if (pos1 != std::string::npos) residueName.replace(pos1, 3, ",");
             }
+            pos1 = atomName.find("*");
+            if (pos1 != std::string::npos)
+                atomName[pos1] = '\'';
 
             BiotypeIndex biotypeIx;
 
