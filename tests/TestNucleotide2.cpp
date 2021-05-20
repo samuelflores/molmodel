@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 		system.addEventReporter(new PeriodicPdbWriter(system, of, 0.020));
 	    system.addEventHandler(new VelocityRescalingThermostat(system, 293.15, 0.050));
 
-	    // rna.setBondMobility(BondMobility::Free , "0/O3*" ,"1/P");
+	    // rna.setBondMobility(BondMobility::Free , "0/O3'" ,"1/P");
 
 	    // rna.writeDefaultPdb(cout);
 

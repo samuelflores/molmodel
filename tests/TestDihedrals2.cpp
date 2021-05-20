@@ -94,8 +94,8 @@ int main()
     else 
     {
         cout << "FAILED" << endl;    
-        cerr << "Initial H3* location was " << initialLocH3 << endl;
-        cerr << "Final H3* location was " << finalLocH3 << endl;
+        cerr << "Initial H3' location was " << initialLocH3 << endl;
+        cerr << "Final H3' location was " << finalLocH3 << endl;
 
         return 1;
     }
