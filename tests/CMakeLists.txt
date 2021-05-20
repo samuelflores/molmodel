@@ -31,6 +31,8 @@ FOREACH(TEST_PROG ${REGR_TESTS})
         SET(TEST_ARGS "${CMAKE_SOURCE_DIR}/resources/structures/1FFK_rnafrag10.pdb")
     ELSEIF(${TEST_ROOT} MATCHES "TestNucleotide2")
         SET(TEST_ARGS "${CMAKE_SOURCE_DIR}/resources/SantaLuciaParams/2MG/test.param")
+    ELSEIF(${TEST_ROOT} MATCHES "TestBiotypeSelfCode")
+        SET(TEST_ARGS "${CMAKE_SOURCE_DIR}/resources/tinker_amber99_clean.prm")
     ENDIF()
 
     IF (BUILD_TESTING_SHARED)
