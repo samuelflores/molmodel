@@ -47,59 +47,59 @@ int main(int argc, char **argv) {
         SimbodyMatterSubsystem matter(system);
         DuMMForceFieldSubsystem dumm(system); // molecular force field
 
-	    dumm.loadAmber99Parameters();
+        dumm.loadAmber99Parameters();
 
-	    // dumm.setGbsaGlobalScaleFactor(0.97);
+        // dumm.setGbsaGlobalScaleFactor(0.97);
 
-	    std::ifstream is(argv[1]);
+        std::ifstream is(argv[1]);
         ASSERT(is.good(), "Cannot open SantaLucia parameters file");
-	    dumm.populateFromTinkerParameterFile(is);
+        dumm.populateFromTinkerParameterFile(is);
 
-	    RNA rna ("AA");
-	    // rna.writeDefaultPdb(cout);
-	    NaPhosphodiesterLinkage po2("", "", 'X');
+        RNA rna ("AA");
+        // rna.writeDefaultPdb(cout);
+        NaPhosphodiesterLinkage po2("", "", 'X');
 
-		// MagnesiumIon mg1, mg2;
-		MagnesiumIon::setAmberLikeParameters(dumm);
-		MagnesiumIon mg1, mg2;
-		ZincIon::setAmberLikeParameters(dumm);
+        // MagnesiumIon mg1, mg2;
+        MagnesiumIon::setAmberLikeParameters(dumm);
+        MagnesiumIon mg1, mg2;
+        ZincIon::setAmberLikeParameters(dumm);
 
-		// system.adoptCompound(p2, Vec3( 0.5, 0, 0));
-		system.adoptCompound(mg1, Vec3(-0.5, 0.6, 0.6));
-		// system.adoptCompound(mg2, Vec3(-0.5, -1, 0));
-		system.adoptCompound(rna, Vec3(-0.5, 0, 0));
-		// system.adoptCompound(po2, Vec3(-0.5, 0, 0));
+        // system.adoptCompound(p2, Vec3( 0.5, 0, 0));
+        system.adoptCompound(mg1, Vec3(-0.5, 0.6, 0.6));
+        // system.adoptCompound(mg2, Vec3(-0.5, -1, 0));
+        system.adoptCompound(rna, Vec3(-0.5, 0, 0));
+        // system.adoptCompound(po2, Vec3(-0.5, 0, 0));
 
-		std::ofstream of("test.pdb");
-		system.addEventReporter(new PeriodicPdbWriter(system, of, 0.020));
-	    system.addEventHandler(new VelocityRescalingThermostat(system, 293.15, 0.050));
+        std::ofstream of("test.pdb");
+        system.addEventReporter(new PeriodicPdbWriter(system, of, 0.020));
+        system.addEventHandler(new VelocityRescalingThermostat(system, 293.15, 0.050));
 
-	    // rna.setBondMobility(BondMobility::Free , "0/O3'" ,"1/P");
+        // rna.setBondMobility(BondMobility::Free , "0/O3'" ,"1/P");
 
-	    // rna.writeDefaultPdb(cout);
+        // rna.writeDefaultPdb(cout);
 
-		system.modelCompounds();
+        system.modelCompounds();
 
-		cerr << "O3' mobilized body index = " << rna.getAtomMobilizedBodyIndex(rna.getAtomIndex("0/O3'")) << endl;
+        cerr << "O3' mobilized body index = " << rna.getAtomMobilizedBodyIndex(rna.getAtomIndex("0/O3'")) << endl;
 
-		system.realizeTopology();
+        system.realizeTopology();
 
-		system.realize(system.updDefaultState(), Stage::Dynamics);
-		Vec3 mg1Force = system.getRigidBodyForces(system.updDefaultState(), Stage::Dynamics)[mg1.getAtomMobilizedBodyIndex(Compound::AtomIndex(0))][1];
-		cout << "Force on first magnesium = " << mg1Force << endl;
+        system.realize(system.updDefaultState(), Stage::Dynamics);
+        Vec3 mg1Force = system.getRigidBodyForces(system.updDefaultState(), Stage::Dynamics)[mg1.getAtomMobilizedBodyIndex(Compound::AtomIndex(0))][1];
+        cout << "Force on first magnesium = " << mg1Force << endl;
 
-		cout << "Mobilized body Id " << mg1.getAtomMobilizedBodyIndex(Compound::AtomIndex(0)) << endl;
+        cout << "Mobilized body Id " << mg1.getAtomMobilizedBodyIndex(Compound::AtomIndex(0)) << endl;
 
-		// LocalEnergyMinimizer::minimizeEnergy(system, system.updDefaultState(), 15.0);
+        // LocalEnergyMinimizer::minimizeEnergy(system, system.updDefaultState(), 15.0);
 
-		VerletIntegrator integrator(system);
-		TimeStepper timeStepper(system, integrator);
-		timeStepper.initialize(system.updDefaultState());
+        VerletIntegrator integrator(system);
+        TimeStepper timeStepper(system, integrator);
+        timeStepper.initialize(system.updDefaultState());
 
-		double endTime = 0.0100;
+        double endTime = 0.0100;
 
-		// while ( timeStepper.getTime() < endTime )
-		timeStepper.stepTo(endTime);
+        // while ( timeStepper.getTime() < endTime )
+        timeStepper.stepTo(endTime);
 
         return 0;
     } catch (const std::exception& e) {
