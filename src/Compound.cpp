@@ -31,6 +31,7 @@
 
 #include "SimTKsimbody.h"
 #include "molmodel/internal/common.h"
+#include <gemmi/metadata.hpp>
 
 #define DO_INSTANTIATE_COMPOUND_PIMPL_HANDLE
 #include "molmodel/internal/Compound.h"
@@ -1007,7 +1008,7 @@ std::ostream& CompoundRep::writeDefaultPdb(std::ostream& os, int& nextSerialNumb
     return os;
 }
 
-void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, int decimal_places = 8, const Transform& transform = Transform() ) const
+void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, gemmi::EntityType entityType, int decimal_places = 8, const Transform& transform = Transform() ) const
 {
     //================================================ Initialise local variables
     PdbChain chain                                    ( state, getOwnerHandle(), transform );
@@ -1030,8 +1031,7 @@ void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, bool i
         
         gemmiRes.seqid                                = gemmi::SeqId ( residueI->getResidueId().residueNumber, residueI->getResidueId().insertionCode );
         gemmiRes.label_seq                            = nextResidueSerialNumber;
-        if ( isPolymer ) { gemmiRes.entity_type       = gemmi::EntityType::Polymer; }
-        else             { gemmiRes.entity_type       = gemmi::EntityType::Unknown; }
+        gemmiRes.entity_type                          = entityType;
         gemmiRes.het_flag                             = '\0';
         
         //============================================ For each molmodel atom
@@ -2025,9 +2025,9 @@ void Compound::writeDefaultPdb(const char* outFileName, const Transform& transfo
     os.close();
 }
 
-void Compound::buildCif( const State& state, gemmi::Model* gemmiModel, bool isPolymer, int decimal_places, const Transform& transform ) const
+void Compound::buildCif( const State& state, gemmi::Model* gemmiModel, gemmi::EntityType entityType, int decimal_places, const Transform& transform ) const
 {
-    getImpl().buildCif ( state, gemmiModel, isPolymer, decimal_places, transform );
+    getImpl().buildCif ( state, gemmiModel, entityType, decimal_places, transform );
     return ;
 }
 

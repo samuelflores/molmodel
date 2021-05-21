@@ -40,6 +40,7 @@
 #include "molmodel/internal/Pdb.h"
 #include "molmodel/internal/Superpose.h"
 #include "molmodel/internal/units.h"
+#include <gemmi/metadata.hpp>
 #include <map>
 
 #include <iosfwd> // declare ostream without all the definitions
@@ -865,7 +866,7 @@ public:
      void buildCif(
          const State& state, ///< simbody state representing the current configuration of the molecule
          gemmi::Model* gemmiModel,  ///< Gemmi library model object pointer to which the molmodel structure information will be copied into.
-         bool isPolymer, ///< Is this compound a polymer?
+         gemmi::EntityType entityType, ///< Type of the entity (Polymer, NonPolymer, Water, ...)?
          int decimal_places = 8, ///< Number of decimal places to which the co-ordinates are to be rounded to.
          const Transform& transform = Transform() ///< optional change to location and orientation of molecule
          ) const;
