@@ -3,6 +3,7 @@
 //
 #include "molmodel/internal/Pdb.h"
 #include "molmodel/internal/Compound.h"
+#include "molmodel/internal/Exceptions.h"
 #include <cstdlib>
 #include <gemmi/cif.hpp>
 #include <gemmi/cifdoc.hpp>
@@ -889,11 +890,9 @@ PdbStructure::PdbStructure( ) {
 PdbStructure::PdbStructure(const std::string& fileName, const std::string& chainsPrefix) try {
     initialize(gemmiStructFromFile(fileName), chainsPrefix);
 } catch (const std::runtime_error &ex) {
-    std::cout << "!!! Error !!! " << ex.what() << std::endl;
-    std::exit(EXIT_FAILURE);
+    throw UnrecoverableMolmodelError(ex.what());
 } catch (const std::logic_error &ex) {
-    std::cout << "!!! Logic Error !!! " << ex.what() << std::endl;
-    std::exit(EXIT_FAILURE);
+    throw UnrecoverableMolmodelError(ex.what());
 }
 
 PdbStructure::PdbStructure(std::istream &input, const InputType iType, const std::string &chainsPrefix)
