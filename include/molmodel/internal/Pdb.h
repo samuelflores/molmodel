@@ -415,7 +415,6 @@ public:
 
     String getChainId() const {return chainId;}
 
-
 protected:
     void parsePdbLine(const String& line);
 

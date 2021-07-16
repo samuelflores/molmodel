@@ -940,14 +940,16 @@ const PdbAtom& PdbStructure::getAtom(String atomName, PdbResidueId residueId, St
 }
 
 void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &chainsPrefix) {
+    models.reserve(models.size() + gs.models.size());
     //================================================ For each model
     for ( const auto &mo : gs.models )
     {
         //============================================ Create molmodel model (first and only)
-        models.emplace_back                              ( PdbModel ( models.size() + 1 ) );
+        models.emplace_back                              ( models.size() + 1 );
 
         auto &model = models.back();
 
+	model.chains.reserve(model.chains.size() + mo.chains.size());
         //============================================ For each chain
         for ( const auto &ch : mo.chains )
         {
@@ -964,12 +966,13 @@ void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &cha
             if ( !model.hasChain ( chainIdWithoutPrefix ) )
             {
                 model.chainIndicesById[chainIdWithPrefix] = models.back().chains.size();
-                model.chains.emplace_back                 ( PdbChain ( chainIdWithoutPrefix ) );
+                model.chains.emplace_back                 ( chainIdWithoutPrefix );
             }
 
             assert ( model.chainIndicesById.find (chainIdWithPrefix) != model.chainIndicesById.end () );
             auto &chain                                   = model.chains[ model.chainIndicesById.at ( chainIdWithPrefix ) ];
 
+	    chain.residues.reserve(chain.residues.size() + ch.residues.size());
             //======================================== For each residue
             int resNumGemmi                           = 0;
             for ( const auto &re : ch.residues)
@@ -993,6 +996,7 @@ void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &cha
                 assert ( chain.residueIndicesById.find (residueId) != chain.residueIndicesById.end () );
                 auto &residue                           = chain.residues[ chain.residueIndicesById.at (residueId) ];
 
+		residue.atoms.reserve(residue.atoms.size() + re.atoms.size());
                 //==================================== For each atom
                 for ( const auto &at : re.atoms )
                 {
