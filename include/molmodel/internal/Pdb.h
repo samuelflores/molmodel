@@ -83,7 +83,7 @@ namespace Exception
 class SimTK_MOLMODEL_EXPORT PdbAtomLocation {
 public:
     explicit PdbAtomLocation(SimTK::Vec3 coords, char altLoc = ' ', SimTK::Real tFac = 0.00, SimTK::Real occ = 1.0) 
-        : coordinates(coords), alternateLocationIndicator(altLoc), temperatureFactor(tFac), occupancy(occ)
+        : coordinates(std::move(coords)), alternateLocationIndicator(altLoc), temperatureFactor(tFac), occupancy(occ)
     {}
 
     /// write columns 31 to 66 of a PDB ATOM/HETATM record at this location
@@ -166,12 +166,25 @@ public:
 
     PdbAtom& setLocation(const PdbAtomLocation& loc) {
         char alt_loc = loc.getAlternateLocationIndicator();
-        if (locationIndicesById.find(alt_loc) == locationIndicesById.end()) {
+	auto it = locationIndicesById.find(alt_loc);
+	if (it == locationIndicesById.end()) {
             locationIndicesById[alt_loc] = locations.size();
             locations.push_back(loc);
+        } else {
+            locations[it->second] = loc;
         }
-        else {
-            locations[locationIndicesById.find(alt_loc)->second] = loc;
+
+        return *this;
+    }
+
+    PdbAtom& setLocation(PdbAtomLocation&& loc) {
+        char alt_loc = loc.getAlternateLocationIndicator();
+	auto it = locationIndicesById.find(alt_loc);
+	if (it == locationIndicesById.end()) {
+            locationIndicesById[alt_loc] = locations.size();
+            locations.emplace_back(std::move(loc));
+        } else {
+            locations[it->second] = std::move(loc);
         }
 
         return *this;

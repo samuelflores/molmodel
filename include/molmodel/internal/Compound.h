@@ -1814,15 +1814,15 @@ public:
 
 
     ResidueInfo(
-        ResidueInfo::Index ix, 
-        const Compound::Name& name, 
+        ResidueInfo::Index ix,
+        const Compound::Name& name,
         const BiopolymerResidue& res,
         Compound::AtomIndex atomOffset,
         char insertionCode = ' ');
 
-    AtomIndex addAtom(Compound::AtomIndex index, const Compound::AtomName& name) {
+    AtomIndex addAtom(Compound::AtomIndex index, Compound::AtomName name) {
         ResidueInfo::AtomIndex answer(atoms.size());
-        atoms.push_back(AtomInfo(index, name));
+        atoms.emplace_back(index, std::move(name));
         atomIdsByName[name] = answer;
         return answer;
     }

@@ -1076,7 +1076,7 @@ protected:
         if (addEndCaps) {
                 auto residue = AcetylResidue();
                 residue.setPdbResidueNumber(resi);
-                appendResidue(previousResidueName, residue);
+                appendResidue(previousResidueName, std::move(residue));
         }
 
         for (; resi < (int)seq.size(); ++resi)
@@ -1088,7 +1088,7 @@ protected:
             // Name residue subcompound after its number in the sequence
             // name must be unique within the protein
             String residueName(resi);
-            appendResidue( residueName, residue );
+            appendResidue(residueName, std::move(residue));
 
             // Rigidify peptide bond 
             if (getNumResidues() > 1) // First residue lacks a preceding peptide bond
@@ -1115,7 +1115,7 @@ protected:
             String cCapName = String("nme") + String((int)seq.size());
             auto residue = NMethylAmideResidue();
             residue.setPdbResidueNumber(resi + 1);
-            appendResidue(cCapName, residue);
+            appendResidue(cCapName, std::move(residue));
             // Rigidify end cap's omega angle (regardless of setting above).
             String omegaAngleName = String("omega") + String(cCapName);
             defineDihedralAngle(

@@ -870,6 +870,7 @@ PdbChain& PdbModel::updOrCreateChain(String chainId)
         chainIndicesById[chainId] = chains.size();
         //std::cout<<__FILE__":"<<__LINE__<<" chain ID is >"<<PdbChain(chainId).getChainId()<<"< "<<std::endl;
         chains.emplace_back(std::move(chainId));
+	return chains.back();
     }
 
     return chains[chainIndicesById[chainId]];

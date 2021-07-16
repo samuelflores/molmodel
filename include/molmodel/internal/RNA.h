@@ -540,7 +540,7 @@ public:
                             residue.inheritAtomNames("5PrimePhosphate");
                             }
 
-                    appendResidue( residueName, residue );
+                    appendResidue(residueName, std::move(residue));
             }
             else {
                 // non-first residue needs phosphodiester linkage
@@ -663,13 +663,13 @@ private:
             residue.assignBiotypes();
             
             if (r == 0) { // first residue does not get phosphate
-                appendResidue( residueName, residue );
+                appendResidue(residueName, std::move(residue));
             }
             else {
                 // non-first residue needs phosphodiester linkage
                 BiopolymerResidue resWithP = residue.withPhosphodiester();
                 resWithP.assignBiotypes();
-                appendResidue( residueName, resWithP );
+                appendResidue(residueName, std::move(resWithP));
 
                 // Define zeta angle
                 String zetaName = String("zeta") + String(residue.getPdbResidueNumber());

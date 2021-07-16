@@ -2438,7 +2438,9 @@ ResidueInfo::ResidueInfo(ResidueInfo::Index ix,
       synonyms(res.getImpl().synonyms)
 {
     setOneLetterCode(res.getOneLetterCode());
-    for (Compound::AtomIndex a(0); a < res.getNumAtoms(); ++a) {
+    const auto numAtoms = res.getNumAtoms();
+    atoms.reserve(atoms.size() + numAtoms);
+    for (Compound::AtomIndex a(0); a < numAtoms; ++a) {
         const SimTK::AtomInfo& compoundAtom = res.getImpl().getAtomInfo(a);
         ResidueInfo::AtomIndex raIx = addAtom(Compound::AtomIndex(a + atomOffset), res.getAtomName(a));
         ResidueInfo::AtomInfo& residueAtom = updAtomInfo(raIx);
@@ -2449,7 +2451,6 @@ ResidueInfo::ResidueInfo(ResidueInfo::Index ix,
         }
     }
 }
-
 
 //////////////////
 /// Biopolymer ///
@@ -2512,12 +2513,11 @@ void Biopolymer::assignBiotypes() {
     }
 }
 
-ResidueInfo::Index Biopolymer::appendResidue(const String& resName, const BiopolymerResidue& r) 
+ResidueInfo::Index Biopolymer::appendResidue(const String& resName, const BiopolymerResidue& r)
 {
     ResidueInfo::Index resId(getImpl().residues.size());
-    updImpl().residues.push_back(ResidueInfo(resId, resName, r, Compound::AtomIndex(getNumAtoms())));
+    updImpl().residues.emplace_back(resId, resName, r, Compound::AtomIndex(getNumAtoms()));
     updImpl().residueIdsByName[resName] = resId;
-    ResidueInfo& residue = updResidue(resId);
 
     // Note that new (empty) residue has already been added to residue count
     if (getNumResidues() <= 1) {
