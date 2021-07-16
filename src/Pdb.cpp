@@ -159,7 +159,7 @@ PdbAtom::PdbAtom(
     : element(compound.getAtomElement(n))
 {
     atomName = canonicalizeAtomName(n);
-    locations.push_back( PdbAtomLocation(transform * compound.calcDefaultAtomLocationInCompoundFrame(n)) );
+    locations.emplace_back(transform * compound.calcDefaultAtomLocationInCompoundFrame(n));
 }
 
 PdbAtom::PdbAtom( 
@@ -171,8 +171,8 @@ PdbAtom::PdbAtom(
 {
     atomName = canonicalizeAtomName(n);
     Compound::AtomIndex atomIndex = compound.getAtomIndex(n);
-  
-    locations.push_back( PdbAtomLocation(transform * compound.calcAtomLocationInGroundFrame(state, atomIndex)) );
+
+    locations.emplace_back(transform * compound.calcAtomLocationInGroundFrame(state, atomIndex));
 }
 
 std::ostream& PdbAtom::write(
@@ -755,11 +755,11 @@ PdbModel::PdbModel(const Compound& compound, int number,
         const Transform& transform)
     : modelNumber(number)
 {
-    String chainId = compound.getPdbChainId();
+    const auto &chainId = compound.getPdbChainId();
 
     assert( 0 == chains.size() );
     chainIndicesById[chainId] = chains.size();
-    chains.push_back(PdbChain(compound, transform));
+    chains.emplace_back(compound, transform);
 }
 
 PdbModel::PdbModel(
@@ -769,11 +769,11 @@ PdbModel::PdbModel(
         const Transform& transform)
     : modelNumber(number)
 {
-    String chainId = compound.getPdbChainId();
+    const auto &chainId = compound.getPdbChainId();
 
     assert( 0 == chains.size() );
     chainIndicesById[chainId] = chains.size();
-    chains.push_back(PdbChain(state, compound, transform));
+    chains.emplace_back(state, compound, transform);
 }
 
 std::ostream& PdbModel::write(std::ostream& os, const Transform& transform) const 

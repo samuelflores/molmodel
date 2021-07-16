@@ -1536,7 +1536,7 @@ CompoundRep& CompoundRep::setPdbChainId(String c) {
 
     return *this;
 }
-String CompoundRep::getPdbChainId() const {return pdbChainId;}
+const String& CompoundRep::getPdbChainId() const {return pdbChainId;}
 
 
 
@@ -2077,7 +2077,7 @@ Compound& Compound::setPdbChainId(String chainId) {
     updImpl().setPdbChainId(chainId);
     return *this;
 }
-String Compound::getPdbChainId() const {
+const String& Compound::getPdbChainId() const {
     return getImpl().getPdbChainId();
 }
 

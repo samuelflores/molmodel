@@ -6,7 +6,7 @@
 
 namespace SimTK {
 
-SimTK_MOLMODEL_EXPORT class UnrecoverableMolmodelError : public std::runtime_error {
+class SimTK_MOLMODEL_EXPORT UnrecoverableMolmodelError : public std::runtime_error {
     public:
         using std::runtime_error::runtime_error;
 	using std::runtime_error::what;

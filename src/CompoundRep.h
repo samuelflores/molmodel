@@ -2291,7 +2291,7 @@ public:
     const String& getPdbResidueName() const;
 
     CompoundRep& setPdbChainId(String);
-    String getPdbChainId() const;
+    const String& getPdbChainId() const;
 
 
     // const Bond& getBond(const String& name) const;

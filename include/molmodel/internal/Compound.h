@@ -1031,7 +1031,7 @@ public:
         );
 
     /// \return character that would populate "chain id" field for PDB file output for this Compound
-    String getPdbChainId() const;
+    const String& getPdbChainId() const;
 
     /**
      * \brief Define a local name for a particular BondCenter in this Compound
