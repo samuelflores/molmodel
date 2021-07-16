@@ -117,6 +117,8 @@ public:
         //======================================== Generate structure from block
         gemmi::Structure gemmiStruct              = getStructureFromFile ( filename );
 
+
+        rStructure.reserve(gemmiStruct.models.size());
         //======================================== For each model
         int modNumGemmi = 0;
         for ( const auto &mod : gemmiStruct.models )
@@ -125,17 +127,20 @@ public:
             std::string modName = "mol" + std::to_string(modNumGemmi++);
 
             Repr::Model rModel{std::move(modName), {}};
+            rModel.chains.reserve(mod.chains.size());
 
             //==================================== For each chain
             for ( const auto &chain : mod.chains)
             {
                 Repr::Chain rChain{trim_both(chain.name)};
+                rChain.residues.reserve(chain.residues.size());
 
                 //================================ For each residue
                 int resNumGemmi                   = 0;
                 for ( const auto &residue : chain.residues )
                 {
                     Repr::Residue rResidue;
+                    rResidue.atoms.reserve(residue.atoms.size());
 
                     //============================ Get residue insertion code, residueID and residue name
                     char ICode                    = residue.seqid.icode;
@@ -205,6 +210,7 @@ public:
 
         // Loop over chains and create a Biopolymer from each one.
         if (rStructure.size() > 0) {
+            compounds.reserve(compounds.size() + rStructure.front().chains.size());
             for (const auto &rChain : rStructure.front().chains) {
                 // Create a string of the sequence.
                 auto firstValidResidueType = Repr::ResidueType::UNKNOWN;
@@ -240,7 +246,7 @@ public:
                     std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).id >"<<rChain.getId()<<"< "<<std::endl;
                     std::cout<<__FILE__<<":"<<__LINE__<<" created an RNA"<<std::endl;
                     std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<rna.getPdbChainId()<<"< "<<std::endl;
-                    compounds.push_back(rna);
+                    compounds.emplace_back(std::move(rna));
                 } else if (Repr::residueIsDNA(firstValidResidueType)) {
                     std::cout<<__FILE__<<":"<<__LINE__<<"Creating a DNA"<<std::endl;
                     // Create a  DNA.
@@ -251,7 +257,7 @@ public:
                         dna.updResidue(ResidueInfo::Index(i)).setPdbInsertionCode(r.insertion_code);
                     }
                     dna.assignBiotypes();
-                    compounds.push_back(dna);
+                    compounds.emplace_back(std::move(dna));
                 } else if (Repr::residueIsProtein(firstValidResidueType)) {
                     std::cout<<__FILE__<<":"<<__LINE__<<"Creating a protein"<<std::endl;
                     // Create a Protein.
@@ -278,7 +284,7 @@ public:
                     std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).id >"<<rChain.getId()<<"< "<<std::endl;
                     std::cout<<__FILE__<<":"<<__LINE__<<" created an RNA"<<std::endl;
                     std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<protein.getPdbChainId()<<"< "<<std::endl;
-                    compounds.push_back(protein);
+                    compounds.emplace_back(std::move(protein));
                 } else {
                     const auto &r = rChain.residues.at(0);
                     std::cout<<__FILE__<<":"<<__LINE__<<" Did not recognize chainResidues[0]->type "<<r.type<<" ("<<Repr::getResidueSpecifier(r.type).longName<<" - "<<"). Please use only canonical RNA, DNA, and protein residue names"<<std::endl;

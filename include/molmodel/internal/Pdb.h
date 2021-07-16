@@ -528,6 +528,20 @@ public:
     /// Empty constructor to allow later initialisation
     explicit PdbStructure();
 
+    PdbStructure(const PdbStructure &other);
+    PdbStructure(PdbStructure &&other) noexcept;
+
+    PdbStructure& operator=(const PdbStructure &other) {
+        models = other.models;
+	return *this;
+    }
+
+    PdbStructure& operator=(PdbStructure &&other) noexcept {
+        models = std::move(other.models);
+	return *this;
+    }
+
+
     bool hasAtom(String atomName, PdbResidueId residueId, String chainId) const;
 
     const PdbAtom& getAtom(String atomName, PdbResidueId residueId, String chainId) const;

@@ -900,8 +900,17 @@ PdbStructure::PdbStructure(
     models.emplace_back(state, compound, 1, transform);
 }
 
-PdbStructure::PdbStructure( ) {
-    return;
+PdbStructure::PdbStructure() {
+}
+
+PdbStructure::PdbStructure(const PdbStructure &other) :
+    models(other.models)
+{
+}
+
+PdbStructure::PdbStructure(PdbStructure &&other) noexcept :
+    models{std::move(other.models)}
+{
 }
 
 
