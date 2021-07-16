@@ -460,7 +460,7 @@ void PdbAtom::parsePdbLine(const String& line)
 }
 
 PdbResidue::PdbResidue(String name, PdbResidueId id)
-    : residueId(id)
+    : residueId(std::move(id))
 {
     name.resize(3, '\0');
 
@@ -481,7 +481,9 @@ PdbResidue::PdbResidue(const Compound& compound, int resNum, const Transform& tr
     residueName[2] = name[2];
     residueName[3] = 0;
 
-    for (Compound::AtomIndex aIx(0); aIx < compound.getNumAtoms(); ++aIx)
+    const auto N = compound.getNumAtoms();
+    atoms.reserve(N);
+    for (Compound::AtomIndex aIx(0); aIx < N; ++aIx)
     {
         Compound::AtomName atomName = compound.getAtomName(aIx);
         //std::cout<<__FILE__<<":"<<__LINE__<< " atomName "<<atomName<<std::endl;
@@ -504,7 +506,9 @@ PdbResidue::PdbResidue(
     residueName[2] = name[2];
     residueName[3] = 0;
 
-    for (Compound::AtomIndex aIx(0); aIx < compound.getNumAtoms(); ++aIx)
+    const auto N = compound.getNumAtoms();
+    atoms.reserve(N);
+    for (Compound::AtomIndex aIx(0); aIx < N; ++aIx)
     {
         Compound::AtomName atomName = compound.getAtomName(aIx);
         addAtom(state, compound, atomName, transform);
@@ -737,9 +741,9 @@ void PdbChain::parsePdbLine(const String& line)
 
         String residueName = line.substr(17, 3);
 
-        if (! hasResidue(residueId)) {
+        if (!hasResidue(residueId)) {
             residueIndicesById[residueId] = residues.size();
-            residues.push_back(PdbResidue(residueName, residueId));
+            residues.emplace_back(std::move(residueName), residueId);
         }
 
         residues[residueIndicesById[residueId]].parsePdbLine(line);
@@ -849,10 +853,10 @@ void PdbModel::parsePdbLine(const String& line, String longChainId = String(" ")
 
 PdbChain& PdbModel::updOrCreateChain(String chainId)
 {
-    if (! hasChain(chainId) ) {
+    if (!hasChain(chainId)) {
         chainIndicesById[chainId] = chains.size();
         //std::cout<<__FILE__":"<<__LINE__<<" chain ID is >"<<PdbChain(chainId).getChainId()<<"< "<<std::endl;
-        chains.push_back(PdbChain(chainId));
+        chains.emplace_back(std::move(chainId));
     }
 
     return chains[chainIndicesById[chainId]];
@@ -872,14 +876,14 @@ const PdbChain& PdbModel::getChain(String chainId) const
 
 PdbStructure::PdbStructure(const Compound& compound,
         const Transform& transform) {
-    models.push_back(PdbModel(compound, 1, transform));
+    models.emplace_back(compound, 1, transform);
 }
 
 PdbStructure::PdbStructure(
-        const State& state, 
+        const State& state,
         const Compound& compound,
         const Transform& transform) {
-    models.push_back(PdbModel(state, compound, 1, transform));
+    models.emplace_back(state, compound, 1, transform);
 }
 
 PdbStructure::PdbStructure( ) {

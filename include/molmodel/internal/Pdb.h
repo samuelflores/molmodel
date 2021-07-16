@@ -313,7 +313,7 @@ class Compound;
 class SimTK_MOLMODEL_EXPORT PdbChain {
     friend class PdbModel;
 public:
-    explicit PdbChain(String id = " ") : chainId(id) {}
+    explicit PdbChain(String id = " ") : chainId(std::move(id)) {}
 
     explicit PdbChain(
         const Compound& compound,
