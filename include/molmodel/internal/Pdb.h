@@ -272,6 +272,13 @@ public:
 
     void addAtom(const PdbAtom& atom);
 
+    template <typename ...Args>
+    void addAtom(Args&& ...args) {
+        atoms.emplace_back(std::forward<Args>(args)...);
+	const auto &a = atoms.back();
+	atomIndicesByName[a.getName()] = atoms.size() - 1;
+    }
+
 protected:
     void parsePdbLine(const String& line);
 

@@ -485,7 +485,7 @@ PdbResidue::PdbResidue(const Compound& compound, int resNum, const Transform& tr
     {
         Compound::AtomName atomName = compound.getAtomName(aIx);
         //std::cout<<__FILE__<<":"<<__LINE__<< " atomName "<<atomName<<std::endl;
-        addAtom(PdbAtom(compound, atomName, transform));
+        addAtom(compound, atomName, transform);
     }
 }
 
@@ -507,7 +507,7 @@ PdbResidue::PdbResidue(
     for (Compound::AtomIndex aIx(0); aIx < compound.getNumAtoms(); ++aIx)
     {
         Compound::AtomName atomName = compound.getAtomName(aIx);
-        addAtom(PdbAtom(state, compound, atomName, transform));
+        addAtom(state, compound, atomName, transform);
     }
 }
 
@@ -613,7 +613,7 @@ void PdbResidue::parsePdbLine(const String& line)
                 elementSymbol = "H";
 
             const Element& element = Element::getBySymbol(elementSymbol);
-            addAtom(PdbAtom(atomName, element));
+            addAtom(atomName, element);
         }
 
         atoms[atomIndicesByName[atomName]].parsePdbLine(line);
@@ -993,7 +993,7 @@ void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &cha
                         const Element& element               = Element::getBySymbol ( elementSymbol );
 
                         residue.atomIndicesByName[ at.name ] = residue.atoms.size();
-                        residue.addAtom                      ( PdbAtom ( at.name, element ) );
+                        residue.addAtom                      ( at.name, element );
                     }
 
                     assert ( residue.atomIndicesByName.find ( at.name ) != residue.atomIndicesByName.end () );
