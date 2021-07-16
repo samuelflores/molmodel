@@ -271,6 +271,7 @@ public:
     }
 
     void addAtom(const PdbAtom& atom);
+    void addAtom(PdbAtom &&atom) noexcept;
 
     template <typename ...Args>
     void addAtom(Args&& ...args) {
@@ -278,6 +279,8 @@ public:
 	const auto &a = atoms.back();
 	atomIndicesByName[a.getName()] = atoms.size() - 1;
     }
+
+    void reserveMoreSpace(const std::size_t count);
 
 protected:
     void parsePdbLine(const String& line);

@@ -2784,14 +2784,17 @@ public:
             insertionCode = ' '; // make sure insertion code goes back to the default of ' '.
         }
         PdbResidue pdbResidue(residue.getPdbResidueName(), PdbResidueId(residueNumber,insertionCode));
-        for (ResidueInfo::AtomIndex a(0); a < residue.getNumAtoms(); ++a) 
+
+	const auto numAtoms = residue.getNumAtoms();
+	pdbResidue.reserveMoreSpace(numAtoms);
+        for (ResidueInfo::AtomIndex a(0); a < numAtoms; ++a)
         {
             Compound::AtomIndex atomIx = residue.getAtomIndex(a);
             const CompoundAtom& atom = getAtom(atomIx);
 
             PdbAtom pdbAtom(residue.getAtomName(a), getAtomElement(atomIx));
             pdbAtom.setLocation(PdbAtomLocation(transform * atomFrameCache[atomIx].p()));
-            pdbResidue.addAtom(pdbAtom);
+            pdbResidue.addAtom(std::move(pdbAtom));
         }
 
         pdbChain.appendResidue(pdbResidue);
@@ -2852,7 +2855,10 @@ public:
             ++residueNumber;
 
         PdbResidue pdbResidue(residue.getPdbResidueName(), PdbResidueId(residueNumber,insertionCode ));
-        for (ResidueInfo::AtomIndex a(0); a < residue.getNumAtoms(); ++a) 
+
+	const auto numAtoms = residue.getNumAtoms();
+	pdbResidue.reserveMoreSpace(numAtoms);
+        for (ResidueInfo::AtomIndex a(0); a < numAtoms; ++a)
         {
             Compound::AtomIndex atomIx = residue.getAtomIndex(a);
             const CompoundAtom& atom = getAtom(atomIx);
@@ -2861,7 +2867,7 @@ public:
             pdbAtom.setLocation(
                 PdbAtomLocation(transform * calcAtomLocationInGroundFrame(state, atomIx))
             );
-            pdbResidue.addAtom(pdbAtom);
+            pdbResidue.addAtom(std::move(pdbAtom));
         }
         pdbChain.appendResidue(pdbResidue);
 

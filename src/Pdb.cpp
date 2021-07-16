@@ -644,6 +644,19 @@ void PdbResidue::addAtom(const PdbAtom& atom)
     atoms.push_back(atom);
 }
 
+void PdbResidue::addAtom(PdbAtom &&atom) noexcept
+{
+    const String& atomName = atom.getName();
+    atomIndicesByName[atomName] = atoms.size();
+    atoms.emplace_back(std::move(atom));
+}
+
+void PdbResidue::reserveMoreSpace(std::size_t count)
+{
+    atoms.reserve(atoms.size() + count);
+}
+
+
 PdbChain::PdbChain(const Compound& compound,
         const Transform& transform)
     : chainId( compound.getPdbChainId() )
