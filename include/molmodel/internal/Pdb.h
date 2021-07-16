@@ -274,7 +274,7 @@ public:
     void addAtom(PdbAtom &&atom) noexcept;
 
     template <typename ...Args>
-    void addAtom(Args&& ...args) {
+    void addAtom(Args&& ...args) noexcept {
         atoms.emplace_back(std::forward<Args>(args)...);
 	const auto &a = atoms.back();
 	atomIndicesByName[a.getName()] = atoms.size() - 1;
@@ -337,7 +337,7 @@ public:
 
     PdbAtom& updAtom(String atomName, PdbResidueId residueId);
 
-    PdbResidue& appendResidue( const PdbResidue& residue )
+    PdbResidue& appendResidue(const PdbResidue& residue)
     {
             //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
             //std::cout<<__FILE__<<":"<<__LINE__<<" You have tried to add a residue with ID : "<<residue.getResidueId().residueNumber << residue.getResidueId().insertionCode <<std::endl;//" which is incompatible with : "<<(residueIndicesById.end()).residueNumber<< std::endl;
@@ -353,6 +353,32 @@ public:
         residueIndicesById[residue.getResidueId()] = residues.size() - 1;
 
         return residues.back();
+    }
+
+    PdbResidue& appendResidue(PdbResidue&& residue) noexcept {
+        if ( residueIndicesById.find(residue.getResidueId()) != residueIndicesById.end() ) {
+            std::cout<<__FILE__<<":"<<__LINE__<<" But there is an existing residue : "<<((residueIndicesById.find(residue.getResidueId()))->first   ).residueNumber << ((residueIndicesById.find(residue.getResidueId()))->first   ).insertionCode <<std::endl; //<<residueIndicesById.find(residue.getResidueId()).insertionCode<<std::endl;
+	    std::abort();
+        }
+
+        residues.emplace_back(std::move(residue));
+        residueIndicesById[residue.getResidueId()] = residues.size() - 1;
+
+        return residues.back();
+    }
+
+    template <typename ...Args>
+    PdbResidue& appendResidue(Args&& ...args) noexcept {
+        residues.emplace_back(std::forward<Args>(args)...);
+
+	auto &residue = residues.back();
+        if ( residueIndicesById.find(residue.getResidueId()) != residueIndicesById.end() ) {
+            std::cout<<__FILE__<<":"<<__LINE__<<" But there is an existing residue : "<<((residueIndicesById.find(residue.getResidueId()))->first   ).residueNumber << ((residueIndicesById.find(residue.getResidueId()))->first   ).insertionCode <<std::endl; //<<residueIndicesById.find(residue.getResidueId()).insertionCode<<std::endl;
+	    std::abort();
+        }
+
+        residueIndicesById[residue.getResidueId()] = residues.size() - 1;
+	return residue;
     }
 
     size_t getNumResidues() const { return residues.size(); }

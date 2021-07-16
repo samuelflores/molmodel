@@ -1704,7 +1704,7 @@ public:
             residueNumber = defaultNextResidueNumber;        
         }
 
-        pdbChain.appendResidue( PdbResidue(getOwnerHandle(), residueNumber, myTransform) );
+        pdbChain.appendResidue(getOwnerHandle(), residueNumber, myTransform);
 
         defaultNextResidueNumber = residueNumber + 1;
 
@@ -1741,7 +1741,7 @@ public:
             residueNumber = defaultNextResidueNumber;        
         }
 
-        pdbChain.appendResidue( PdbResidue(state, getOwnerHandle(), residueNumber, myTransform) );
+        pdbChain.appendResidue(state, getOwnerHandle(), residueNumber, myTransform);
 
         defaultNextResidueNumber = residueNumber + 1;
 
@@ -2797,7 +2797,7 @@ public:
             pdbResidue.addAtom(std::move(pdbAtom));
         }
 
-        pdbChain.appendResidue(pdbResidue);
+        pdbChain.appendResidue(std::move(pdbResidue));
 
         defaultNextResidueNumber = residueNumber + 1;
 
@@ -2869,7 +2869,7 @@ public:
             );
             pdbResidue.addAtom(std::move(pdbAtom));
         }
-        pdbChain.appendResidue(pdbResidue);
+        pdbChain.appendResidue(std::move(pdbResidue));
 
         defaultNextResidueNumber = residueNumber + 1;
 
