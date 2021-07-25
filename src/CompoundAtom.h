@@ -938,10 +938,10 @@ public:
         return synonyms;
     }
 
-    const AtomInfo& addName(const Compound::AtomName& n) {
+    const AtomInfo& addName(Compound::AtomName n) {
         // assert(CompoundPathName::isValidAtomName(n));
-        name = n;
-        synonyms.insert(n);
+        name = std::move(n);
+        synonyms.insert(name);
         return *this;
     }
 

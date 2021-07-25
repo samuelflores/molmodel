@@ -1995,16 +1995,16 @@ public:
      * \brief Attach a new residue onto the end of the current Biopolymer chain
      */
     ResidueInfo::Index appendResidue(
-        const Compound::Name& resName, ///< new name for the new residue, local to this parent Biopolymer.
-        const BiopolymerResidue& residue ///< template residue to copy onto the end of the chain.  The residue will be copied, not incorporated.
+        Compound::Name resName, ///< new name for the new residue, local to this parent Biopolymer.
+        BiopolymerResidue residue ///< template residue to copy onto the end of the chain.  The residue will be copied, not incorporated.
         );
 
     /**
      * \brief Attach a new residue onto the end of the current Biopolymer chain
      */
     ResidueInfo::Index appendResidue(
-        const Compound::Name& resName, ///< new residue name, from the viewpoint of this parent Biopolymer
-        const BiopolymerResidue& residue, ///< template residue to copy onto the end of the chain.  The residue will be copied, not incorporated.
+        Compound::Name resName, ///< new residue name, from the viewpoint of this parent Biopolymer
+        BiopolymerResidue residue, ///< template residue to copy onto the end of the chain.  The residue will be copied, not incorporated.
         BondMobility::Mobility mobility ///< allowed motion of the new bond connecting the new residue to the rest of the chain
         );
 

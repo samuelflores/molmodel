@@ -383,7 +383,7 @@ Vec3 CompoundRep::calcDefaultAtomLocationInGroundFrame(const Compound::AtomName&
 // Add a subcompound attached by a bond to an existing atom
 // bondCompound("H1", MonovalentAtom(Element::Hydrogen()), "bond", "C/bond2", C_Hdistance );
 CompoundRep& CompoundRep::bondCompound(
-    const Compound::Name&           name, 
+    Compound::Name           name,
     const Compound&                 subcompoundArg, 
     const Compound::BondCenterPathName&   parentBondName, 
     mdunits::Length                        distance,
@@ -394,7 +394,7 @@ CompoundRep& CompoundRep::bondCompound(
     assert(! isNaN(dihedral) );
 
     const Compound::BondCenterIndex inboardBondCenterIndex = 
-        absorbSubcompound(name, subcompoundArg, false);
+        absorbSubcompound(std::move(name), subcompoundArg, false);
 
     // Get atoms to bond
     const Compound::BondCenterIndex outboardBondCenterIndex = getBondCenterInfo(parentBondName).getIndex();
@@ -416,8 +416,6 @@ CompoundRep& CompoundRep::bondCompound(
 
     //const Compound::BondIndex bondIndex = 
     //    bondBondCenters(outboardBondCenterIndex, inboardBondCenterIndex, distance, dihedral);
-
-    const BondInfo& bondInfo = getBondInfo(bondIndex);
 
     // Set bond mobility
     Bond& bond = updBond(updBondInfo(bondIndex));
@@ -1201,7 +1199,7 @@ Compound::BondCenterIndex CompoundRep::addLocalCompound(
 
 
 Compound::BondCenterIndex CompoundRep::absorbSubcompound(
-    const Compound::Name& scName,
+    Compound::Name scName,
     const Compound& subcompound,
     bool isBaseCompound)
 {
@@ -1228,8 +1226,8 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
         Compound::AtomIndex parentIx = parentAtomIndicesBySubcompoundAtomIndex[an->second];
         Compound::AtomName parentName = scName + "/" + an->first;
         AtomInfo& parentAtomInfo = updAtomInfo(parentIx);
-        parentAtomInfo.addName(parentName);
         atomIdsByName[parentName] = parentIx;
+        parentAtomInfo.addName(std::move(parentName));
     }
     // Set "main" atom name last, to make it stick
     for (Compound::AtomIndex a(0); a < subcompound.getNumAtoms(); ++a) {
@@ -1237,8 +1235,8 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
         Compound::AtomIndex parentIx = parentAtomIndicesBySubcompoundAtomIndex[a];
         AtomInfo& parentAtomInfo = updAtomInfo(parentIx);
         Compound::AtomName parentName = scName + "/" + childAtomInfo.getName();
-        parentAtomInfo.addName(parentName);
         atomIdsByName[parentName] = parentIx;
+        parentAtomInfo.addName(std::move(parentName));
     }
 
     // copy bondCenters
@@ -2513,7 +2511,7 @@ void Biopolymer::assignBiotypes() {
     }
 }
 
-ResidueInfo::Index Biopolymer::appendResidue(const String& resName, const BiopolymerResidue& r)
+ResidueInfo::Index Biopolymer::appendResidue(String resName, BiopolymerResidue r)
 {
     ResidueInfo::Index resId(getImpl().residues.size());
     updImpl().residues.emplace_back(resId, resName, r, Compound::AtomIndex(getNumAtoms()));
@@ -2521,20 +2519,20 @@ ResidueInfo::Index Biopolymer::appendResidue(const String& resName, const Biopol
 
     // Note that new (empty) residue has already been added to residue count
     if (getNumResidues() <= 1) {
-        setBaseCompound(resName, r);
+        setBaseCompound(std::move(resName), std::move(r));
     }
     else {
-        const String& previousResidueName = getResidue(ResidueInfo::Index(getNumResidues()-2)).getName();
+        String previousResidueName = getResidue(ResidueInfo::Index(getNumResidues()-2)).getName();
         // attach residue directly to the biopolymer instead of to the residue
-        bondCompound(resName, r, previousResidueName + "/bondNext");
+        bondCompound(std::move(resName), std::move(r), previousResidueName + "/bondNext");
     }
 
     return resId;
 }
 
 //Sam added polymorphism with mobility parameter
-ResidueInfo::Index Biopolymer::appendResidue(const String& resName, const BiopolymerResidue& residue, BondMobility::Mobility mobility) {
-    ResidueInfo::Index r = appendResidue(resName, residue);
+ResidueInfo::Index Biopolymer::appendResidue(String resName, BiopolymerResidue residue, BondMobility::Mobility mobility) {
+    ResidueInfo::Index r = appendResidue(std::move(resName), std::move(residue));
     setResidueBondMobility(r, mobility);
     return r;
 }

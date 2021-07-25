@@ -197,7 +197,7 @@ public:
     // Add a subcompound attached by a bond to an existing atom
     // bondCompound("H1", MonovalentAtom(Element::Hydrogen()), "bond", "C/bond2", C_Hdistance );
     CompoundRep& bondCompound(
-        const Compound::Name& name, 
+        Compound::Name name,
         const Compound& subcompound, 
         const Compound::BondCenterPathName& parentBondName, 
         mdunits::Length distance,
@@ -1817,7 +1817,7 @@ public:
 
     // Copy atoms etc.
     // Returns new bond center index of absorbed inboard bond center
-    Compound::BondCenterIndex absorbSubcompound(const Compound::Name& scName, const Compound& subcompound, bool isBase);
+    Compound::BondCenterIndex absorbSubcompound(Compound::Name scName, const Compound& subcompound, bool isBase);
 
     const BondInfo& getBondInfo(Compound::BondIndex bi) const {
         return allBonds[bi];
