@@ -36,6 +36,7 @@
 #include "molmodel/internal/common.h"
 #include "molmodel/internal/Compound.h"
 #include "molmodel/internal/CompoundSystem.h"
+#include <string>
 
 namespace SimTK {
 
@@ -1087,13 +1088,13 @@ protected:
 
             // Name residue subcompound after its number in the sequence
             // name must be unique within the protein
-            String residueName(resi);
+            String residueName = std::to_string(resi);
             appendResidue(residueName, std::move(residue));
 
             // Rigidify peptide bond 
             if (getNumResidues() > 1) // First residue lacks a preceding peptide bond
             {
-                String omegaAngleName = String("omega") + String(resi);
+                String omegaAngleName = "omega" + residueName;
 
                 defineDihedralAngle(
                     omegaAngleName, 
@@ -1112,12 +1113,12 @@ protected:
 
         // Create C-terminal end cap, if we are producing end caps
         if (addEndCaps) {
-            String cCapName = String("nme") + String((int)seq.size());
+            String cCapName = "nme" + std::to_string((int)seq.size());
             auto residue = NMethylAmideResidue();
             residue.setPdbResidueNumber(resi + 1);
             appendResidue(cCapName, std::move(residue));
             // Rigidify end cap's omega angle (regardless of setting above).
-            String omegaAngleName = String("omega") + String(cCapName);
+            String omegaAngleName = "omega" + cCapName;
             defineDihedralAngle(
                 omegaAngleName, 
                 previousResidueName+"/C/bond1", 
