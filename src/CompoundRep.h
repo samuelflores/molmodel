@@ -2529,7 +2529,7 @@ public:
     /*virtual*/ BiopolymerResidueRep* clone() const {return new BiopolymerResidueRep(*this);}
 
     BiopolymerResidueRep(String name, String tlc = "Unk", char olc = '?')
-        : residueName(name), threeLetterCode(tlc), oneLetterCode(olc)
+        : residueName(std::move(name)), threeLetterCode(std::move(tlc)), oneLetterCode(olc)
         {}
 
     BiopolymerResidueRep& setOneLetterCode(char olc) {
@@ -2551,55 +2551,35 @@ public:
 
     // Attempt to deduce correct biotypes from global biotypes database
     /// @return true if all atoms have a valid biotype assigned, false otherwise
-    bool assignBiotypes(Ordinality::Residue ordinality = Ordinality::Any) 
+    bool assignBiotypes(Ordinality::Residue ordinality = Ordinality::Any)
     {
-        bool answer = true; // start optimistic
-
         // for each named atom, look up resname, atomname, ordinality
         // if biotype is still undefined, raise exception
-        std::vector<AtomInfo>::iterator atomI;
-        for (atomI = allAtoms.begin(); atomI != allAtoms.end(); ++atomI) 
+        for (auto &it : allAtoms)
         {
             // debugging
             // int atomIndex = atomI->getIndex();
             // std::cout << "biotype for atom " << atomI->getIndex() << std::endl;
-            
-            CompoundAtom& atom = updAtom(*atomI);
-            
-			// if the atom already has a valid biotype, keep it.
-			if (atom.getBiotypeIndex().isValid()) continue;
 
-            // Examine all possible residue names
-            const std::set<Compound::Name>& residueNames = synonyms;
+            CompoundAtom& atom = updAtom(it);
+
+            // if the atom already has a valid biotype, keep it.
+            if (atom.getBiotypeIndex().isValid()) continue;
 
             // Create a container to hold variations of atom name
-            const std::set<Compound::AtomName>& atomNames = getAtomSynonyms(atomI->getIndex());
+            const std::set<Compound::AtomName>& atomNames = getAtomSynonyms(it.getIndex());
 
             // Loop over residue names and atom names until a match is found
-            bool foundBiotype = false;
-            BiotypeIndex index = getBiotypeIndex(residueNames, atomNames, ordinality);
+            BiotypeIndex index = getBiotypeIndex(synonyms, atomNames, ordinality);
             if (index.isValid()) {
                 atom.setBiotypeIndex(index);
-                foundBiotype = true;
             }
             else {
-                foundBiotype = false;
+                return false;
             }
-
-            if (!foundBiotype) {
-                answer = false;
-                std::set<Compound::AtomName>::const_iterator atomNamesIterator; 
-                for (atomNamesIterator = atomNames.begin(); atomNamesIterator != atomNames.end(); atomNamesIterator++){
-                    //std::cout<<__FILE__<<":"<<__LINE__<<" atomNames = "<<string(*atomNamesIterator)<<std::endl;
-                }
-            }
-            // Perhaps the atom already had a usable biotype...
-            /// assert(atom.getBiotypeIndex().isValid());
-            assert(foundBiotype);
-
         }
 
-        return answer;
+        return true;
     }
 
 private:

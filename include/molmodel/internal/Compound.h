@@ -1736,8 +1736,8 @@ public:
      * \brief Constructor for BiopolymerResidue
      */
     BiopolymerResidue(
-        const Compound::Name& residueTypeName, ///< name for the type of BiopolymerResidue, e.g. "glycine"
-        const String& threeLetterCode, ///< three letter code for the type of residue, e.g. "GLY".  This name will be used in the ResidueType field when PDB files are created.
+        Compound::Name residueTypeName, ///< name for the type of BiopolymerResidue, e.g. "glycine"
+        String threeLetterCode, ///< three letter code for the type of residue, e.g. "GLY".  This name will be used in the ResidueType field when PDB files are created.
         char oneLetterCode ///< one letter code for the type of residue.  e.g 'G'.  Use 'X' if the residue type is non-canonical.
         );
 

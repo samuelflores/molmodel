@@ -2704,14 +2704,13 @@ bool BiopolymerResidue::assignBiotypes(Ordinality::Residue ordinality) {
     return updImpl().assignBiotypes(ordinality);
 }
 
-BiopolymerResidue::BiopolymerResidue(const String& name, const String& threeLetterCode, char oneLetterCode)
+BiopolymerResidue::BiopolymerResidue(String name, String threeLetterCode, char oneLetterCode)
     : Compound( new BiopolymerResidueRep(name, threeLetterCode, oneLetterCode) )
 {
     // set pdb residue name
-    String pdbRes = threeLetterCode;
     // convert to upper case
-    std::transform(pdbRes.begin(), pdbRes.end(), pdbRes.begin(), (int(*)(int)) toupper);
-    setPdbResidueName(pdbRes);
+    std::transform(threeLetterCode.begin(), threeLetterCode.end(), threeLetterCode.begin(), (int(*)(int)) toupper);
+    setPdbResidueName(threeLetterCode);
 
     setCompoundName(name);
     if ( (threeLetterCode != "UNK") && (threeLetterCode.length() > 1) )
