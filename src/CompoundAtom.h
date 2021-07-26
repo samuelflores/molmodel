@@ -925,6 +925,22 @@ public:
     // One constructor for local atoms
     AtomInfo(Compound::AtomIndex id, const CompoundAtom& atom, bool isBase /*, const Transform& frameInCompound = Transform()*/ );
 
+    AtomInfo(const AtomInfo &other)
+        : id(other.id),
+          name(other.name),
+          synonyms(other.synonyms),
+          bIsBaseAtom(other.bIsBaseAtom),
+          atom(other.atom)
+    {}
+
+    AtomInfo(AtomInfo &&other) noexcept
+        : id(std::move(other.id)),
+          name(std::move(other.name)),
+          synonyms(std::move(other.synonyms)),
+          bIsBaseAtom(other.bIsBaseAtom),
+          atom(std::move(other.atom))
+    {}
+
     bool hasValidAtomName() const {
         return CompoundPathName::isValidAtomName(name);
     }

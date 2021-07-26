@@ -1817,7 +1817,7 @@ public:
 
     // Copy atoms etc.
     // Returns new bond center index of absorbed inboard bond center
-    Compound::BondCenterIndex absorbSubcompound(Compound::Name scName, const Compound& subcompound, bool isBase);
+    Compound::BondCenterIndex absorbSubcompound(Compound::Name scName, const Compound& subcompound, bool isBase) noexcept;
 
     const BondInfo& getBondInfo(Compound::BondIndex bi) const {
         return allBonds[bi];
@@ -2595,136 +2595,6 @@ public:
     friend class Biopolymer;
 
     BiopolymerRep* clone() const {return new BiopolymerRep(*this);}
-    //const std::vector<String>& getResidueNames() const {
-    //    return residueNames;
-    //}
-
-    //std::vector<String>& updResidueNames() {
-    //    return residueNames;
-    //}
-
-/*BiopolymerRep& fitDefaultConfiguration(
-        const Compound::AtomTargetLocations& atomTargets,
-        SimTK::Real targetRms,
-        bool useObservedPointFitter,
-        Real minimizerTolerance//,
-        //Compound compoundCopy //= *this;
-        )
-{
-    // this is a pointer, *this is its value
-    Compound compoundCopy((*this));
-    // TODO - DuMM should not be required
-    CompoundSystem matchingSystem;
-    SimbodyMatterSubsystem matchingMatter(matchingSystem);
-    DuMMForceFieldSubsystem dumm(matchingSystem);
-    dumm.loadAmber99Parameters();
-    dumm.setAllGlobalScaleFactors(0);
-    GeneralForceSubsystem forces(matchingSystem);
-    matchingSystem.adoptCompound(compoundCopy);
-    matchingSystem.modelCompounds();
-    matchingSystem.realizeTopology();
-    State& state = matchingSystem.updDefaultState();
-    matchingSystem.realize(state, Stage::Position);
-    // cout << "Number of atom matches(2) = " << optimizationAtomTargets.size() << endl;
-    std::map<MobilizedBodyIndex, std::vector<Vec3> > stations;
-    std::map<MobilizedBodyIndex, std::vector<Vec3> > targetLocations;
-    for (Compound::AtomTargetLocations::const_iterator targetIx = atomTargets.begin();
-         targetIx != atomTargets.end();
-         ++targetIx)
-    {
-        Compound::AtomIndex atomId = targetIx->first;
-        MobilizedBodyIndex bodyId = compoundCopy.getAtomMobilizedBodyIndex(atomId);
-        stations[bodyId].push_back(compoundCopy.getAtomLocationInMobilizedBodyFrame(atomId));
-        targetLocations[bodyId].push_back(targetIx->second);
-    }
-   
-    // Use ObservedPointFitter to optimize geometry
-    std::vector<MobilizedBodyIndex> bodyList;
-    std::vector<std::vector<Vec3> > stationList;
-    std::vector<std::vector<Vec3> > targetList;
-    for (std::map<MobilizedBodyIndex, std::vector<Vec3> >::const_iterator iter = stations.begin(); iter != stations.end(); iter++) {
-        bodyList.push_back(iter->first);
-        stationList.push_back(iter->second);
-        targetList.push_back(targetLocations.find(iter->first)->second);
-    }
-
-
-    // ObservedPointFitter takes a while, and occasionally aborts with line search trouble,
-    // So lets try a minimization using custom forces
-    //bool useObservedPointFitter = true;
-    if (useObservedPointFitter) {
-        // sherm 100307: Optimizers now use relative tolerance.
-        Real tolerance = .001; // 0.1%
-        ObservedPointFitter::findBestFit(matchingSystem, state, bodyList, stationList, targetList, tolerance);
-    }
-    else {
-        const MobilizedBody& groundBody = matchingMatter.getGround();
-        for (int b = 0; b < (int)bodyList.size(); ++b)
-        {
-            const MobilizedBody& atomBody = matchingMatter.getMobilizedBody(bodyList[b]);
-            for (int s = 0; s < (int)stationList[b].size(); ++s)
-            {
-                const Vec3& atomLocation = stationList[b][s];
-                const Vec3& targetLocation = targetList[b][s];
-                Force::TwoPointLinearSpring(forces, atomBody, atomLocation, groundBody, targetLocation, 1000000.0, 0.0);
-            }
-        }
-
-        state = matchingSystem.realizeTopology();
-        matchingSystem.realize(state, Stage::Position);
-        matchingSystem.realize(state, Stage::Position);
-            LocalEnergyMinimizer::minimizeEnergy(matchingSystem, state,  minimizerTolerance);
-
-            // Stuff optimized coordinates into a string
-            std::ostringstream optimizedPdbStringOut;
-            matchingSystem.realize(state, Stage::Position);
-            compoundCopy.writePdb(state, optimizedPdbStringOut);
-            // Create another PdbStructure, and match the dihedral angles to that
-            std::istringstream optimizedPdbStringIn(optimizedPdbStringOut.str());
-            PdbStructure optimizedStructure(optimizedPdbStringIn);
-            //Compound::AtomTargetLocations optimizedAtomTargets =
-            //        createAtomTargets(optimizedStructure,false); // scf set guessCoordinates to false here to make sure it's done exactly as before
-        std::ofstream myofstream("match1e.pdb");
-        optimizedStructure.write(myofstream, SimTK::Transform(Vec3(0)));
-    }
-    // Stuff optimized coordinates into a string
-    std::ostringstream optimizedPdbStringOut;
-    matchingSystem.realize(state, Stage::Position);
-    compoundCopy.writePdb(state, optimizedPdbStringOut);
-    // Create another PdbStructure, and match the dihedral angles to that
-    std::istringstream optimizedPdbStringIn(optimizedPdbStringOut.str());
-    PdbStructure optimizedStructure(optimizedPdbStringIn);
-    Compound::AtomTargetLocations optimizedAtomTargets =
-            createAtomTargets(optimizedStructure,false); // scf set guessCoordinates to false here to make sure it's done exactly as before
-    bool matchHydrogenAtomLocations = false;
-    if (! matchHydrogenAtomLocations) {
-        std::map<Compound::AtomIndex, Vec3>::iterator it;
-        std::map<Compound::AtomIndex, Vec3>::iterator next;
-        next = optimizedAtomTargets.begin();
-        while (next != optimizedAtomTargets.end()) {
-            it = next;
-            Compound::AtomIndex m = (*it).first;
-            Element myAtomElement = getAtomElement(m);
-            next++;
-            if  ((myAtomElement.getName()).compare("hydrogen") == 0) {
-                //cout<<__FILE__<<":"<<__LINE__<<" erasing "<<m<<endl;
-                optimizedAtomTargets.erase(it);
-            }
-            //cout<<__FILE__<<":"<<__LINE__<<" "<<m<<","<<(getAtomName(m))<<endl;
-        }
-    }
-    
-    //not sure that this was ever needed.  In any event, cutting out from the BiopolymerRep version:
-    matchDefaultBondLengths(optimizedAtomTargets);
-    matchDefaultBondAngles(optimizedAtomTargets);
-    matchDefaultDihedralAngles(optimizedAtomTargets);
-    // Use original atom locations for top level transform
-    matchDefaultTopLevelTransform(optimizedAtomTargets);
-    
-    return *this;
-} */
-
-
 
     int getNumResidues() const;
     const String& getResidueName(int residueIndex) const;

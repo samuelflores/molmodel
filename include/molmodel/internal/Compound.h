@@ -1796,10 +1796,24 @@ public:
     public:
         friend class ResidueInfo;
 
-        AtomInfo(Compound::AtomIndex index, const Compound::AtomName& name) 
-            : pdbAtomName(name), biopolymerAtomIndex(index)
+        AtomInfo(Compound::AtomIndex index, Compound::AtomName name)
+            : biopolymerAtomIndex(index), pdbAtomName(std::move(name))
         {
             synonyms.insert(name);
+        }
+
+        AtomInfo(const AtomInfo &other)
+            : biopolymerAtomIndex(other.biopolymerAtomIndex),
+              pdbAtomName(other.pdbAtomName),
+              synonyms(other.synonyms)
+        {
+        }
+
+        AtomInfo(AtomInfo &&other) noexcept
+            : biopolymerAtomIndex(std::move(other.biopolymerAtomIndex)),
+              pdbAtomName(std::move(other.pdbAtomName)),
+              synonyms(std::move(other.synonyms))
+        {
         }
 
         const std::set<Compound::AtomName>& getNames() const {
@@ -1820,7 +1834,7 @@ public:
         Compound::AtomIndex atomOffset,
         char insertionCode = ' ');
 
-    AtomIndex addAtom(Compound::AtomIndex index, Compound::AtomName name) {
+    AtomIndex addAtom(Compound::AtomIndex index, Compound::AtomName name) noexcept {
         ResidueInfo::AtomIndex answer(atoms.size());
         atoms.emplace_back(index, std::move(name));
         atomIdsByName[name] = answer;

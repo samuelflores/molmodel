@@ -273,7 +273,7 @@ CompoundRep& CompoundRep::setBaseAtom(
 {
     // Add an AtomInfo reference in the list of all atoms
     const Compound::AtomIndex compoundAtomIndex = Compound::AtomIndex(allAtoms.size());
-    allAtoms.push_back(AtomInfo(compoundAtomIndex, CompoundAtom(element, location), true));
+    allAtoms.emplace_back(compoundAtomIndex, CompoundAtom(element, location), true);
 
     // Set name
     nameAtom(name, compoundAtomIndex);
@@ -1201,7 +1201,7 @@ Compound::BondCenterIndex CompoundRep::addLocalCompound(
 Compound::BondCenterIndex CompoundRep::absorbSubcompound(
     Compound::Name scName,
     const Compound& subcompound,
-    bool isBaseCompound)
+    bool isBaseCompound) noexcept
 {
     const CompoundRep& subcompoundRep  = subcompound.getImpl();
 
@@ -1493,11 +1493,6 @@ void CompoundRep::calcDefaultAtomFramesInCompoundFrame(std::vector<Transform>& a
         Transform& transform = atomFrameCache[aI->getIndex()];
         if (isNaN(transform.p()[0])) {
             //std::cout<<__FILE__<<":"<<__LINE__<<" calculating default atom frame for atom ";
-            AtomInfo myAtomInfo = *aI;
-            std::set <Compound::AtomName>   tempSet    =myAtomInfo.getNames();
-            for ( std::set <Compound::AtomName>::iterator tempSetIterator = tempSet.begin(); tempSetIterator != tempSet.end(); tempSetIterator++){
-                //std::cout<<(*tempSetIterator)<<", ";
-            }
             //std::cout<<std::endl;
             //String tempString = String(aI->getNames()); //<<std::endl;
             transform = calcDefaultAtomFrameInCompoundFrame(aI->getIndex(), atomFrameCache);
