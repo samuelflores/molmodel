@@ -2539,14 +2539,12 @@ Compound::AtomTargetLocations Biopolymer::createAtomTargets(const PdbStructure& 
 }
 
 Compound::AtomTargetLocations Biopolymer::
-createAtomTargets(const PdbChain& targetChain, 
+createAtomTargets(const PdbChain& targetChain,
                   bool guessCoordinates // optional parameter, defaults to FALSE
-                 ) const 
+                 ) const
 {
     Compound::AtomTargetLocations answer;
-   
-    //cout<<__FILE__<<":"<<__LINE__<<endl;
-    // If chain id does not match, we won't find any matches
+
     String chainId = getPdbChainId();
     if (targetChain.getChainId() != chainId)
         return answer;
@@ -2557,57 +2555,36 @@ createAtomTargets(const PdbChain& targetChain,
         int residueNumber = residue.getPdbResidueNumber();
         char insertionCode = residue.getPdbInsertionCode(); // TODO - make this an attribute of the residue?
         PdbResidueId residueId(residueNumber, insertionCode);
-        // scf added guessCoords exception
-        //cout<<__FILE__<<":"<<__LINE__<<"getNumResidues() "<<getNumResidues()<<endl;
-        if ((!targetChain.hasResidue(residueId)) && (! guessCoordinates)) 
+        if ((!targetChain.hasResidue(residueId)) && (!guessCoordinates))
             continue;
 
         for(ResidueInfo::AtomIndex a(0); a < residue.getNumAtoms(); ++a) {
-            String atomName = residue.getAtomName(a);            
-            String oldAtomName = atomName; // atomName can potentially be stuffed with odd values in the loop below.  Let's keep a copy with the original name.
+            const string &atomName = residue.getAtomName(a);
             const std::set<Compound::AtomName>& atomNames = residue.getAtomSynonyms(a);
-            std::set<Compound::AtomName>::const_iterator nameIx;
-            int myCount =0;
-            for (nameIx = atomNames.begin(); nameIx != atomNames.end(); ++nameIx)
+            std::set<Compound::AtomName>::const_iterator nameIt;
+            for (nameIt = atomNames.begin(); nameIt != atomNames.end(); ++nameIt)
             {
-                myCount++;
-            }
-            for (nameIx = atomNames.begin(); nameIx != atomNames.end(); ++nameIx)
-            {
-                atomName = *nameIx;
-                if ( targetChain.hasAtom(atomName, residueId) )
-                    break;
-            }
-            //cout<<__FILE__<<":"<<__LINE__<<endl;
-            if ( targetChain.hasAtom(atomName, residueId) ) {
-                const PdbAtom& pdbAtom = targetChain.getAtom(atomName, residueId);
-                if (pdbAtom.hasLocation()) {
-                    // atom index in Biopolymer, as opposed to in residue
-                    Compound::AtomIndex atomIndex = residue.getAtomIndex(a);
-                    answer[atomIndex] = pdbAtom.getLocation();
-
-                    std::stringstream sstm;
-                    sstm << int(r) <<"/"<< oldAtomName;
-                    string atomPath = sstm.str();
-                    //cout<<__FILE__<<":"<<__LINE__<<" atomPath = "<<atomPath<<endl;
-                    //cout<<__FILE__<<":"<<__LINE__<<" calcDefaultAtomLocationInGroundFrame(atomPath ) "<< calcDefaultAtomLocationInGroundFrame(atomPath )  << endl;
+                if (targetChain.hasAtom(*nameIt, residueId)) {
+                    const PdbAtom& pdbAtom = targetChain.getAtom(*nameIt, residueId);
+		    if (pdbAtom.hasLocation()) {
+                        // atom index in Biopolymer, as opposed to in residue
+                        Compound::AtomIndex atomIndex = residue.getAtomIndex(a);
+		        answer[atomIndex] = pdbAtom.getLocation();
+                    }
                 }
             }
-            else if (guessCoordinates)  //&&
-                    //(getAtomElement(residue.getAtomIndex(a) ).getName().compare("hydrogen") != 0)) // scf added
-            {
-                    Compound::AtomIndex atomIndex = residue.getAtomIndex(a);
-                    std::stringstream sstm;
-                    sstm << int(r) <<"/"<< oldAtomName;
-                    string atomPath = sstm.str();
-                    //cout<<__FILE__<<":"<<__LINE__<<" atomIndex = "<<atomIndex<<endl;
-                    cout<<__FILE__<<":"<<__LINE__<<"answer.size() "<<   answer.size()<< endl;
-                    Element myAtomElement = getAtomElement ( atomPath );
-                    if ((myAtomElement.getName()).compare("hydrogen") != 0 ) { // don't bother guessing hydrogen positions
-                        cout<<__FILE__<<":"<<__LINE__<<" calcDefaultAtomLocationInGroundFrame(atomPath ) "<< calcDefaultAtomLocationInGroundFrame(atomPath )  << endl;
-                        answer[atomIndex] = calcDefaultAtomLocationInGroundFrame(atomPath );
-                    }
-                    cout<<__FILE__<<":"<<__LINE__<<endl;
+
+            if (nameIt == atomNames.end() && guessCoordinates) {
+                Compound::AtomIndex atomIndex = residue.getAtomIndex(a);
+		string atomPath = std::to_string(r) + "/" + atomName;
+                //cout<<__FILE__<<":"<<__LINE__<<" atomIndex = "<<atomIndex<<endl;
+                cout<<__FILE__<<":"<<__LINE__<<"answer.size() "<<   answer.size()<< endl;
+                const auto &myAtomElement = getAtomElement(atomPath);
+                if ((myAtomElement.getName()).compare("hydrogen") != 0) { // don't bother guessing hydrogen positions
+                    cout<<__FILE__<<":"<<__LINE__<<" calcDefaultAtomLocationInGroundFrame(atomPath ) "<< calcDefaultAtomLocationInGroundFrame(atomPath)  << endl;
+                    answer[atomIndex] = calcDefaultAtomLocationInGroundFrame(atomPath);
+                }
+                cout<<__FILE__<<":"<<__LINE__<<endl;
             }
         }
     }
