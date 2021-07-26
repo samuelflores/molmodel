@@ -1241,7 +1241,6 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
     std::map<Compound::BondCenterIndex, Compound::BondCenterIndex> parentBondCenterIndicesBySubcompoundBondCenterIndex;
     for (Compound::BondCenterIndex bond(0); bond < subcompound.getNumBondCenters(); ++bond) 
     {
-        const BondCenter&   scBc     = subcompoundRep.getBondCenter(bond);
         const BondCenterInfo&     scBcInfo = subcompoundRep.getBondCenterInfo(bond);
 
         const AtomInfo& atomInfo = getAtomInfo(Compound::AtomIndex(refAtomCount + scBcInfo.getAtomIndex()));
@@ -1261,8 +1260,8 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
     }
 
     // copy bonds
-    std::map<Compound::BondIndex, Compound::BondIndex> parentBondIndicesBySubcompoundBondIndex;
-    for (Compound::BondIndex bond(0); bond < subcompoundRep.getNumBonds(); ++bond)
+    auto bondIx = Compound::BondIndex(allBonds.size());
+    for (Compound::BondIndex bond(0); bond < subcompoundRep.getNumBonds(); ++bond, ++bondIx)
     {
         // 1) Index Info relative to subcompound
         const BondInfo&       scBondInfo = subcompoundRep.getBondInfo(bond);
@@ -1275,27 +1274,26 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
         BondCenterInfo& bc1Info   = updBondCenterInfo(atom1Info.getIndex(), scBc1.getAtomBondCenterIndex());
         BondCenterInfo& bc2Info   = updBondCenterInfo(atom2Info.getIndex(), scBc2.getAtomBondCenterIndex());
 
-        const Compound::BondIndex bondIndex = Compound::BondIndex(allBonds.size());
         allBonds.emplace_back(
-            bondIndex,
+            bondIx,
             bc1Info.getIndex(),
             bc2Info.getIndex(),
             scBondInfo.getBond()
             );
 
-        parentBondIndicesBySubcompoundBondIndex[bond] = bondIndex;
+        //parentBondIndicesBySubcompoundBondIndex[bond] = bondIndex;
 
         // Update cross references in BondCenters
-        bc1Info.setBondIndex(bondIndex);
-        bc2Info.setBondIndex(bondIndex);
+        bc1Info.setBondIndex(bondIx);
+        bc2Info.setBondIndex(bondIx);
         bc1Info.setBondPartnerBondCenterIndex(bc2Info.getIndex());
         bc2Info.setBondPartnerBondCenterIndex(bc1Info.getIndex());
 
         // map bonds to atomId pairs
         const std::pair<Compound::AtomIndex, Compound::AtomIndex> key1(atom1Info.getIndex(), atom2Info.getIndex());
         const std::pair<Compound::AtomIndex, Compound::AtomIndex> key2(atom2Info.getIndex(), atom1Info.getIndex());
-        bondIndicesByAtomIndexPair[key1] = bondIndex;
-        bondIndicesByAtomIndexPair[key2] = bondIndex;
+        bondIndicesByAtomIndexPair[key1] = bondIx;
+        bondIndicesByAtomIndexPair[key2] = bondIx;
     }
 
     // copy dihedral angles
