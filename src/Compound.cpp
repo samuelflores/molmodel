@@ -1206,33 +1206,30 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
     const CompoundRep& subcompoundRep  = subcompound.getImpl();
 
     // copy atoms
-    std::map<Compound::AtomIndex, Compound::AtomIndex> parentAtomIndicesBySubcompoundAtomIndex;
-    for (Compound::AtomIndex a(0); a < subcompound.getNumAtoms(); ++a) {
+    const auto refAtomCount = allAtoms.size();
+    auto parentIx = Compound::AtomIndex(refAtomCount);
+    for (Compound::AtomIndex a(0); a < subcompound.getNumAtoms(); ++a, ++parentIx) {
         const CompoundAtom& childAtom = subcompoundRep.getAtom(a);
         const AtomInfo& childAtomInfo = subcompoundRep.getAtomInfo(a);
-
-        const Compound::AtomIndex parentAtomIndex = Compound::AtomIndex(allAtoms.size());
-        bool isBase = childAtomInfo.isBaseAtom();
-        if (!isBaseCompound) isBase = false;
-        const AtomInfo atomInfo(parentAtomIndex, childAtom, isBase);
-
-        allAtoms.push_back(atomInfo);
-        parentAtomIndicesBySubcompoundAtomIndex[a] = parentAtomIndex;
+        bool isBase = childAtomInfo.isBaseAtom() & isBaseCompound;
+        allAtoms.emplace_back(parentIx, childAtom, isBase);
     }
+
     // Copy atom names
     std::map<Compound::AtomName, Compound::AtomIndex>::const_iterator an;
     for (an = subcompoundRep.atomIdsByName.begin(); an != subcompoundRep.atomIdsByName.end(); ++an)
     {
-        Compound::AtomIndex parentIx = parentAtomIndicesBySubcompoundAtomIndex[an->second];
+        Compound::AtomIndex parIx = Compound::AtomIndex(refAtomCount + an->second);
         Compound::AtomName parentName = scName + "/" + an->first;
-        AtomInfo& parentAtomInfo = updAtomInfo(parentIx);
-        atomIdsByName[parentName] = parentIx;
+        AtomInfo& parentAtomInfo = updAtomInfo(parIx);
+        atomIdsByName[parentName] = parIx;
         parentAtomInfo.addName(std::move(parentName));
     }
     // Set "main" atom name last, to make it stick
-    for (Compound::AtomIndex a(0); a < subcompound.getNumAtoms(); ++a) {
+    parentIx = Compound::AtomIndex(refAtomCount);
+    for (Compound::AtomIndex a(0); a < subcompound.getNumAtoms(); ++a, ++parentIx) {
         const AtomInfo& childAtomInfo = subcompoundRep.getAtomInfo(a);
-        Compound::AtomIndex parentIx = parentAtomIndicesBySubcompoundAtomIndex[a];
+
         AtomInfo& parentAtomInfo = updAtomInfo(parentIx);
         Compound::AtomName parentName = scName + "/" + childAtomInfo.getName();
         atomIdsByName[parentName] = parentIx;
@@ -1247,7 +1244,7 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
         const BondCenter&   scBc     = subcompoundRep.getBondCenter(bond);
         const BondCenterInfo&     scBcInfo = subcompoundRep.getBondCenterInfo(bond);
 
-        const AtomInfo& atomInfo = getAtomInfo(parentAtomIndicesBySubcompoundAtomIndex[scBcInfo.getAtomIndex()]);
+        const AtomInfo& atomInfo = getAtomInfo(Compound::AtomIndex(refAtomCount + scBcInfo.getAtomIndex()));
 
         addBondCenterInfo( atomInfo.getIndex(), scBcInfo.getAtomBondCenterIndex() );
         const BondCenterInfo& parentBondCenterInfo = getBondCenterInfo( atomInfo.getIndex(), scBcInfo.getAtomBondCenterIndex() );
@@ -1258,9 +1255,9 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
     std::map<String, Compound::BondCenterIndex>::const_iterator bcn;
     for (bcn = subcompoundRep.bondCenterIndicesByName.begin(); bcn != subcompoundRep.bondCenterIndicesByName.end(); ++bcn)
     {
-        Compound::BondCenterIndex parentIx = parentBondCenterIndicesBySubcompoundBondCenterIndex[bcn->second];
+        Compound::BondCenterIndex parIx = parentBondCenterIndicesBySubcompoundBondCenterIndex[bcn->second];
         Compound::BondCenterName parentName = scName + "/" + bcn->first;
-        bondCenterIndicesByName[parentName] = parentIx;
+        bondCenterIndicesByName[parentName] = parIx;
     }
 
     // copy bonds
@@ -1271,23 +1268,20 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
         const BondInfo&       scBondInfo = subcompoundRep.getBondInfo(bond);
         const BondCenterInfo& scBc1      = subcompoundRep.getBondCenterInfo( scBondInfo.getParentBondCenterIndex() );
         const BondCenterInfo& scBc2      = subcompoundRep.getBondCenterInfo( scBondInfo.getChildBondCenterIndex() );
-        const AtomInfo&       scAtom1    = subcompoundRep.getAtomInfo(scBc1.getAtomIndex());
-        const AtomInfo&       scAtom2    = subcompoundRep.getAtomInfo(scBc2.getAtomIndex());
 
         // 2) Index Info relative to parent compound
-        const AtomInfo& atom1Info = getAtomInfo(parentAtomIndicesBySubcompoundAtomIndex[scBc1.getAtomIndex()]);
-        const AtomInfo& atom2Info = getAtomInfo(parentAtomIndicesBySubcompoundAtomIndex[scBc2.getAtomIndex()]);
+        const AtomInfo& atom1Info = getAtomInfo(Compound::AtomIndex(refAtomCount + scBc1.getAtomIndex()));
+        const AtomInfo& atom2Info = getAtomInfo(Compound::AtomIndex(refAtomCount + scBc2.getAtomIndex()));
         BondCenterInfo& bc1Info   = updBondCenterInfo(atom1Info.getIndex(), scBc1.getAtomBondCenterIndex());
         BondCenterInfo& bc2Info   = updBondCenterInfo(atom2Info.getIndex(), scBc2.getAtomBondCenterIndex());
 
         const Compound::BondIndex bondIndex = Compound::BondIndex(allBonds.size());
-        allBonds.push_back( BondInfo(
-            bondIndex, 
-            bc1Info.getIndex(), 
+        allBonds.emplace_back(
+            bondIndex,
+            bc1Info.getIndex(),
             bc2Info.getIndex(),
             scBondInfo.getBond()
-            ) );
-        const BondInfo& bondInfo = getBondInfo(bondIndex);
+            );
 
         parentBondIndicesBySubcompoundBondIndex[bond] = bondIndex;
 
