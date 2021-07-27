@@ -312,9 +312,17 @@ Element::Element()
 //    : HandleBase(new ElementRep())
     : impl(new Impl())
 {}
-    
+
 Element::Element(int atomicNumber, Name name, Symbol symbol, mdunits::Mass typicalMass) 
     : impl(new Impl(atomicNumber, name, symbol, typicalMass))
+{}
+
+Element::Element(const Element &src)
+    : impl(src.impl)
+{}
+
+Element::Element(Element &&src) noexcept
+    : impl(std::move(src.impl))
 {}
 
 Element::Symbol Element::getSymbol() const {
@@ -329,6 +337,16 @@ int Element::getAtomicNumber() const {
 
 mdunits::Mass Element::getMass() const {
     return impl->getMass();
+}
+
+Element & Element::operator=(const Element &src) {
+    impl = src.impl;
+    return *this;
+}
+
+Element & Element::operator=(Element &&src) noexcept {
+    impl = std::move(src.impl);
+    return *this;
 }
 
 //const Element& Element::Hydrogen() {

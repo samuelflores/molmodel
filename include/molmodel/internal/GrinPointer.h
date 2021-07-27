@@ -105,6 +105,7 @@ public:
     }
 
     GrinPointer(const GrinPointer & src);
+    GrinPointer(GrinPointer &&src) noexcept;
 
     ~GrinPointer() throw() { doDelete(ptr); }
 
@@ -115,6 +116,7 @@ public:
     PointeeType& operator*() {return *ptr;}
 
     GrinPointer& operator=(const GrinPointer& src);
+    GrinPointer& operator=(GrinPointer&& src) noexcept;
 
 private:
     typedef void (*DeleteFunctionPtr)(PointeeType* ptr);
@@ -143,7 +145,17 @@ inline GrinPointer<PointeeType>::GrinPointer(const GrinPointer& src)
 	ptr(doCopy(src.ptr)),
 	doDelete(src.doDelete)
 {}
-    
+
+template<typename PointeeType>
+inline GrinPointer<PointeeType>::GrinPointer(GrinPointer &&src) noexcept
+:
+	doCopy(src.doCopy),
+	ptr(src.ptr),
+	doDelete(src.doDelete)
+{
+	src.ptr = nullptr;
+}
+
 template<typename PointeeType>
 inline GrinPointer<PointeeType>& GrinPointer<PointeeType>::operator=(const GrinPointer& src)
 {
@@ -156,6 +168,16 @@ inline GrinPointer<PointeeType>& GrinPointer<PointeeType>::operator=(const GrinP
     // ...and update
 	ptr = tmp;
 	return *this;
+}
+
+template<typename PointeeType>
+inline GrinPointer<PointeeType>& GrinPointer<PointeeType>::operator=(GrinPointer&& src) noexcept
+{
+    doDelete(ptr);
+
+    ptr = src.ptr;
+    src.ptr = nullptr;
+    return *this;
 }
 
 }

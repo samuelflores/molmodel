@@ -59,6 +59,9 @@ public:
     Element();
     Element(int atomicNumber, Name name, Symbol symbol, mdunits::Mass typicalMass);
 
+    Element(const Element &src);
+    Element(Element &&src) noexcept;
+
     Symbol getSymbol() const;
     Name getName() const;
 	int getAtomicNumber() const;
@@ -69,6 +72,9 @@ public:
         if (getMass() != rhs.getMass()) return false;
         return true;
     }
+
+    Element & operator=(const Element &src);
+    Element & operator=(Element &&src) noexcept;
 
     static Element getByAtomicNumber(int atomicNumber);
     static Element getBySymbol(const SimTK::String& symbol); 
