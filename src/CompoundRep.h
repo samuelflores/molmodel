@@ -1424,85 +1424,60 @@ public:
             const Compound::AtomTargetLocations& atomTargets, 
             Compound::PlanarBondMatchingPolicy policy) 
     {
-        std::vector< AtomIndexList > atomQuads = getBondedAtomRuns(4, atomTargets);
+        const std::vector<AtomIndexList> &atomQuads = getBondedAtomRuns(4, atomTargets);
 
         std::vector< AtomIndexList >::const_iterator bonds14Ix;
         for (bonds14Ix = atomQuads.begin(); bonds14Ix != atomQuads.end(); ++bonds14Ix) 
         {
-            //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
             Compound::AtomIndex atomIndex1 = (*bonds14Ix)[0];
             Compound::AtomIndex atomIndex2 = (*bonds14Ix)[1];
             Compound::AtomIndex atomIndex3 = (*bonds14Ix)[2];
             Compound::AtomIndex atomIndex4 = (*bonds14Ix)[3];
-            // for efficiency, set each dihedral only once
             if (atomIndex4 < atomIndex1) continue;
 
-			// Don't set dihedrals involving ring-closing bonds, as these can damage "real" dihedrals
-			if ( getBond(atomIndex2, atomIndex1).isRingClosingBond() ) continue;
-			if ( getBond(atomIndex3, atomIndex4).isRingClosingBond() ) continue;
+            // Don't set dihedrals involving ring-closing bonds, as these can damage "real" dihedrals
+            if (getBond(atomIndex2, atomIndex1).isRingClosingBond()) continue;
+            if (getBond(atomIndex3, atomIndex4).isRingClosingBond()) continue;
 
             // Compute and set dihedral angle
             UnitVec3 bond12(atomTargets.find(atomIndex2)->second - atomTargets.find(atomIndex1)->second);
             UnitVec3 bond23(atomTargets.find(atomIndex3)->second - atomTargets.find(atomIndex2)->second);
             UnitVec3 bond34(atomTargets.find(atomIndex4)->second - atomTargets.find(atomIndex3)->second);
-            
-            //std::cout<<__FILE__<<":"<<__LINE__<<" bond12 "<<bond12<<std::endl;
-            //std::cout<<__FILE__<<":"<<__LINE__<<" bond23 "<<bond23<<std::endl;
-            //std::cout<<__FILE__<<":"<<__LINE__<<" bond34 "<<bond34<<std::endl;
-            Angle angle = SimTK::calcDihedralAngle(bond12, bond23, bond34);
-            //std::cout<<__FILE__<<":"<<__LINE__<<"angle      = >"<< angle << "<" << std::endl;
 
-            // assert(false);  // need to implement general setDefaultDihedralAngle method
+            Angle angle = SimTK::calcDihedralAngle(bond12, bond23, bond34);
 
             // Don't set torsion for planar bonds, except maybe to Flip them
-            if  (policy == Compound::KeepPlanarBonds)
+            if (policy == Compound::KeepPlanarBonds)
             {
-                //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-                if ( isPlanarBond(atomIndex2, atomIndex3) )
+                if (isPlanarBond(atomIndex2, atomIndex3))
                     continue;
-            }   
-            //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-
-            if (policy == Compound::FlipPlanarBonds)
-                if ( isPlanarBond(atomIndex2, atomIndex3) ) {
+            }
+            else if (policy == Compound::FlipPlanarBonds) {
+                if (isPlanarBond(atomIndex2, atomIndex3)) {
                     // TODO - decide whether to flip the dihedral angle 180 degrees
-                    //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-                    Angle initialAngle = calcDefaultDihedralAngle(                
-                        atomIndex1, 
-                        atomIndex2, 
-                        atomIndex3, 
+                    Angle initialAngle = calcDefaultDihedralAngle(
+                        atomIndex1,
+                        atomIndex2,
+                        atomIndex3,
                         atomIndex4);
-                    //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
                     Angle diffAngle = angle - initialAngle;
                     // normalize to range (-180 degrees, 180 degrees)
                     while ( -SimTK::Pi >= diffAngle ) diffAngle += 2 * SimTK::Pi;
                     while ( SimTK::Pi < diffAngle )   diffAngle -= 2 * SimTK::Pi;
                     // Either flip the dihedral 180 degrees...
                     if (std::abs(diffAngle) > 0.5 * SimTK::Pi)
-                        angle = initialAngle + SimTK::Pi;          
+                        angle = initialAngle + SimTK::Pi;
                     else // ... or do nothing.
                         continue;
                 }
+            }
 
-            //std::cout<<__FILE__<<":"<<__LINE__<<" angle, atomIndex1, atomIndex2, atomIndex3, atomIndex4 "<<angle<<" , "<< atomIndex1;
-            /*std::cout << ":"<<getAtomName(atomIndex1);  
-            std::cout<<" , "<< atomIndex2;
-            std::cout << ":"<<getAtomName(atomIndex2);
-            std::cout<<" , "<< atomIndex3;
-            std::cout << ":"<<getAtomName(atomIndex3)  <<" , "<< atomIndex4;
-            std::cout << ":"<<getAtomName(atomIndex4)   <<std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"angle      = >"<< angle << "<" << std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"atomIndex1 = >"<< atomIndex1 << "<" << std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"atomIndex2 = >"<< atomIndex2 << "<" << std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"atomIndex3 = >"<< atomIndex3 << "<" << std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"atomIndex4 = >"<< atomIndex4 << "<" << std::endl;*/
-            setDefaultDihedralAngle( 
-                angle, 
-                atomIndex1, 
-                atomIndex2, 
-                atomIndex3, 
+            setDefaultDihedralAngle(
+                angle,
+                atomIndex1,
+                atomIndex2,
+                atomIndex3,
                 atomIndex4);
-            //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
         }
 
         return *this;

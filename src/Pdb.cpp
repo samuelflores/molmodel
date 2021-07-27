@@ -429,34 +429,31 @@ void PdbAtom::parsePdbLine(const String& line)
 /// Try to be smart about guessing correct atom name for names that are not 4 characters long
 /* static */ std::vector<SimTK::String> PdbAtom::generatePossibleAtomNames(SimTK::String name)
 {
-    AtomNameList possibleNames;
-
     // 1) convert to upper case
     std::transform(name.begin(), name.end(), name.begin(), (int(*)(int)) std::toupper);
 
-    if (4 == name.length()) 
-        possibleNames.push_back(name); // easy case
-
+    if (4 == name.length())
+        return { name };
     else if (4 < name.length())
     {
         // truncate name
-        possibleNames.push_back(name.substr(0, 4));
+        return { name.substr(0, 4) };
     }
-
     else
     {
+	AtomNameList possibleNames;
         // 1) append spaces to make four characters
         SimTK::String name1 = name;
         while (name1.length() < 4) name1 += " ";
-        possibleNames.push_back(name1);
+        possibleNames.push_back(std::move(name1));
 
         // 2) prepend one space, append rest
         SimTK::String name2 = String(" ") + name;
         while (name2.length() < 4) name2 += " ";
-        possibleNames.push_back(name2);
-    }
+        possibleNames.push_back(std::move(name2));
 
-    return possibleNames;
+	return possibleNames;
+    }
 }
 
 PdbResidue::PdbResidue(String name, PdbResidueId id)
@@ -526,10 +523,8 @@ std::ostream& PdbResidue::write(std::ostream& os, int& nextAtomSerialNumber,Stri
     return os;
 }
 
-bool PdbResidue::hasAtom(SimTK::String argName) const 
+bool PdbResidue::hasAtom(const SimTK::String &argName) const
 {
-    //std::cout<<__FILE__<<":"<<__LINE__<< std::endl;
-    // try variations of atom name spelling
     PdbAtom::AtomNameList possibleNames = PdbAtom::generatePossibleAtomNames(argName);
     PdbAtom::AtomNameList::const_iterator nameI;
     for (nameI = possibleNames.begin(); nameI != possibleNames.end(); ++nameI)

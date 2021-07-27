@@ -77,24 +77,30 @@ public:
     }
 
     // convert to lower case and trim leading and trailing spaces
-    static String regularizeString(const char* inputString) 
+    static string regularizeString(const char* str)
     {
-        String s(inputString);
+        size_t last = strlen(str);
+        size_t first = 0;
+        while (str[first] == ' ')
+            first++;
 
-        // Trim back end first, otherwise back end indices may not be correct
-        int end = s.find_last_not_of(" ");
-        if ( end < (int)(s.size() - 1) )
-            s.replace(++end, s.size(), "");
+        if (first == last)
+            return "";
 
-        // Trim front end
-        int start = s.find_first_not_of(" ");
-        if (start > 0)
-            s.replace(0, start, "");
+        last--;
+        while (str[last] == ' ' && last > first)
+            last--;
 
-        // lower case
-        std::transform(s.begin(), s.end(), s.begin(), (int(*)(int)) std::tolower);
+        string rs(last - first + 1, ' ');
+        size_t idx = first;
+        size_t jdx = 0;
+        for (;idx <= last; idx++, jdx++) {
+            char ch = str[idx];
+            unsigned b = (unsigned(ch) - 65U) < 26U;
+            rs[jdx] = ch + b * 32;
+        }
 
-        return s;
+        return rs;
     }
 
     String residueName;

@@ -266,7 +266,7 @@ public:
 
     std::ostream& write(std::ostream& os, int& nextAtomSerialNumber, String chainId, const Transform& transform) const;
 
-    bool hasAtom(SimTK::String argName) const; 
+    bool hasAtom(const SimTK::String &argName) const; 
 
     const PdbAtom& getAtom(String argName) const;
 
