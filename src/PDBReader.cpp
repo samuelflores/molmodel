@@ -104,7 +104,7 @@ static gemmi::Structure getStructureFromFile( const std::string &filename ) {
 
 class PDBReader::PDBReaderImpl {
 public:
-    PDBReaderImpl(string filename) : hasBuiltSystem(false) { // second parameter is a vector of strings specifying chain ID, residue combinations to be deleted.  Optional parameter, defaults to an empty vector.
+    PDBReaderImpl(const string &filename, bool onlyFirstModel) : hasBuiltSystem(false) { // second parameter is a vector of strings specifying chain ID, residue combinations to be deleted.  Optional parameter, defaults to an empty vector.
         std::cout<<__FILE__<<":"<<__LINE__<<"  filename.c_str()  >"<< filename.c_str()<<"< "<<std::endl;
         //============================================ Read in PDB or CIF
         const auto extension = getFileExtension(filename);
@@ -193,6 +193,9 @@ public:
             }
 
             rStructure.push_back(std::move(rModel));
+
+            if (onlyFirstModel)
+                break;
         }
 
         // NOTE:
@@ -205,7 +208,7 @@ public:
         //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
     }
 
-    void createCompounds( CompoundSystem& system, const String & chainsPrefix  ) {
+    void createCompounds(CompoundSystem& system, const String & chainsPrefix) {
         SimTK_APIARGCHECK_ALWAYS(!hasBuiltSystem, "PDBReaderImpl", "createSystem", "createSystem() has already been called");
 
         // Loop over chains and create a Biopolymer from each one.
@@ -364,9 +367,8 @@ private:
     bool hasBuiltSystem;
 };
 
-PDBReader::PDBReader(string filename ) {
-    //std::cout<<__FILE__<<":"<<__LINE__<<" >"<< deletedResidueVector.size() <<"<"<<std::endl;
-    impl = new PDBReaderImpl(filename );
+PDBReader::PDBReader(const string &filename, bool onlyFirstModel) {
+    impl = new PDBReaderImpl(filename, onlyFirstModel);
 }
 
 PDBReader::~PDBReader() {
