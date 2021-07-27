@@ -104,7 +104,7 @@ static gemmi::Structure getStructureFromFile( const std::string &filename ) {
 
 class PDBReader::PDBReaderImpl {
 public:
-    PDBReaderImpl(string filename ) : hasBuiltSystem(false) { // second parameter is a vector of strings specifying chain ID, residue combinations to be deleted.  Optional parameter, defaults to an empty vector.
+    PDBReaderImpl(string filename) : hasBuiltSystem(false) { // second parameter is a vector of strings specifying chain ID, residue combinations to be deleted.  Optional parameter, defaults to an empty vector.
         std::cout<<__FILE__<<":"<<__LINE__<<"  filename.c_str()  >"<< filename.c_str()<<"< "<<std::endl;
         //============================================ Read in PDB or CIF
         const auto extension = getFileExtension(filename);
@@ -183,16 +183,16 @@ public:
 
                         rAtom.setChainId(chain.name);
 
-                        rResidue.atoms.emplace_back(std::move(rAtom));
+                        rResidue.atoms.push_back(std::move(rAtom));
                     }
 
-                    rChain.residues.emplace_back(std::move(rResidue));
+                    rChain.residues.push_back(std::move(rResidue));
                 }
 
-                rModel.chains.emplace_back(std::move(rChain));
+                rModel.chains.push_back(std::move(rChain));
             }
 
-            rStructure.emplace_back(std::move(rModel));
+            rStructure.push_back(std::move(rModel));
         }
 
         // NOTE:
@@ -246,7 +246,7 @@ public:
                     std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).id >"<<rChain.getId()<<"< "<<std::endl;
                     std::cout<<__FILE__<<":"<<__LINE__<<" created an RNA"<<std::endl;
                     std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<rna.getPdbChainId()<<"< "<<std::endl;
-                    compounds.emplace_back(std::move(rna));
+                    compounds.push_back(std::move(rna));
                 } else if (Repr::residueIsDNA(firstValidResidueType)) {
                     std::cout<<__FILE__<<":"<<__LINE__<<"Creating a DNA"<<std::endl;
                     // Create a  DNA.
@@ -257,7 +257,7 @@ public:
                         dna.updResidue(ResidueInfo::Index(i)).setPdbInsertionCode(r.insertion_code);
                     }
                     dna.assignBiotypes();
-                    compounds.emplace_back(std::move(dna));
+                    compounds.push_back(std::move(dna));
                 } else if (Repr::residueIsProtein(firstValidResidueType)) {
                     std::cout<<__FILE__<<":"<<__LINE__<<"Creating a protein"<<std::endl;
                     // Create a Protein.
@@ -284,7 +284,7 @@ public:
                     std::cout<<__FILE__<<":"<<__LINE__<<" (*chains).id >"<<rChain.getId()<<"< "<<std::endl;
                     std::cout<<__FILE__<<":"<<__LINE__<<" created an RNA"<<std::endl;
                     std::cout<<__FILE__<<":"<<__LINE__<<" with chain >"<<protein.getPdbChainId()<<"< "<<std::endl;
-                    compounds.emplace_back(std::move(protein));
+                    compounds.push_back(std::move(protein));
                 } else {
                     const auto &r = rChain.residues.at(0);
                     std::cout<<__FILE__<<":"<<__LINE__<<" Did not recognize chainResidues[0]->type "<<r.type<<" ("<<Repr::getResidueSpecifier(r.type).longName<<" - "<<"). Please use only canonical RNA, DNA, and protein residue names"<<std::endl;

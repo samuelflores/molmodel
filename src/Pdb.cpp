@@ -643,7 +643,7 @@ void PdbResidue::addAtom(PdbAtom &&atom) noexcept
 {
     const String& atomName = atom.getName();
     atomIndicesByName[atomName] = atoms.size();
-    atoms.emplace_back(std::move(atom));
+    atoms.push_back(std::move(atom));
 }
 
 void PdbResidue::reserveMoreSpace(std::size_t count)

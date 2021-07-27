@@ -182,7 +182,7 @@ public:
 	auto it = locationIndicesById.find(alt_loc);
 	if (it == locationIndicesById.end()) {
             locationIndicesById[alt_loc] = locations.size();
-            locations.emplace_back(std::move(loc));
+            locations.push_back(std::move(loc));
         } else {
             locations[it->second] = std::move(loc);
         }
@@ -374,7 +374,7 @@ public:
 	    std::abort();
         }
 
-        residues.emplace_back(std::move(residue));
+        residues.push_back(std::move(residue));
         residueIndicesById[residue.getResidueId()] = residues.size() - 1;
 
         return residues.back();
