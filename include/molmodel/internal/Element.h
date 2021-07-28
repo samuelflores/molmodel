@@ -76,8 +76,9 @@ public:
     Element & operator=(const Element &src);
     Element & operator=(Element &&src) noexcept;
 
-    static Element getByAtomicNumber(int atomicNumber);
-    static Element getBySymbol(const SimTK::String& symbol); 
+    static const Element * getByAtomicNumber(int atomicNumber);
+    static const Element * getByName(Name name);
+    static const Element * getBySymbol(const Symbol& symbol);
 
     class Hydrogen;
     class Deuterium;

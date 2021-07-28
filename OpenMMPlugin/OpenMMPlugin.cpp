@@ -157,9 +157,9 @@ try {
 
     openMMSystem = new OpenMM::System();
     for (DuMM::NonbondAtomIndex nax(0); nax < dumm.getNumNonbondAtoms(); ++nax) {
-        const Element& e = Element::getByAtomicNumber
+        const Element* e = Element::getByAtomicNumber
            (dumm.getAtomElementNum(dumm.getAtomIndexOfNonbondAtom(nax)));
-        openMMSystem->addParticle(e.getMass());
+        openMMSystem->addParticle(e->getMass());
     }
 
         // NONBONDED FORCES //

@@ -136,7 +136,7 @@ public:
     // Add one simple atom unconnected to anything else
     CompoundRep& setBaseAtom(
         const Compound::AtomName& name, 
-        const Element& element,
+        const Element * element,
         const Transform& location);
 
     CompoundRep& setBaseAtom(
@@ -289,11 +289,11 @@ public:
 
     const Compound::AtomName getAtomName(Compound::AtomIndex) const;
 
-    const Element& getAtomElement(Compound::AtomIndex atomIndex) const {
+    const Element * getAtomElement(Compound::AtomIndex atomIndex) const {
         return getAtom(atomIndex).getElement();
     }
 
-    const Element& getAtomElement(const Compound::AtomName& atomName) const {
+    const Element * getAtomElement(const Compound::AtomName& atomName) const {
         return getAtom(atomName).getElement();
     }
 

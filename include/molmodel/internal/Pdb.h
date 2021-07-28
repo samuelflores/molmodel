@@ -122,7 +122,7 @@ class SimTK_MOLMODEL_EXPORT PdbAtom {
     friend class PdbResidue;
     typedef std::vector<SimTK::String> AtomNameList;
 public:
-    explicit PdbAtom(const SimTK::String& name, const Element& e);
+    explicit PdbAtom(const SimTK::String& name, const Element *e);
 
     explicit PdbAtom( 
         const class Compound& compound, 
@@ -225,7 +225,7 @@ protected:
     static std::vector<SimTK::String> generatePossibleAtomNames(SimTK::String name);
 
 public:
-    Element element;
+    const Element *element;
 
     // avoid dll export warnings for these private types
 #if defined(_MSC_VER)

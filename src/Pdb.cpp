@@ -147,7 +147,7 @@ std::ostream& PdbAtomLocation::writePdb(std::ostream& os, const Transform& trans
 /*static*/bool PdbAtom::getWriteFullPrecisionLocation() 
 {   return writeExtraPrecision; }
 
-PdbAtom::PdbAtom(const SimTK::String& name, const Element& e) : element(e) 
+PdbAtom::PdbAtom(const SimTK::String& name, const Element *e) : element(e)
 {
     atomName = canonicalizeAtomName(name);
 }
@@ -242,7 +242,7 @@ std::ostream& PdbAtom::write(
 
     // element
     // convert to upper case
-    std::string e = element.getSymbol();
+    std::string e = element->getSymbol();
     std::transform(e.begin(), e.end(), e.begin(), (int(*)(int)) toupper);
     os << std::right << std::setw(2) << e;
 
@@ -611,7 +611,7 @@ void PdbResidue::parsePdbLine(const String& line)
             if ( ('H' == atomName[0]) && (std::string::npos == atomName.find_first_of(" ")) )
                 elementSymbol = "H";
 
-            const Element& element = Element::getBySymbol(elementSymbol);
+            const Element *element = Element::getBySymbol(elementSymbol);
             addAtom(atomName, element);
         }
 
@@ -1016,7 +1016,7 @@ void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &cha
                         //============================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
                         String elementSymbol                 = std::string ( at.element.name() );
                         //============================ Add the atom
-                        const Element& element               = Element::getBySymbol ( elementSymbol );
+                        const Element *element               = Element::getBySymbol ( elementSymbol );
 
                         residue.atomIndicesByName[ at.name ] = residue.atoms.size();
                         residue.addAtom                      ( at.name, element );

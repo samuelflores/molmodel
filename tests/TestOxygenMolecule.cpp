@@ -50,12 +50,12 @@ class Oxygen2 : public Compound {
 public:
     Oxygen2() {
         if (! Biotype::exists("Oxygen2", "O") )
-            Biotype::defineBiotype(Element::Oxygen(), 1, "Oxygen2", "O");
+            Biotype::defineBiotype(Element::getBySymbol("O"), 1, "Oxygen2", "O");
 
         BiotypeIndex biotypeIx = Biotype::get("Oxygen2", "O").getIndex();
 
-        setBaseAtom( UnivalentAtom("O1", Element::Oxygen()) );
-        bondAtom( UnivalentAtom("O2", Element::Oxygen()), "O1/bond", 0.13);
+        setBaseAtom( UnivalentAtom("O1", Element::getBySymbol("O")) );
+        bondAtom( UnivalentAtom("O2", Element::getBySymbol("O")), "O1/bond", 0.13);
 
         setBiotypeIndex("O1", biotypeIx);
         setBiotypeIndex("O2", biotypeIx);
@@ -66,9 +66,9 @@ void testWater() {
     Compound water;
     Real angle = 105 * SimTK::Deg2Rad;
     Real length = 0.09;
-    water.setBaseAtom(BivalentAtom("O", Element::Oxygen(), angle));
-    water.bondAtom(UnivalentAtom("H1", Element::Hydrogen()), "O/bond1", length);
-    water.bondAtom(UnivalentAtom("H2", Element::Hydrogen()), "O/bond2", length);
+    water.setBaseAtom(BivalentAtom("O", Element::getBySymbol("O"), angle));
+    water.bondAtom(UnivalentAtom("H1", Element::getBySymbol("H")), "O/bond1", length);
+    water.bondAtom(UnivalentAtom("H2", Element::getBySymbol("H")), "O/bond2", length);
     ASSERT((water.calcDefaultAtomLocationInGroundFrame("O") - Vec3(0,0,0)).norm() < 0.01);
     ASSERT((water.calcDefaultAtomLocationInGroundFrame("H1") - Vec3(length,0,0)).norm() < 0.01);
     ASSERT((water.calcDefaultAtomLocationInGroundFrame("H2") - Vec3(std::cos(angle)*length,std::sin(angle)*length,0)).norm() < 0.01);

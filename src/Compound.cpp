@@ -233,15 +233,15 @@ class CompoundRep;
 /// Atom ///
 ////////////
     
-CompoundAtom::CompoundAtom(const Element& element, Transform location)
-  : 
-    element(element), 
-    biotypeIx(InvalidBiotypeIndex), 
+CompoundAtom::CompoundAtom(const Element *element, Transform location)
+  :
+    element(element),
+    biotypeIx(InvalidBiotypeIndex),
     localTransform(location)
 {
 }
 
-const Element& CompoundAtom::getElement() const {
+const Element * CompoundAtom::getElement() const {
     return element;
 }
 
@@ -268,7 +268,7 @@ template class PIMPLImplementation<Compound,CompoundRep>;
 // Add one simple atom unconnected to anything else
 CompoundRep& CompoundRep::setBaseAtom(
     const Compound::AtomName& name, 
-    const Element& element,
+    const Element * element,
     const Transform& location) 
 {
     // Add an AtomInfo reference in the list of all atoms
@@ -286,7 +286,7 @@ CompoundRep& CompoundRep::setBaseAtom(
     const Biotype& biotype,
     const Transform& location) 
 {
-    const Element& element = biotype.getElement();
+    const Element * element = biotype.getElement();
 
     setBaseAtom(name, element, location);
 
@@ -1045,7 +1045,7 @@ void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, gemmi:
             gemmiAtom.name.erase                      ( std::remove ( gemmiAtom.name.begin(), gemmiAtom.name.end(), ' ' ), gemmiAtom.name.end() );
             gemmiAtom.altloc                          = '\0';
             gemmiAtom.charge                          = 0;
-            gemmiAtom.element                         = gemmi::Element ( atomI->element.getSymbol() );
+            gemmiAtom.element                         = gemmi::Element ( atomI->element->getSymbol() );
             const PdbAtomLocation& location           = atomI->getPdbAtomLocation();
             Vec3 modCoords                            = transform * location.getCoordinates();
             gemmiAtom.pos                             = gemmi::Position ( static_cast<double> ( std::ceil ( (modCoords[0] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ),
@@ -1616,7 +1616,7 @@ Compound& Compound::addCompoundSynonym(const Compound::Name& synonym) {
     return *this;
 }
 
-Compound& Compound::setBaseAtom(const Compound::AtomName& name, const Element& element, const Transform& location) 
+Compound& Compound::setBaseAtom(const Compound::AtomName& name, const Element * element, const Transform& location)
 {
     updImpl().setBaseAtom(name, element, location);
     return *this;
@@ -1899,11 +1899,11 @@ Compound::AtomIndex Compound::getAtomIndex(const Compound::AtomName& name) const
     return getImpl().getAtomInfo(name).getIndex();
 }
 
-const Element& Compound::getAtomElement(Compound::AtomIndex atomIndex) const {
+const Element * Compound::getAtomElement(Compound::AtomIndex atomIndex) const {
     return getImpl().getAtomElement(atomIndex);
 }
 
-const Element& Compound::getAtomElement(const Compound::AtomName& atomName) const {
+const Element * Compound::getAtomElement(const Compound::AtomName& atomName) const {
     return getImpl().getAtomElement(atomName);
 }
 
@@ -2580,7 +2580,7 @@ createAtomTargets(const PdbChain& targetChain,
                 //cout<<__FILE__<<":"<<__LINE__<<" atomIndex = "<<atomIndex<<endl;
                 cout<<__FILE__<<":"<<__LINE__<<"answer.size() "<<   answer.size()<< endl;
                 const auto &myAtomElement = getAtomElement(atomPath);
-                if ((myAtomElement.getName()).compare("hydrogen") != 0) { // don't bother guessing hydrogen positions
+                if ((myAtomElement->getName()).compare("hydrogen") != 0) { // don't bother guessing hydrogen positions
                     cout<<__FILE__<<":"<<__LINE__<<" calcDefaultAtomLocationInGroundFrame(atomPath ) "<< calcDefaultAtomLocationInGroundFrame(atomPath)  << endl;
                     answer[atomIndex] = calcDefaultAtomLocationInGroundFrame(atomPath);
                 }

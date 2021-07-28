@@ -50,12 +50,12 @@ public:
         : RiboseCore(name, threeLetterCode, oneLetterCode)
     {
         // 2' hydroxyl group present in DNA but not in DNA
-        //bondAtom(BivalentAtom("O2'", Element::Oxygen(), 108.50*Deg2Rad), "C2'/bond4", 0.1413, -60*Deg2Rad);
-        //bondAtom(UnivalentAtom("2HO'", Element::Hydrogen()), "O2'/bond2", 0.0960);
+        //bondAtom(BivalentAtom("O2'", Element::getBySymbol("O"), 108.50*Deg2Rad), "C2'/bond4", 0.1413, -60*Deg2Rad);
+        //bondAtom(UnivalentAtom("2HO'", Element::getBySymbol("H")), "O2'/bond2", 0.0960);
         bondAtom(AliphaticHydrogen("H2'1"), "C2'/bond3");
         //bondAtom(AliphaticHydrogen("H2'2"), "C2'/bond4");
 
-        bondAtom(UnivalentAtom("H2'2", Element::Hydrogen()), "C2'/bond4", 0.0960);
+        bondAtom(UnivalentAtom("H2'2", Element::getBySymbol("H")), "C2'/bond4", 0.0960);
 
         // alternate atom name
         //nameAtom("O2'", "O2'");
@@ -125,19 +125,19 @@ class ThymineBase  : public PyrimidineBaseCore
 public:
     ThymineBase()
     {
-        setBaseAtom( TrivalentAtom("N1",  Element::Nitrogen(), 125.8*Deg2Rad, 128.8*Deg2Rad));
+        setBaseAtom( TrivalentAtom("N1",  Element::getBySymbol("N"), 125.8*Deg2Rad, 128.8*Deg2Rad));
 
-        bondAtom( TrivalentAtom("C2", Element::Carbon(), 118.6*Deg2Rad, 120.9*Deg2Rad),  "N1/bond2", 0.1383, 180*Deg2Rad,   BondMobility::Rigid );
-        bondAtom( UnivalentAtom("O2", Element::Oxygen()), "C2/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C2", Element::getBySymbol("C"), 118.6*Deg2Rad, 120.9*Deg2Rad),  "N1/bond2", 0.1383, 180*Deg2Rad,   BondMobility::Rigid );
+        bondAtom( UnivalentAtom("O2", Element::getBySymbol("O")), "C2/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom(TrivalentAtom("N3", Element::Nitrogen(), 126.4*Deg2Rad, 116.8*Deg2Rad), "C2/bond2", 0.1358, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom(UnivalentAtom("H3", Element::Hydrogen()), "N3/bond3", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom(TrivalentAtom("N3", Element::getBySymbol("N"), 126.4*Deg2Rad, 116.8*Deg2Rad), "C2/bond2", 0.1358, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom(UnivalentAtom("H3", Element::getBySymbol("H")), "N3/bond3", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( TrivalentAtom("C4", Element::Carbon(), 114.0*Deg2Rad, 120.6*Deg2Rad),  "N3/bond2", 0.1388, 0*Deg2Rad,   BondMobility::Rigid );
-        bondAtom( UnivalentAtom("O4", Element::Oxygen()), "C4/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C4", Element::getBySymbol("C"), 114.0*Deg2Rad, 120.6*Deg2Rad),  "N3/bond2", 0.1388, 0*Deg2Rad,   BondMobility::Rigid );
+        bondAtom( UnivalentAtom("O4", Element::getBySymbol("O")), "C4/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( TrivalentAtom("C5", Element::Carbon(), 120.7*Deg2Rad, 119.70*Deg2Rad), "C4/bond2", 0.1444, 0*Deg2Rad, BondMobility::Rigid);
-        //bondAtom( UnivalentAtom("H5", Element::Hydrogen()), "C5/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C5", Element::getBySymbol("C"), 120.7*Deg2Rad, 119.70*Deg2Rad), "C4/bond2", 0.1444, 0*Deg2Rad, BondMobility::Rigid);
+        //bondAtom( UnivalentAtom("H5", Element::getBySymbol("H")), "C5/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
         bondCompound("thymineMethyl",MethylGroup(),"C5/bond3",0.150 ,0*Deg2Rad,BondMobility::Rigid); // the problem is here!
         nameAtom("C7" , "thymineMethyl/C");
         //nameAtom("H7" , "thymineMethyl/H1");
@@ -150,8 +150,8 @@ public:
         setBiotypeIndex( "H72", Biotype::get("Deoxythymidine", "H7", SimTK::Ordinality::Any).getIndex() );
         setBiotypeIndex( "H73", Biotype::get("Deoxythymidine", "H7", SimTK::Ordinality::Any).getIndex() );
 
-        bondAtom( TrivalentAtom("C6", Element::Carbon(), 121.20*Deg2Rad, 119.70*Deg2Rad), "C5/bond2", 0.1350, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom( UnivalentAtom("H6", Element::Hydrogen()), "C6/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C6", Element::getBySymbol("C"), 121.20*Deg2Rad, 119.70*Deg2Rad), "C5/bond2", 0.1350, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( UnivalentAtom("H6", Element::getBySymbol("H")), "C6/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
 
         addRingClosingBond("C6/bond2", "N1/bond3", 0.1365, 0*Deg2Rad, BondMobility::Rigid);
     }

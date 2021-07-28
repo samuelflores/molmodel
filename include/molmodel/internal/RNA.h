@@ -49,8 +49,8 @@ public:
         bondAtom(AliphaticHydrogen("H2'"), "C2'/bond3");
         //#bondAtom(AliphaticHydrogen("H2'2"), "C2'/bond4");
 
-        bondAtom(BivalentAtom("O2'", Element::Oxygen(), 108.50*Deg2Rad), "C2'/bond4", 0.1413, -60*Deg2Rad);
-        bondAtom(UnivalentAtom("2HO'", Element::Hydrogen()), "O2'/bond2", 0.0960);
+        bondAtom(BivalentAtom("O2'", Element::getBySymbol("O"), 108.50*Deg2Rad), "C2'/bond4", 0.1413, -60*Deg2Rad);
+        bondAtom(UnivalentAtom("2HO'", Element::getBySymbol("H")), "O2'/bond2", 0.0960);
 
         // alternate atom name
         nameAtom("H2'", "H2'");
@@ -121,23 +121,23 @@ class PurineBaseCore : public Compound {
 public:
     PurineBaseCore()
     {
-        setBaseAtom( TrivalentAtom("N9",  Element::Nitrogen(), 125.8*Deg2Rad, 128.8*Deg2Rad));
+        setBaseAtom( TrivalentAtom("N9",  Element::getBySymbol("N"), 125.8*Deg2Rad, 128.8*Deg2Rad));
 
-        bondAtom( TrivalentAtom("C8",  Element::Carbon(),   113.9*Deg2Rad, 123.05*Deg2Rad),  "N9/bond3", 0.13710, 180*Deg2Rad,   BondMobility::Rigid );
+        bondAtom( TrivalentAtom("C8",  Element::getBySymbol("C"),   113.9*Deg2Rad, 123.05*Deg2Rad),  "N9/bond3", 0.13710, 180*Deg2Rad,   BondMobility::Rigid );
 
-        bondAtom( UnivalentAtom("H8",  Element::Hydrogen()),                                 "C8/bond3",  0.10800 );
-        bondAtom(  BivalentAtom("N7",  Element::Nitrogen(), 103.8*Deg2Rad),                  "C8/bond2",  0.13040, 0*Deg2Rad,    BondMobility::Rigid );
-        bondAtom( TrivalentAtom("C5",  Element::Carbon(),   110.4*Deg2Rad, 132.40*Deg2Rad),  "N7/bond2",  0.13910, 0*Deg2Rad,    BondMobility::Rigid );
+        bondAtom( UnivalentAtom("H8",  Element::getBySymbol("H")),                                 "C8/bond3",  0.10800 );
+        bondAtom(  BivalentAtom("N7",  Element::getBySymbol("N"), 103.8*Deg2Rad),                  "C8/bond2",  0.13040, 0*Deg2Rad,    BondMobility::Rigid );
+        bondAtom( TrivalentAtom("C5",  Element::getBySymbol("C"),   110.4*Deg2Rad, 132.40*Deg2Rad),  "N7/bond2",  0.13910, 0*Deg2Rad,    BondMobility::Rigid );
         
-        bondAtom( TrivalentAtom("C4",  Element::Carbon(),   126.2*Deg2Rad, 106.2*Deg2Rad),   "N9/bond2",  0.13740, 0*Deg2Rad,    BondMobility::Rigid );
+        bondAtom( TrivalentAtom("C4",  Element::getBySymbol("C"),   126.2*Deg2Rad, 106.2*Deg2Rad),   "N9/bond2",  0.13740, 0*Deg2Rad,    BondMobility::Rigid );
 
         addRingClosingBond("C5/bond2",                                                       "C4/bond3",  0.13700, 0*Deg2Rad,    BondMobility::Rigid );
 
         // 114.30 is average between amber angle for guanine(111.30) and adenine(117.30)
-        bondAtom( TrivalentAtom("C6",  Element::Carbon(), 114.30*Deg2Rad, 122.85*Deg2Rad),   "C5/bond3",  0.14040, 180*Deg2Rad,  BondMobility::Rigid );
+        bondAtom( TrivalentAtom("C6",  Element::getBySymbol("C"), 114.30*Deg2Rad, 122.85*Deg2Rad),   "C5/bond3",  0.14040, 180*Deg2Rad,  BondMobility::Rigid );
 
-        bondAtom(  BivalentAtom("N3",  Element::Nitrogen(), 118.60*Deg2Rad),                 "C4/bond2",  0.13540, 180*Deg2Rad,  BondMobility::Rigid );
-        bondAtom( TrivalentAtom("C2",  Element::Carbon()),                                   "N3/bond2",  0.13240, 0*Deg2Rad,    BondMobility::Rigid );
+        bondAtom(  BivalentAtom("N3",  Element::getBySymbol("N"), 118.60*Deg2Rad),                 "C4/bond2",  0.13540, 180*Deg2Rad,  BondMobility::Rigid );
+        bondAtom( TrivalentAtom("C2",  Element::getBySymbol("C")),                                   "N3/bond2",  0.13240, 0*Deg2Rad,    BondMobility::Rigid );
 
         // Two bond centers open, inboard (N9), and C6
         nameBondCenter("bondC6", "C6/bond3");
@@ -152,16 +152,16 @@ public:
     AdenineBase()
     {
         // Lone pair on N1
-        bondAtom(  BivalentAtom("N1",  Element::Nitrogen(), 118.60*Deg2Rad), "C6/bond2",  0.13390, 0*Deg2Rad, BondMobility::Rigid );
+        bondAtom(  BivalentAtom("N1",  Element::getBySymbol("N"), 118.60*Deg2Rad), "C6/bond2",  0.13390, 0*Deg2Rad, BondMobility::Rigid );
         addRingClosingBond("N1/bond2",                                       "C2/bond2",  0.13240, 0*Deg2Rad, BondMobility::Rigid);
 
         // Hydrogen on C2
-        bondAtom( UnivalentAtom("H2",  Element::Hydrogen()),                 "bondC2",    0.10800,            BondMobility::Rigid );
+        bondAtom( UnivalentAtom("H2",  Element::getBySymbol("H")),                 "bondC2",    0.10800,            BondMobility::Rigid );
 
         // Amine on C6
-        bondAtom( TrivalentAtom("N6",  Element::Nitrogen()),                 "bondC6",    0.13400, 0*Deg2Rad, BondMobility::Rigid );
-        bondAtom( UnivalentAtom("H61", Element::Hydrogen()),                 "N6/bond2",  0.10100,            BondMobility::Rigid );
-        bondAtom( UnivalentAtom("H62", Element::Hydrogen()),                 "N6/bond3",  0.10100,            BondMobility::Rigid );
+        bondAtom( TrivalentAtom("N6",  Element::getBySymbol("N")),                 "bondC6",    0.13400, 0*Deg2Rad, BondMobility::Rigid );
+        bondAtom( UnivalentAtom("H61", Element::getBySymbol("H")),                 "N6/bond2",  0.10100,            BondMobility::Rigid );
+        bondAtom( UnivalentAtom("H62", Element::getBySymbol("H")),                 "N6/bond3",  0.10100,            BondMobility::Rigid );
     }
 };
 
@@ -171,17 +171,17 @@ public:
     GuanineBase()
     {
         // Hydrogen on N1
-        bondAtom( TrivalentAtom("N1",  Element::Nitrogen(), 125.20*Deg2Rad, 116.8*Deg2Rad), "C6/bond2",  0.13880, 0*Deg2Rad, BondMobility::Rigid );
-        bondAtom(UnivalentAtom("H1", Element::Hydrogen()),   "N1/bond3", 0.10100, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("N1",  Element::getBySymbol("N"), 125.20*Deg2Rad, 116.8*Deg2Rad), "C6/bond2",  0.13880, 0*Deg2Rad, BondMobility::Rigid );
+        bondAtom(UnivalentAtom("H1", Element::getBySymbol("H")),   "N1/bond3", 0.10100, BondMobility::Rigid);
         addRingClosingBond("N1/bond2",                       "C2/bond2",  0.13240, 0*Deg2Rad, BondMobility::Rigid);
 
         // Amine on C2
-        bondAtom( TrivalentAtom("N2",  Element::Nitrogen()), "bondC2",    0.13400, 0*Deg2Rad, BondMobility::Rigid );
-        bondAtom( UnivalentAtom("H21", Element::Hydrogen()), "N2/bond2",  0.10100,            BondMobility::Rigid );
-        bondAtom( UnivalentAtom("H22", Element::Hydrogen()), "N2/bond3",  0.10100,            BondMobility::Rigid );
+        bondAtom( TrivalentAtom("N2",  Element::getBySymbol("N")), "bondC2",    0.13400, 0*Deg2Rad, BondMobility::Rigid );
+        bondAtom( UnivalentAtom("H21", Element::getBySymbol("H")), "N2/bond2",  0.10100,            BondMobility::Rigid );
+        bondAtom( UnivalentAtom("H22", Element::getBySymbol("H")), "N2/bond3",  0.10100,            BondMobility::Rigid );
 
         // Carbonyl on C6
-        bondAtom( UnivalentAtom("O6",  Element::Oxygen()),   "bondC6",    0.12290,            BondMobility::Rigid );
+        bondAtom( UnivalentAtom("O6",  Element::getBySymbol("O")),   "bondC6",    0.12290,            BondMobility::Rigid );
 
     }
 };
@@ -210,25 +210,25 @@ class CytosineBase : public PyrimidineBaseCore
 public:
     CytosineBase()
     {
-        setBaseAtom(   TrivalentAtom("N1",  Element::Nitrogen(), 125.8*Deg2Rad, 128.8*Deg2Rad));
+        setBaseAtom(   TrivalentAtom("N1",  Element::getBySymbol("N"), 125.8*Deg2Rad, 128.8*Deg2Rad));
 	//scf added temporarily
-        //bondAtom( UnivalentAtom("HN1", Element::Hydrogen()), "N1/bond4", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
+        //bondAtom( UnivalentAtom("HN1", Element::getBySymbol("H")), "N1/bond4", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( TrivalentAtom("C2", Element::Carbon(), 118.6*Deg2Rad, 120.9*Deg2Rad),  "N1/bond2", 0.1383, 180*Deg2Rad,   BondMobility::Rigid );
-        bondAtom( UnivalentAtom("O2", Element::Oxygen()), "C2/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C2", Element::getBySymbol("C"), 118.6*Deg2Rad, 120.9*Deg2Rad),  "N1/bond2", 0.1383, 180*Deg2Rad,   BondMobility::Rigid );
+        bondAtom( UnivalentAtom("O2", Element::getBySymbol("O")), "C2/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( BivalentAtom("N3", Element::Nitrogen(), 120.5*Deg2Rad), "C2/bond2", 0.1358, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( BivalentAtom("N3", Element::getBySymbol("N"), 120.5*Deg2Rad), "C2/bond2", 0.1358, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( TrivalentAtom("C4", Element::Carbon(), 121.5*Deg2Rad, 119.3*Deg2Rad), "N3/bond2", 0.1339, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom( TrivalentAtom("N4", Element::Nitrogen(), 120.0*Deg2Rad, 120.0*Deg2Rad), "C4/bond3", 0.1340, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom( UnivalentAtom("H41", Element::Hydrogen()), "N4/bond2", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom( UnivalentAtom("H42", Element::Hydrogen()), "N4/bond3", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C4", Element::getBySymbol("C"), 121.5*Deg2Rad, 119.3*Deg2Rad), "N3/bond2", 0.1339, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("N4", Element::getBySymbol("N"), 120.0*Deg2Rad, 120.0*Deg2Rad), "C4/bond3", 0.1340, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( UnivalentAtom("H41", Element::getBySymbol("H")), "N4/bond2", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( UnivalentAtom("H42", Element::getBySymbol("H")), "N4/bond3", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( TrivalentAtom("C5", Element::Carbon(), 117.0*Deg2Rad, 119.70*Deg2Rad), "C4/bond2", 0.1433, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom( UnivalentAtom("H5", Element::Hydrogen()), "C5/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C5", Element::getBySymbol("C"), 117.0*Deg2Rad, 119.70*Deg2Rad), "C4/bond2", 0.1433, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( UnivalentAtom("H5", Element::getBySymbol("H")), "C5/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( TrivalentAtom("C6", Element::Carbon(), 121.20*Deg2Rad, 119.70*Deg2Rad), "C5/bond2", 0.1350, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom( UnivalentAtom("H6", Element::Hydrogen()), "C6/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C6", Element::getBySymbol("C"), 121.20*Deg2Rad, 119.70*Deg2Rad), "C5/bond2", 0.1350, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( UnivalentAtom("H6", Element::getBySymbol("H")), "C6/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
 
         addRingClosingBond("C6/bond2", "N1/bond3", 0.1365, 0*Deg2Rad, BondMobility::Rigid);
     }
@@ -239,22 +239,22 @@ class UracilBase : public PyrimidineBaseCore
 public:
     UracilBase()
     {
-        setBaseAtom( TrivalentAtom("N1",  Element::Nitrogen(), 125.8*Deg2Rad, 128.8*Deg2Rad));
+        setBaseAtom( TrivalentAtom("N1",  Element::getBySymbol("N"), 125.8*Deg2Rad, 128.8*Deg2Rad));
 
-        bondAtom( TrivalentAtom("C2", Element::Carbon(), 118.6*Deg2Rad, 120.9*Deg2Rad),  "N1/bond2", 0.1383, 180*Deg2Rad,   BondMobility::Rigid );
-        bondAtom( UnivalentAtom("O2", Element::Oxygen()), "C2/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C2", Element::getBySymbol("C"), 118.6*Deg2Rad, 120.9*Deg2Rad),  "N1/bond2", 0.1383, 180*Deg2Rad,   BondMobility::Rigid );
+        bondAtom( UnivalentAtom("O2", Element::getBySymbol("O")), "C2/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom(TrivalentAtom("N3", Element::Nitrogen(), 126.4*Deg2Rad, 116.8*Deg2Rad), "C2/bond2", 0.1358, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom(UnivalentAtom("H3", Element::Hydrogen()), "N3/bond3", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom(TrivalentAtom("N3", Element::getBySymbol("N"), 126.4*Deg2Rad, 116.8*Deg2Rad), "C2/bond2", 0.1358, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom(UnivalentAtom("H3", Element::getBySymbol("H")), "N3/bond3", 0.1010, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( TrivalentAtom("C4", Element::Carbon(), 114.0*Deg2Rad, 120.6*Deg2Rad),  "N3/bond2", 0.1388, 0*Deg2Rad,   BondMobility::Rigid );
-        bondAtom( UnivalentAtom("O4", Element::Oxygen()), "C4/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C4", Element::getBySymbol("C"), 114.0*Deg2Rad, 120.6*Deg2Rad),  "N3/bond2", 0.1388, 0*Deg2Rad,   BondMobility::Rigid );
+        bondAtom( UnivalentAtom("O4", Element::getBySymbol("O")), "C4/bond3", 0.1229, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( TrivalentAtom("C5", Element::Carbon(), 120.7*Deg2Rad, 119.70*Deg2Rad), "C4/bond2", 0.1444, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom( UnivalentAtom("H5", Element::Hydrogen()), "C5/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C5", Element::getBySymbol("C"), 120.7*Deg2Rad, 119.70*Deg2Rad), "C4/bond2", 0.1444, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( UnivalentAtom("H5", Element::getBySymbol("H")), "C5/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
 
-        bondAtom( TrivalentAtom("C6", Element::Carbon(), 121.20*Deg2Rad, 119.70*Deg2Rad), "C5/bond2", 0.1350, 0*Deg2Rad, BondMobility::Rigid);
-        bondAtom( UnivalentAtom("H6", Element::Hydrogen()), "C6/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( TrivalentAtom("C6", Element::getBySymbol("C"), 121.20*Deg2Rad, 119.70*Deg2Rad), "C5/bond2", 0.1350, 0*Deg2Rad, BondMobility::Rigid);
+        bondAtom( UnivalentAtom("H6", Element::getBySymbol("H")), "C6/bond3", 0.1080, 0*Deg2Rad, BondMobility::Rigid);
 
         addRingClosingBond("C6/bond2", "N1/bond3", 0.1365, 0*Deg2Rad, BondMobility::Rigid);
     }
@@ -328,25 +328,25 @@ public:
 
         setCompoundName("TwoNMethylGuanidineGroup");
 
-        setBaseAtom( TrivalentAtom("N9", Element::Nitrogen(), 127.767*Deg2Rad, 112.885*Deg2Rad) );
+        setBaseAtom( TrivalentAtom("N9", Element::getBySymbol("N"), 127.767*Deg2Rad, 112.885*Deg2Rad) );
 
-        bondAtom( TrivalentAtom("C8", Element::Carbon(), 113.564*Deg2Rad, 120.934*Deg2Rad), "N9/bond2", 0.13740, 180.00*Deg2Rad, BondMobility::Rigid );
-        bondAtom( BivalentAtom("N7", Element::Nitrogen(), 104.422*Deg2Rad), "C8/bond2", 0.12800, 0.02*Deg2Rad, BondMobility::Rigid );
-        bondAtom( TrivalentAtom("C5", Element::Carbon(), 130.918*Deg2Rad, 112.885*Deg2Rad), "N7/bond2", 0.13760, 179.54*Deg2Rad, BondMobility::Rigid );
-        bondAtom( TrivalentAtom("C6", Element::Carbon(), 131.213*Deg2Rad, 109.672*Deg2Rad), "C5/bond2", 0.14350, -0.17*Deg2Rad, BondMobility::Rigid );
-        bondAtom( UnivalentAtom("O6", Element::Oxygen()), "C6/bond2", 0.11940 );
-        bondAtom( TrivalentAtom("N1", Element::Nitrogen(), 126.495*Deg2Rad, 113.649*Deg2Rad), "C6/bond3", 0.14150, 0.32*Deg2Rad, BondMobility::Rigid );
-        bondAtom( TrivalentAtom("C2", Element::Carbon(), 116.091*Deg2Rad, 123.417*Deg2Rad), "N1/bond2", 0.13620, 178.30*Deg2Rad, BondMobility::Rigid );
-        bondAtom( TrivalentAtom("N2", Element::Nitrogen(), 116.703*Deg2Rad, 120.926*Deg2Rad), "C2/bond2", 0.13550, 20.71*Deg2Rad, BondMobility::Rigid );
-        bondAtom( UnivalentAtom("1H2", Element::Hydrogen()), "N2/bond2", 0.09940 );
-        bondAtom( QuadrivalentAtom("C10", Element::Carbon()), "N2/bond3", 0.14490, 176.13*Deg2Rad, BondMobility::Torsion );
-        bondAtom( UnivalentAtom("H20", Element::Hydrogen()), "C10/bond2", 0.10810 );
-        bondAtom( UnivalentAtom("H21", Element::Hydrogen()), "C10/bond3", 0.10850 );
-        bondAtom( UnivalentAtom("H22", Element::Hydrogen()), "C10/bond4", 0.10790 );
-        bondAtom( BivalentAtom("N3", Element::Nitrogen(), 112.885*Deg2Rad), "C2/bond3", 0.12910, 0.73*Deg2Rad, BondMobility::Rigid );
-        bondAtom( TrivalentAtom("C4", Element::Carbon(), 109.368*Deg2Rad, 104.422*Deg2Rad), "N3/bond2", 0.13560, -119.37*Deg2Rad, BondMobility::Rigid );
-        bondAtom( UnivalentAtom("H1", Element::Hydrogen()), "N1/bond3", 0.09980 );
-        bondAtom( UnivalentAtom("H8", Element::Hydrogen()), "C8/bond3", 0.10710 );
+        bondAtom( TrivalentAtom("C8", Element::getBySymbol("C"), 113.564*Deg2Rad, 120.934*Deg2Rad), "N9/bond2", 0.13740, 180.00*Deg2Rad, BondMobility::Rigid );
+        bondAtom( BivalentAtom("N7", Element::getBySymbol("N"), 104.422*Deg2Rad), "C8/bond2", 0.12800, 0.02*Deg2Rad, BondMobility::Rigid );
+        bondAtom( TrivalentAtom("C5", Element::getBySymbol("C"), 130.918*Deg2Rad, 112.885*Deg2Rad), "N7/bond2", 0.13760, 179.54*Deg2Rad, BondMobility::Rigid );
+        bondAtom( TrivalentAtom("C6", Element::getBySymbol("C"), 131.213*Deg2Rad, 109.672*Deg2Rad), "C5/bond2", 0.14350, -0.17*Deg2Rad, BondMobility::Rigid );
+        bondAtom( UnivalentAtom("O6", Element::getBySymbol("O")), "C6/bond2", 0.11940 );
+        bondAtom( TrivalentAtom("N1", Element::getBySymbol("N"), 126.495*Deg2Rad, 113.649*Deg2Rad), "C6/bond3", 0.14150, 0.32*Deg2Rad, BondMobility::Rigid );
+        bondAtom( TrivalentAtom("C2", Element::getBySymbol("C"), 116.091*Deg2Rad, 123.417*Deg2Rad), "N1/bond2", 0.13620, 178.30*Deg2Rad, BondMobility::Rigid );
+        bondAtom( TrivalentAtom("N2", Element::getBySymbol("N"), 116.703*Deg2Rad, 120.926*Deg2Rad), "C2/bond2", 0.13550, 20.71*Deg2Rad, BondMobility::Rigid );
+        bondAtom( UnivalentAtom("1H2", Element::getBySymbol("H")), "N2/bond2", 0.09940 );
+        bondAtom( QuadrivalentAtom("C10", Element::getBySymbol("C")), "N2/bond3", 0.14490, 176.13*Deg2Rad, BondMobility::Torsion );
+        bondAtom( UnivalentAtom("H20", Element::getBySymbol("H")), "C10/bond2", 0.10810 );
+        bondAtom( UnivalentAtom("H21", Element::getBySymbol("H")), "C10/bond3", 0.10850 );
+        bondAtom( UnivalentAtom("H22", Element::getBySymbol("H")), "C10/bond4", 0.10790 );
+        bondAtom( BivalentAtom("N3", Element::getBySymbol("N"), 112.885*Deg2Rad), "C2/bond3", 0.12910, 0.73*Deg2Rad, BondMobility::Rigid );
+        bondAtom( TrivalentAtom("C4", Element::getBySymbol("C"), 109.368*Deg2Rad, 104.422*Deg2Rad), "N3/bond2", 0.13560, -119.37*Deg2Rad, BondMobility::Rigid );
+        bondAtom( UnivalentAtom("H1", Element::getBySymbol("H")), "N1/bond3", 0.09980 );
+        bondAtom( UnivalentAtom("H8", Element::getBySymbol("H")), "C8/bond3", 0.10710 );
 
         addRingClosingBond( "C4/bond2", "N9/bond3", 0.15);
         addRingClosingBond( "C4/bond3", "C5/bond3", 0.15);
@@ -388,41 +388,41 @@ public:
 
     static void instantiateBiotypes() {
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "N9") )
-            Biotype::defineBiotype(Element::Nitrogen(), 3, "TwoNMethylGuanidineGroup", "N9"); 
+            Biotype::defineBiotype(Element::getBySymbol("N"), 3, "TwoNMethylGuanidineGroup", "N9"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "C8") )
-            Biotype::defineBiotype(Element::Carbon(), 3, "TwoNMethylGuanidineGroup", "C8"); 
+            Biotype::defineBiotype(Element::getBySymbol("C"), 3, "TwoNMethylGuanidineGroup", "C8"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "N7") )
-            Biotype::defineBiotype(Element::Nitrogen(), 2, "TwoNMethylGuanidineGroup", "N7"); 
+            Biotype::defineBiotype(Element::getBySymbol("N"), 2, "TwoNMethylGuanidineGroup", "N7"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "C5") )
-            Biotype::defineBiotype(Element::Carbon(), 3, "TwoNMethylGuanidineGroup", "C5"); 
+            Biotype::defineBiotype(Element::getBySymbol("C"), 3, "TwoNMethylGuanidineGroup", "C5"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "C6") )
-            Biotype::defineBiotype(Element::Carbon(), 3, "TwoNMethylGuanidineGroup", "C6"); 
+            Biotype::defineBiotype(Element::getBySymbol("C"), 3, "TwoNMethylGuanidineGroup", "C6"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "O6") )
-            Biotype::defineBiotype(Element::Oxygen(), 1, "TwoNMethylGuanidineGroup", "O6"); 
+            Biotype::defineBiotype(Element::getBySymbol("O"), 1, "TwoNMethylGuanidineGroup", "O6"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "N1") )
-            Biotype::defineBiotype(Element::Nitrogen(), 3, "TwoNMethylGuanidineGroup", "N1"); 
+            Biotype::defineBiotype(Element::getBySymbol("N"), 3, "TwoNMethylGuanidineGroup", "N1"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "C2") )
-            Biotype::defineBiotype(Element::Carbon(), 3, "TwoNMethylGuanidineGroup", "C2"); 
+            Biotype::defineBiotype(Element::getBySymbol("C"), 3, "TwoNMethylGuanidineGroup", "C2"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "N2") )
-            Biotype::defineBiotype(Element::Nitrogen(), 3, "TwoNMethylGuanidineGroup", "N2"); 
+            Biotype::defineBiotype(Element::getBySymbol("N"), 3, "TwoNMethylGuanidineGroup", "N2"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "1H2") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "TwoNMethylGuanidineGroup", "1H2"); 
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "TwoNMethylGuanidineGroup", "1H2"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "C10") )
-            Biotype::defineBiotype(Element::Carbon(), 4, "TwoNMethylGuanidineGroup", "C10"); 
+            Biotype::defineBiotype(Element::getBySymbol("C"), 4, "TwoNMethylGuanidineGroup", "C10"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "H20") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "TwoNMethylGuanidineGroup", "H20"); 
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "TwoNMethylGuanidineGroup", "H20"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "H21") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "TwoNMethylGuanidineGroup", "H21"); 
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "TwoNMethylGuanidineGroup", "H21"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "H22") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "TwoNMethylGuanidineGroup", "H22"); 
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "TwoNMethylGuanidineGroup", "H22"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "N3") )
-            Biotype::defineBiotype(Element::Nitrogen(), 2, "TwoNMethylGuanidineGroup", "N3"); 
+            Biotype::defineBiotype(Element::getBySymbol("N"), 2, "TwoNMethylGuanidineGroup", "N3"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "C4") )
-            Biotype::defineBiotype(Element::Carbon(), 3, "TwoNMethylGuanidineGroup", "C4"); 
+            Biotype::defineBiotype(Element::getBySymbol("C"), 3, "TwoNMethylGuanidineGroup", "C4"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "H1") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "TwoNMethylGuanidineGroup", "H1"); 
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "TwoNMethylGuanidineGroup", "H1"); 
         if (! Biotype::exists("TwoNMethylGuanidineGroup", "H8") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "TwoNMethylGuanidineGroup", "H8"); 
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "TwoNMethylGuanidineGroup", "H8"); 
     } // end instantiateBiotypes
 
 }; // end class TwoNMethylGuanidineGroup 

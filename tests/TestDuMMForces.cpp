@@ -178,7 +178,7 @@ public:
 			dumm.defineAtomClass(
 				dumm.getNextUnusedAtomClassIndex(),
 				"Argon",
-				Element::Oxygen().getAtomicNumber(),
+				Element::getBySymbol("O")->getAtomicNumber(),
 				0, // no bonds
 				1.88 * angstroms, // radius
 				0.0003832 * kilocalories_per_mole // well depth
@@ -195,7 +195,7 @@ public:
 		}
 
         if (! Biotype::exists("Argon", "Ar") )
-            Biotype::defineBiotype(Element::Argon(), 0, "Argon", "Ar");
+            Biotype::defineBiotype(Element::getBySymbol("Ar"), 0, "Argon", "Ar");
 
         dumm.setBiotypeChargedAtomType( dumm.getChargedAtomTypeIndex("Argon"), Biotype::get("Argon", "Ar").getIndex() );
 
@@ -280,7 +280,7 @@ public:
 			dumm.defineAtomClass(
 				dumm.getNextUnusedAtomClassIndex(),
 				"O2Mol",
-				Element::Oxygen().getAtomicNumber(),
+				Element::getBySymbol("O")->getAtomicNumber(),
 				1, // one bond
 				1.70 * angstroms, // radius
 				0.20 * kilocalories_per_mole // well depth
@@ -304,13 +304,13 @@ public:
         );
 
         if (! Biotype::exists("Oxygen Molecule", "O") )
-            Biotype::defineBiotype(Element::Oxygen(), 1, "Oxygen Molecule", "O");
+            Biotype::defineBiotype(Element::getBySymbol("O"), 1, "Oxygen Molecule", "O");
 
         dumm.setBiotypeChargedAtomType( dumm.getChargedAtomTypeIndex("O2Mol"), Biotype::get("Oxygen Molecule", "O").getIndex() );
 
         Compound o2Molecule;
-        o2Molecule.setBaseAtom( UnivalentAtom("O1", Element::Oxygen()) );
-        o2Molecule.bondAtom( UnivalentAtom("O2", Element::Oxygen()), "O1/bond", bondLength );
+        o2Molecule.setBaseAtom( UnivalentAtom("O1", Element::getBySymbol("O")) );
+        o2Molecule.bondAtom( UnivalentAtom("O2", Element::getBySymbol("O")), "O1/bond", bondLength );
         o2Molecule.setBondMobility(BondMobility::Free, "O1", "O2");
         o2Molecule.setAtomBiotype("O1", "Oxygen Molecule", "O");
         o2Molecule.setAtomBiotype("O2", "Oxygen Molecule", "O");
@@ -484,7 +484,7 @@ public:
 			dumm.defineAtomClass(
 				dumm.getNextUnusedAtomClassIndex(),
 				"TIP3P Water O",
-				Element::Oxygen().getAtomicNumber(),
+				Element::getBySymbol("O")->getAtomicNumber(),
 				2, // one bond
 				1.7683 * angstroms, // radius
 				0.1520 * kilocalories_per_mole // well depth
@@ -495,7 +495,7 @@ public:
 			dumm.defineAtomClass(
 				dumm.getNextUnusedAtomClassIndex(),
 				"TIP3P Water H",
-				Element::Hydrogen().getAtomicNumber(),
+				Element::getBySymbol("H")->getAtomicNumber(),
 				1, // one bond
 				0.0001 * angstroms, // radius
 				0.0000 * kilocalories_per_mole // well depth
@@ -535,18 +535,18 @@ public:
             104.52); // define bond bend takes angle in degrees!?!
 
         if (! Biotype::exists("TIP3P Water", "O") )
-            Biotype::defineBiotype(Element::Oxygen(), 2, "TIP3P Water", "O");
+            Biotype::defineBiotype(Element::getBySymbol("O"), 2, "TIP3P Water", "O");
 
         if (! Biotype::exists("TIP3P Water", "H") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "TIP3P Water", "H");
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "TIP3P Water", "H");
 
         dumm.setBiotypeChargedAtomType( dumm.getChargedAtomTypeIndex("TIP3P Water O"), Biotype::get("TIP3P Water", "O").getIndex() );
         dumm.setBiotypeChargedAtomType( dumm.getChargedAtomTypeIndex("TIP3P Water H"), Biotype::get("TIP3P Water", "H").getIndex() );
 
         Compound water;
-        water.setBaseAtom( BivalentAtom("O", Element::Oxygen()) );
-        water.bondAtom( UnivalentAtom("H1", Element::Hydrogen()), "O/bond1", 0.9572 * angstroms );
-        water.bondAtom( UnivalentAtom("H2", Element::Hydrogen()), "O/bond2", 0.9572 * angstroms );
+        water.setBaseAtom( BivalentAtom("O", Element::getBySymbol("O")) );
+        water.bondAtom( UnivalentAtom("H1", Element::getBySymbol("H")), "O/bond1", 0.9572 * angstroms );
+        water.bondAtom( UnivalentAtom("H2", Element::getBySymbol("H")), "O/bond2", 0.9572 * angstroms );
         water.setDefaultBondAngle(bondAngle, "H1", "O", "H2");
 
         // Unfortunately, there is not yet a BondMobility::Angle concept, so pure Pin is not available here
@@ -709,10 +709,10 @@ public:
 		}
 
         if (! Biotype::exists("H2O2", "O") )
-            Biotype::defineBiotype(Element::Oxygen(), 2, "H2O2", "O");
+            Biotype::defineBiotype(Element::getBySymbol("O"), 2, "H2O2", "O");
 
         if (! Biotype::exists("H2O2", "H") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "H2O2", "H");
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "H2O2", "H");
 
         dumm.setBiotypeChargedAtomType( dumm.getChargedAtomTypeIndex("H2O2 O"), Biotype::get("H2O2", "O").getIndex() );
         dumm.setBiotypeChargedAtomType( dumm.getChargedAtomTypeIndex("H2O2 H"), Biotype::get("H2O2", "H").getIndex() );
@@ -744,10 +744,10 @@ public:
         );
 
         Compound h2O2;
-        h2O2.setBaseAtom( BivalentAtom("O1", Element::Oxygen()) );
-        h2O2.bondAtom( BivalentAtom("O2", Element::Oxygen()), "O1/bond1", 1.4464 * angstroms );
-        h2O2.bondAtom( UnivalentAtom("H1", Element::Hydrogen()), "O1/bond2", 0.9659 * angstroms );
-        h2O2.bondAtom( UnivalentAtom("H2", Element::Hydrogen()), "O2/bond2", 0.9659 * angstroms );
+        h2O2.setBaseAtom( BivalentAtom("O1", Element::getBySymbol("O")) );
+        h2O2.bondAtom( BivalentAtom("O2", Element::getBySymbol("O")), "O1/bond1", 1.4464 * angstroms );
+        h2O2.bondAtom( UnivalentAtom("H1", Element::getBySymbol("H")), "O1/bond2", 0.9659 * angstroms );
+        h2O2.bondAtom( UnivalentAtom("H2", Element::getBySymbol("H")), "O2/bond2", 0.9659 * angstroms );
         h2O2.setDefaultBondAngle(100.8982 * degrees, "H1", "O1", "O2");
         h2O2.setDefaultBondAngle(100.8982 * degrees, "O1", "O2", "H2");
         h2O2.setDefaultDihedralAngle(torsion, "H1", "O1", "O2", "H2");

@@ -58,7 +58,7 @@ public:
 	
 	static void instantiateBiotypes() {
         if (! Biotype::exists("Lithium Ion", "Li+") )
-            Biotype::defineBiotype(Element::Lithium(), 0, "Lithium Ion", "Li+");
+            Biotype::defineBiotype(Element::getBySymbol("Li"), 0, "Lithium Ion", "Li+");
 	}
 
     // create charged atom types
@@ -109,7 +109,7 @@ public:
 
 	static void instantiateBiotypes() {
         if (! Biotype::exists("Sodium Ion", "Na+") )
-            Biotype::defineBiotype(Element::Sodium(), 0, "Sodium Ion", "Na+");
+            Biotype::defineBiotype(Element::getBySymbol("Na"), 0, "Sodium Ion", "Na+");
 	}
 
     // create charged atom types
@@ -122,7 +122,7 @@ public:
 			dumm.defineAtomClass_KA(
 				dumm.getNextUnusedAtomClassIndex(),
 				"Na+ Sodium Ion",
-				Element::Sodium().getAtomicNumber(),
+				Element::getBySymbol("Na")->getAtomicNumber(),
 				0, // no covalent bonds
 				1.8680, // radius
 				0.00277 // well depth
@@ -159,7 +159,7 @@ public:
 
 	static void instantiateBiotypes() {
         if (! Biotype::exists("Potassium Ion", "K+") )
-            Biotype::defineBiotype(Element::Potassium(), 0, "Potassium Ion", "K+");
+            Biotype::defineBiotype(Element::getBySymbol("K"), 0, "Potassium Ion", "K+");
 	}
 
     // create charged atom types
@@ -174,7 +174,7 @@ public:
 			dumm.defineAtomClass_KA(
 				dumm.getNextUnusedAtomClassIndex(),
 				ionName,
-				Element::Potassium().getAtomicNumber(),
+				Element::getBySymbol("K")->getAtomicNumber(),
 				0, // no covalent bonds
 				2.6580, // radius
 				0.000328 // well depth
@@ -210,7 +210,7 @@ public:
 
 	static void instantiateBiotypes() {
         if (! Biotype::exists("Rubidium Ion", "Rb+") )
-            Biotype::defineBiotype(Element::Rubidium(), 0, "Rubidium Ion", "Rb+");
+            Biotype::defineBiotype(Element::getBySymbol("Rb"), 0, "Rubidium Ion", "Rb+");
 	}
 
     // create charged atom types
@@ -225,7 +225,7 @@ public:
 			dumm.defineAtomClass_KA(
 				dumm.getNextUnusedAtomClassIndex(),
 				ionName,
-				Element::Rubidium().getAtomicNumber(),
+				Element::getBySymbol("Rb")->getAtomicNumber(),
 				0, // no covalent bonds
 				2.956, // radius
 				0.00017 // well depth
@@ -261,7 +261,7 @@ public:
 
 	static void instantiateBiotypes() {
         if (! Biotype::exists("Cesium Ion", "Cs+") )
-            Biotype::defineBiotype(Element::Cesium(), 0, "Cesium Ion", "Cs+");
+            Biotype::defineBiotype(Element::getBySymbol("Cs"), 0, "Cesium Ion", "Cs+");
 	}
 
     // create charged atom types
@@ -276,7 +276,7 @@ public:
 			dumm.defineAtomClass_KA(
 				dumm.getNextUnusedAtomClassIndex(),
 				ionName,
-				Element::Cesium().getAtomicNumber(),
+				Element::getBySymbol("Cs")->getAtomicNumber(),
 				0, // no covalent bonds
 				3.390, // radius
 				0.0000806 // well depth
@@ -312,7 +312,7 @@ public:
 
 	static void instantiateBiotypes() {
         if (! Biotype::exists("Magnesium Ion", "Mg+2") )
-            Biotype::defineBiotype(Element::Magnesium(), 0, "Magnesium Ion", "Mg+2");
+            Biotype::defineBiotype(Element::getBySymbol("Mg"), 0, "Magnesium Ion", "Mg+2");
 	}
 
     // create charged atom types
@@ -327,7 +327,7 @@ public:
 			dumm.defineAtomClass_KA(
 				dumm.getNextUnusedAtomClassIndex(),
 				ionName,
-				Element::Magnesium().getAtomicNumber(),
+				Element::getBySymbol("Mg")->getAtomicNumber(),
 				0, // no covalent bonds
 				0.7926, // radius
 				0.8947 // well depth
@@ -363,7 +363,7 @@ public:
 
 	static void instantiateBiotypes() {
         if (! Biotype::exists("Calcium Ion", "Ca+2") )
-            Biotype::defineBiotype(Element::Calcium(), 0, "Calcium Ion", "Ca+2");
+            Biotype::defineBiotype(Element::getBySymbol("Ca"), 0, "Calcium Ion", "Ca+2");
 	}
 
     // create charged atom types
@@ -378,7 +378,7 @@ public:
 			dumm.defineAtomClass_KA(
 				dumm.getNextUnusedAtomClassIndex(),
 				ionName,
-				Element::Calcium().getAtomicNumber(),
+				Element::getBySymbol("Ca")->getAtomicNumber(),
 				0, // no covalent bonds
 				1.7131, // radius
 				0.459789 // well depth
@@ -414,7 +414,7 @@ public:
 
 	static void instantiateBiotypes() {
         if (! Biotype::exists("Zinc Ion", "Zn+2") )
-            Biotype::defineBiotype(Element::Zinc(), 0, "Zinc Ion", "Zn+2");
+            Biotype::defineBiotype(Element::getBySymbol("Zn"), 0, "Zinc Ion", "Zn+2");
 	}
 
     // create charged atom types
@@ -429,7 +429,7 @@ public:
 			dumm.defineAtomClass_KA(
 				dumm.getNextUnusedAtomClassIndex(),
 				ionName,
-				Element::Zinc().getAtomicNumber(),
+				Element::getBySymbol("Zn")->getAtomicNumber(),
 				0, // no covalent bonds
 				1.1000, // radius
 				0.0125 // well depth
@@ -465,7 +465,7 @@ public:
 
 	static void instantiateBiotypes() {
         if (! Biotype::exists("Chloride Ion", "Cl-") )
-            Biotype::defineBiotype(Element::Chlorine(), 0, "Chloride Ion", "Cl-");
+            Biotype::defineBiotype(Element::getBySymbol("Cl"), 0, "Chloride Ion", "Cl-");
 	}
 
     // create charged atom types
@@ -480,7 +480,7 @@ public:
 			dumm.defineAtomClass_KA(
 				dumm.getNextUnusedAtomClassIndex(),
 				ionName,
-				Element::Chlorine().getAtomicNumber(),
+				Element::getBySymbol("Cl")->getAtomicNumber(),
 				0, // no covalent bonds
 				2.4700, // radius
 				0.1000 // well depth

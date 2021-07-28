@@ -52,8 +52,8 @@ public:
         nameAtom("3H", "methyl/H3");
 
         convertInboardBondCenterToOutboard();
-        bondAtom(TrivalentAtom("C", Element::Carbon()), "methyl/bond", 0.15520);
-        bondAtom(UnivalentAtom("O", Element::Oxygen()), "C/bond2", 0.12290);
+        bondAtom(TrivalentAtom("C", Element::getBySymbol("C")), "methyl/bond", 0.15520);
+        bondAtom(UnivalentAtom("O", Element::getBySymbol("O")), "C/bond2", 0.12290);
         nameBondCenter("bondC", "C/bond3");
         nameBondCenter("bondNext", "bondC");
         
@@ -73,8 +73,8 @@ public:
     NMethylAmideResidue() : BiopolymerResidue("N-methyl amide", "NAC", 'X')
     {
         // TODO - set nitrogen bond angles
-        setBaseAtom(TrivalentAtom("N", Element::Nitrogen()));
-        bondAtom(UnivalentAtom("HN", Element::Hydrogen()), "N/bond3", 0.1010);
+        setBaseAtom(TrivalentAtom("N", Element::getBySymbol("N")));
+        bondAtom(UnivalentAtom("HN", Element::getBySymbol("H")), "N/bond3", 0.1010);
         bondAtom(AliphaticCarbon("CH3"), "N/bond2", 0.1449);
         bondAtom(AliphaticHydrogen("1H"), "CH3/bond2");
         bondAtom(AliphaticHydrogen("2H"), "CH3/bond3");
@@ -158,20 +158,20 @@ public:
         // We want the inboard bond center to be on the main chain nitrogen peptide bond
         // But we also want the CA and main chain H to be the reference for dihedrals.
         // To reconcile these two requirements, a bit of extra work is required.
-        TrivalentAtom nAtom("N", Element::Nitrogen());
+        TrivalentAtom nAtom("N", Element::getBySymbol("N"));
         // nAtom.convertInboardBondCenterToOutboard(); // free bond1 for use with HN
         // nAtom.setInboardBondCenter("bond3");  // lowest priority bond becomes inboard
 
         setBaseAtom(nAtom);
 
         // Alpha carbon
-        bondAtom(QuadrivalentAtom("CA", Element::Carbon()), "N/bond2", N_CAdistance, DefaultAntiparallelBetaPhiAngle + 180*Deg2Rad); // phi
-        bondAtom(UnivalentAtom("HA", Element::Hydrogen()), "CA/bond3", CA_Hdistance);
+        bondAtom(QuadrivalentAtom("CA", Element::getBySymbol("C")), "N/bond2", N_CAdistance, DefaultAntiparallelBetaPhiAngle + 180*Deg2Rad); // phi
+        bondAtom(UnivalentAtom("HA", Element::getBySymbol("H")), "CA/bond3", CA_Hdistance);
         nameBondCenter("bondCA", "CA/bond4");
 
         // Carbonyl
-        bondAtom(TrivalentAtom("C", Element::Carbon()), "CA/bond2", CA_Cdistance, DefaultAntiparallelBetaPsiAngle + 180*Deg2Rad); // psi
-        bondAtom(UnivalentAtom("O", Element::Oxygen()), "C/bond2", C_Odistance);
+        bondAtom(TrivalentAtom("C", Element::getBySymbol("C")), "CA/bond2", CA_Cdistance, DefaultAntiparallelBetaPsiAngle + 180*Deg2Rad); // psi
+        bondAtom(UnivalentAtom("O", Element::getBySymbol("O")), "C/bond2", C_Odistance);
         nameBondCenter("bondC", "C/bond3");
         nameBondCenter("bondNext", "bondC");
 
@@ -247,7 +247,7 @@ public:
     {
         static const mdunits::Length  H_Ndistance = 0.1010;
 
-        bondAtom(UnivalentAtom("H", Element::Hydrogen()), "N/bond3", H_Ndistance);
+        bondAtom(UnivalentAtom("H", Element::getBySymbol("H")), "N/bond3", H_Ndistance);
         nameAtom("HN", "H"); // synonym
 
         // defineDihedralAngle("phi", "H", "N", "CA", "C", 180*Deg2Rad); // already defined
@@ -332,8 +332,8 @@ public:
         static const Angle H_S_Cangle = 96.0*Deg2Rad;
         static const Angle S_C_Cangle = 108.6*Deg2Rad;
 
-        bondAtom(BivalentAtom("SG", Element::Sulfur(), H_S_Cangle), "bondCB", S_Cdistance, 180*Deg2Rad);
-        bondAtom(UnivalentAtom("HG", Element::Hydrogen()), "SG/bond2", H_Sdistance, 180*Deg2Rad);
+        bondAtom(BivalentAtom("SG", Element::getBySymbol("S"), H_S_Cangle), "bondCB", S_Cdistance, 180*Deg2Rad);
+        bondAtom(UnivalentAtom("HG", Element::getBySymbol("H")), "SG/bond2", H_Sdistance, 180*Deg2Rad);
 
         defineDihedralAngle("chi2", "HG", "SG", "CB", "CA");
 
@@ -364,10 +364,10 @@ public:
         static const Angle S_C_Cangle = 108.6*Deg2Rad;
 
         // Putting 90 degrees here, though it's not clear the PARM99 potential has its minimum there.
-        bondAtom(BivalentAtom("SG", Element::Sulfur(), S_S_Cangle), "bondCB", S_Cdistance,  90*Deg2Rad);
+        bondAtom(BivalentAtom("SG", Element::getBySymbol("S"), S_S_Cangle), "bondCB", S_Cdistance,  90*Deg2Rad);
         // was:
-        //bondAtom(BivalentAtom("SG", Element::Sulfur(), H_S_Cangle), "bondCB", S_Cdistance, 180*Deg2Rad);
-        //bondAtom(UnivalentAtom("HG", Element::Hydrogen()), "SG/bond2", H_Sdistance, 180*Deg2Rad);
+        //bondAtom(BivalentAtom("SG", Element::getBySymbol("S"), H_S_Cangle), "bondCB", S_Cdistance, 180*Deg2Rad);
+        //bondAtom(UnivalentAtom("HG", Element::getBySymbol("H")), "SG/bond2", H_Sdistance, 180*Deg2Rad);
 
         // Wont' need this anymore. But do we need to define SS dihedral?  Or set all this in the 'extra' bond?
         //defineDihedralAngle("chi2", "HG", "SG", "CB", "CA");
@@ -442,23 +442,23 @@ public:
 
         // default angle for TrivalentAtom is 120 degrees, which is what we want
         // for a six-membered ring
-        bondAtom( TrivalentAtom("CG", Element::Carbon()), "bondCB", CB_CGdistance, 180*Deg2Rad);
+        bondAtom( TrivalentAtom("CG", Element::getBySymbol("C")), "bondCB", CB_CGdistance, 180*Deg2Rad);
 
-        bondAtom( TrivalentAtom("CD1", Element::Carbon()), "CG/bond2", C_Cdistance, 180*Deg2Rad );
-        bondAtom( UnivalentAtom("HD1", Element::Hydrogen()), "CD1/bond3", C_Hdistance );
+        bondAtom( TrivalentAtom("CD1", Element::getBySymbol("C")), "CG/bond2", C_Cdistance, 180*Deg2Rad );
+        bondAtom( UnivalentAtom("HD1", Element::getBySymbol("H")), "CD1/bond3", C_Hdistance );
 
         // Start using hidedral of zero, to loop ring back to beginning
-        bondAtom( TrivalentAtom("CE1", Element::Carbon()), "CD1/bond2", C_Cdistance, 0*Deg2Rad );
-        bondAtom( UnivalentAtom("HE1", Element::Hydrogen()), "CE1/bond3", C_Hdistance );
+        bondAtom( TrivalentAtom("CE1", Element::getBySymbol("C")), "CD1/bond2", C_Cdistance, 0*Deg2Rad );
+        bondAtom( UnivalentAtom("HE1", Element::getBySymbol("H")), "CE1/bond3", C_Hdistance );
 
-        bondAtom( TrivalentAtom("CZ", Element::Carbon()), "CE1/bond2", C_Cdistance, 0*Deg2Rad );
-        bondAtom( UnivalentAtom("HZ", Element::Hydrogen()), "CZ/bond3", C_Hdistance );
+        bondAtom( TrivalentAtom("CZ", Element::getBySymbol("C")), "CE1/bond2", C_Cdistance, 0*Deg2Rad );
+        bondAtom( UnivalentAtom("HZ", Element::getBySymbol("H")), "CZ/bond3", C_Hdistance );
 
-        bondAtom( TrivalentAtom("CE2", Element::Carbon()), "CZ/bond2", C_Cdistance, 0*Deg2Rad );
-        bondAtom( UnivalentAtom("HE2", Element::Hydrogen()), "CE2/bond3", C_Hdistance );
+        bondAtom( TrivalentAtom("CE2", Element::getBySymbol("C")), "CZ/bond2", C_Cdistance, 0*Deg2Rad );
+        bondAtom( UnivalentAtom("HE2", Element::getBySymbol("H")), "CE2/bond3", C_Hdistance );
 
-        bondAtom( TrivalentAtom("CD2", Element::Carbon()), "CE2/bond2", C_Cdistance, 0*Deg2Rad );
-        bondAtom( UnivalentAtom("HD2", Element::Hydrogen()), "CD2/bond3", C_Hdistance );
+        bondAtom( TrivalentAtom("CD2", Element::getBySymbol("C")), "CE2/bond2", C_Cdistance, 0*Deg2Rad );
+        bondAtom( UnivalentAtom("HD2", Element::getBySymbol("H")), "CD2/bond3", C_Hdistance );
 
         addRingClosingBond("CD2/bond2", "CG/bond3", C_Cdistance, 0*Deg2Rad);
 
@@ -507,21 +507,21 @@ public:
         static const Angle ringAngle = 108.000 * Deg2Rad; // 108 degrees is exact
         static const Angle outerRingAngle = 180*Deg2Rad - 0.5*ringAngle;
 
-        bondAtom( TrivalentAtom("CG", Element::Carbon(), outerRingAngle, outerRingAngle), "bondCB", CB_CGdistance);
+        bondAtom( TrivalentAtom("CG", Element::getBySymbol("C"), outerRingAngle, outerRingAngle), "bondCB", CB_CGdistance);
 
-        bondAtom( TrivalentAtom("ND1", Element::Nitrogen(), ringAngle, outerRingAngle), "CG/bond2", CG_NDdistance, 180*Deg2Rad);
+        bondAtom( TrivalentAtom("ND1", Element::getBySymbol("N"), ringAngle, outerRingAngle), "CG/bond2", CG_NDdistance, 180*Deg2Rad);
         // optional proton depends upon protonation state
-        bondAtom( UnivalentAtom("HD1", Element::Hydrogen()), "ND1/bond3", H_Ndistance);
+        bondAtom( UnivalentAtom("HD1", Element::getBySymbol("H")), "ND1/bond3", H_Ndistance);
 
-        bondAtom( TrivalentAtom("CE1", Element::Carbon(), ringAngle, outerRingAngle), "ND1/bond2", N_CEdistance, 0*Deg2Rad);
-        bondAtom( UnivalentAtom("HE1", Element::Hydrogen()), "CE1/bond3", H_Cdistance);
+        bondAtom( TrivalentAtom("CE1", Element::getBySymbol("C"), ringAngle, outerRingAngle), "ND1/bond2", N_CEdistance, 0*Deg2Rad);
+        bondAtom( UnivalentAtom("HE1", Element::getBySymbol("H")), "CE1/bond3", H_Cdistance);
 
-        bondAtom( TrivalentAtom("NE2", Element::Nitrogen(), ringAngle, outerRingAngle), "CE1/bond2", CG_NDdistance, 0*Deg2Rad);
+        bondAtom( TrivalentAtom("NE2", Element::getBySymbol("N"), ringAngle, outerRingAngle), "CE1/bond2", CG_NDdistance, 0*Deg2Rad);
         // optional proton depends upon protonation state
-        bondAtom( UnivalentAtom("HE2", Element::Hydrogen()), "NE2/bond3", H_Ndistance);
+        bondAtom( UnivalentAtom("HE2", Element::getBySymbol("H")), "NE2/bond3", H_Ndistance);
 
-        bondAtom( TrivalentAtom("CD2", Element::Carbon(), ringAngle, outerRingAngle), "NE2/bond2", N_CEdistance, 0*Deg2Rad);
-        bondAtom( UnivalentAtom("HD2", Element::Hydrogen()), "CD2/bond3", H_Cdistance);
+        bondAtom( TrivalentAtom("CD2", Element::getBySymbol("C"), ringAngle, outerRingAngle), "NE2/bond2", N_CEdistance, 0*Deg2Rad);
+        bondAtom( UnivalentAtom("HD2", Element::getBySymbol("H")), "CD2/bond3", H_Cdistance);
 
         addRingClosingBond("CD2/bond2", "CG/bond3", CD_CGdistance, 0*Deg2Rad);
 
@@ -650,7 +650,7 @@ public:
         bondAtom(AliphaticHydrogen("1HG"), "CG/bond3");
         bondAtom(AliphaticHydrogen("2HG"), "CG/bond4");
 
-        bondAtom( BivalentAtom("SD", Element::Sulfur(), 98.90*Deg2Rad), "CG/bond2", 0.1810, 180*Deg2Rad);
+        bondAtom( BivalentAtom("SD", Element::getBySymbol("S"), 98.90*Deg2Rad), "CG/bond2", 0.1810, 180*Deg2Rad);
 
         bondAtom(AliphaticCarbon("CE"), "SD/bond2", 0.1810, 180*Deg2Rad);
         bondAtom(AliphaticHydrogen("1HE"), "CE/bond2");
@@ -669,13 +669,13 @@ public:
     Asparagine() 
         : AminoAcidResidue::BetaUnbranchedAminoAcidResidue("asparagine", "Asn", 'N')
     {
-        bondAtom(TrivalentAtom("CG", Element::Carbon(), 120.4*Deg2Rad, 116.6*Deg2Rad), "bondCB", 0.15220);
+        bondAtom(TrivalentAtom("CG", Element::getBySymbol("C"), 120.4*Deg2Rad, 116.6*Deg2Rad), "bondCB", 0.15220);
 
-        bondAtom(UnivalentAtom("OD1", Element::Oxygen()), "CG/bond2", 0.12290);
+        bondAtom(UnivalentAtom("OD1", Element::getBySymbol("O")), "CG/bond2", 0.12290);
 
-        bondAtom(TrivalentAtom("ND2", Element::Nitrogen()), "CG/bond3", 0.13350);
-        bondAtom(UnivalentAtom("1HD2", Element::Hydrogen()), "ND2/bond2", 0.1010);
-        bondAtom(UnivalentAtom("2HD2", Element::Hydrogen()), "ND2/bond3", 0.1010);
+        bondAtom(TrivalentAtom("ND2", Element::getBySymbol("N")), "CG/bond3", 0.13350);
+        bondAtom(UnivalentAtom("1HD2", Element::getBySymbol("H")), "ND2/bond2", 0.1010);
+        bondAtom(UnivalentAtom("2HD2", Element::getBySymbol("H")), "ND2/bond3", 0.1010);
 
         defineDihedralAngle("chi2", "OD1", "CG", "CB", "CA");
 
@@ -783,13 +783,13 @@ public:
         bondAtom( AliphaticHydrogen("1HG"), "CG/bond3" ); 
         bondAtom( AliphaticHydrogen("2HG"), "CG/bond4" ); 
 
-        bondAtom(TrivalentAtom("CD", Element::Carbon(), 120.4*Deg2Rad, 116.6*Deg2Rad), "CG/bond2", 0.15220);
+        bondAtom(TrivalentAtom("CD", Element::getBySymbol("C"), 120.4*Deg2Rad, 116.6*Deg2Rad), "CG/bond2", 0.15220);
 
-        bondAtom(UnivalentAtom("OE1", Element::Oxygen()), "CD/bond2", 0.12290);
+        bondAtom(UnivalentAtom("OE1", Element::getBySymbol("O")), "CD/bond2", 0.12290);
 
-        bondAtom(TrivalentAtom("NE2", Element::Nitrogen()), "CD/bond3", 0.13350);
-        bondAtom(UnivalentAtom("1HE2", Element::Hydrogen()), "NE2/bond2", 0.1010);
-        bondAtom(UnivalentAtom("2HE2", Element::Hydrogen()), "NE2/bond3", 0.1010);
+        bondAtom(TrivalentAtom("NE2", Element::getBySymbol("N")), "CD/bond3", 0.13350);
+        bondAtom(UnivalentAtom("1HE2", Element::getBySymbol("H")), "NE2/bond2", 0.1010);
+        bondAtom(UnivalentAtom("2HE2", Element::getBySymbol("H")), "NE2/bond3", 0.1010);
 
         defineDihedralAngle("chi2", "CD", "CG", "CB", "CA");
         defineDihedralAngle("chi3", "OE1", "CD", "CG", "CB");
@@ -818,18 +818,18 @@ public:
 
         // TODO - set bond angle CB/CD/NE to 111.2
 
-        bondAtom(TrivalentAtom("NE", Element::Nitrogen(), 123.2*Deg2Rad, 118.4*Deg2Rad), "CD/bond2", 0.1436, 180*Deg2Rad);
-        bondAtom(UnivalentAtom("HE", Element::Hydrogen()), "NE/bond3", 0.1010);
+        bondAtom(TrivalentAtom("NE", Element::getBySymbol("N"), 123.2*Deg2Rad, 118.4*Deg2Rad), "CD/bond2", 0.1436, 180*Deg2Rad);
+        bondAtom(UnivalentAtom("HE", Element::getBySymbol("H")), "NE/bond3", 0.1010);
 
-        bondAtom(TrivalentAtom("CZ", Element::Carbon()), "NE/bond2", 0.1340, 180*Deg2Rad);
+        bondAtom(TrivalentAtom("CZ", Element::getBySymbol("C")), "NE/bond2", 0.1340, 180*Deg2Rad);
 
-        bondAtom(TrivalentAtom("NH1", Element::Nitrogen()), "CZ/bond2", 0.1340, 180*Deg2Rad);
-        bondAtom(UnivalentAtom("1HH1", Element::Hydrogen()), "NH1/bond2", 0.1010);
-        bondAtom(UnivalentAtom("2HH1", Element::Hydrogen()), "NH1/bond3", 0.1010);
+        bondAtom(TrivalentAtom("NH1", Element::getBySymbol("N")), "CZ/bond2", 0.1340, 180*Deg2Rad);
+        bondAtom(UnivalentAtom("1HH1", Element::getBySymbol("H")), "NH1/bond2", 0.1010);
+        bondAtom(UnivalentAtom("2HH1", Element::getBySymbol("H")), "NH1/bond3", 0.1010);
 
-        bondAtom(TrivalentAtom("NH2", Element::Nitrogen()), "CZ/bond3", 0.1340, 180*Deg2Rad);
-        bondAtom(UnivalentAtom("1HH2", Element::Hydrogen()), "NH2/bond2", 0.1010);
-        bondAtom(UnivalentAtom("2HH2", Element::Hydrogen()), "NH2/bond3", 0.1010);
+        bondAtom(TrivalentAtom("NH2", Element::getBySymbol("N")), "CZ/bond3", 0.1340, 180*Deg2Rad);
+        bondAtom(UnivalentAtom("1HH2", Element::getBySymbol("H")), "NH2/bond2", 0.1010);
+        bondAtom(UnivalentAtom("2HH2", Element::getBySymbol("H")), "NH2/bond3", 0.1010);
 
         defineDihedralAngle("chi2", "CD", "CG", "CB", "CA");
         defineDihedralAngle("chi3", "NE", "CD", "CG", "CB");
@@ -929,35 +929,35 @@ public:
     Tryptophan()
         : AminoAcidResidue::BetaUnbranchedAminoAcidResidue("tryptophan", "Trp", 'W')
     {
-        bondAtom( TrivalentAtom("CG", Element::Carbon(), 125.0*Deg2Rad, 128.6*Deg2Rad), "bondCB", 0.14950);
+        bondAtom( TrivalentAtom("CG", Element::getBySymbol("C"), 125.0*Deg2Rad, 128.6*Deg2Rad), "bondCB", 0.14950);
 
         // 125.65 angle computed to place hydrogen symmetrically
-        bondAtom( TrivalentAtom("CD1", Element::Carbon(), 108.7*Deg2Rad, 125.65*Deg2Rad), "CG/bond2", 0.13520, 180*Deg2Rad);
-        bondAtom( UnivalentAtom("HD1", Element::Hydrogen()), "CD1/bond3", 0.1080);
+        bondAtom( TrivalentAtom("CD1", Element::getBySymbol("C"), 108.7*Deg2Rad, 125.65*Deg2Rad), "CG/bond2", 0.13520, 180*Deg2Rad);
+        bondAtom( UnivalentAtom("HD1", Element::getBySymbol("H")), "CD1/bond3", 0.1080);
 
         // 124.25 computed to center hydrogen
-        bondAtom( TrivalentAtom("NE1", Element::Nitrogen(), 111.50*Deg2Rad, 124.25*Deg2Rad), "CD1/bond2", 0.13810, 0*Deg2Rad);
-        bondAtom( UnivalentAtom("HE1", Element::Hydrogen()), "NE1/bond3", 0.1010);
+        bondAtom( TrivalentAtom("NE1", Element::getBySymbol("N"), 111.50*Deg2Rad, 124.25*Deg2Rad), "CD1/bond2", 0.13810, 0*Deg2Rad);
+        bondAtom( UnivalentAtom("HE1", Element::getBySymbol("H")), "NE1/bond3", 0.1010);
 
-        bondAtom( TrivalentAtom("CE2", Element::Carbon(), 104.4*Deg2Rad, 132.80*Deg2Rad), "NE1/bond2", 0.1380, 0*Deg2Rad);
+        bondAtom( TrivalentAtom("CE2", Element::getBySymbol("C"), 104.4*Deg2Rad, 132.80*Deg2Rad), "NE1/bond2", 0.1380, 0*Deg2Rad);
 
         // 180 degrees to bulge back out for the six-membered ring
-        bondAtom( TrivalentAtom("CZ2", Element::Carbon()), "CE2/bond3", 0.1400, 180*Deg2Rad);
-        bondAtom( UnivalentAtom("HZ2", Element::Hydrogen()), "CZ2/bond3", 0.1080);
+        bondAtom( TrivalentAtom("CZ2", Element::getBySymbol("C")), "CE2/bond3", 0.1400, 180*Deg2Rad);
+        bondAtom( UnivalentAtom("HZ2", Element::getBySymbol("H")), "CZ2/bond3", 0.1080);
 
-        bondAtom( TrivalentAtom("CH2", Element::Carbon()), "CZ2/bond2", 0.1400, 0*Deg2Rad);
-        bondAtom( UnivalentAtom("HH2", Element::Hydrogen()), "CH2/bond3", 0.1080);
+        bondAtom( TrivalentAtom("CH2", Element::getBySymbol("C")), "CZ2/bond2", 0.1400, 0*Deg2Rad);
+        bondAtom( UnivalentAtom("HH2", Element::getBySymbol("H")), "CH2/bond3", 0.1080);
 
 
 
-        bondAtom( TrivalentAtom("CD2", Element::Carbon(), 108.8*Deg2Rad, 122.7*Deg2Rad), "CE2/bond2", 0.1419, 0*Deg2Rad);
+        bondAtom( TrivalentAtom("CD2", Element::getBySymbol("C"), 108.8*Deg2Rad, 122.7*Deg2Rad), "CE2/bond2", 0.1419, 0*Deg2Rad);
         addRingClosingBond("CD2/bond2", "CG/bond3", 0.1459);
 
-        bondAtom( TrivalentAtom("CE3", Element::Carbon()), "CD2/bond3", 0.1404, 0*Deg2Rad);
-        bondAtom( UnivalentAtom("HE3", Element::Hydrogen()), "CE3/bond3", 0.1080);
+        bondAtom( TrivalentAtom("CE3", Element::getBySymbol("C")), "CD2/bond3", 0.1404, 0*Deg2Rad);
+        bondAtom( UnivalentAtom("HE3", Element::getBySymbol("H")), "CE3/bond3", 0.1080);
 
-        bondAtom( TrivalentAtom("CZ3", Element::Carbon()), "CE3/bond2", 0.1400, 0*Deg2Rad);
-        bondAtom( UnivalentAtom("HZ3", Element::Hydrogen()), "CZ3/bond3", 0.1080);
+        bondAtom( TrivalentAtom("CZ3", Element::getBySymbol("C")), "CE3/bond2", 0.1400, 0*Deg2Rad);
+        bondAtom( UnivalentAtom("HZ3", Element::getBySymbol("H")), "CZ3/bond3", 0.1080);
 
         addRingClosingBond("CZ3/bond2", "CH2/bond2", 0.1400);
 
@@ -992,25 +992,25 @@ public:
 
         // default angle for TrivalentAtom is 120 degrees, which is what we want
         // for a six-membered ring
-        bondAtom( TrivalentAtom("CG", Element::Carbon()), "bondCB", CB_CGdistance, 180*Deg2Rad);
+        bondAtom( TrivalentAtom("CG", Element::getBySymbol("C")), "bondCB", CB_CGdistance, 180*Deg2Rad);
 
-        bondAtom( TrivalentAtom("CD1", Element::Carbon()), "CG/bond2", C_Cdistance, 180*Deg2Rad );
-        bondAtom( UnivalentAtom("HD1", Element::Hydrogen()), "CD1/bond3", C_Hdistance );
+        bondAtom( TrivalentAtom("CD1", Element::getBySymbol("C")), "CG/bond2", C_Cdistance, 180*Deg2Rad );
+        bondAtom( UnivalentAtom("HD1", Element::getBySymbol("H")), "CD1/bond3", C_Hdistance );
 
         // Start using hidedral of zero, to loop ring back to beginning
-        bondAtom( TrivalentAtom("CE1", Element::Carbon()), "CD1/bond2", C_Cdistance, 0*Deg2Rad );
-        bondAtom( UnivalentAtom("HE1", Element::Hydrogen()), "CE1/bond3", C_Hdistance );
+        bondAtom( TrivalentAtom("CE1", Element::getBySymbol("C")), "CD1/bond2", C_Cdistance, 0*Deg2Rad );
+        bondAtom( UnivalentAtom("HE1", Element::getBySymbol("H")), "CE1/bond3", C_Hdistance );
 
-        bondAtom( TrivalentAtom("CZ", Element::Carbon()), "CE1/bond2", C_Cdistance, 180*Deg2Rad );
+        bondAtom( TrivalentAtom("CZ", Element::getBySymbol("C")), "CE1/bond2", C_Cdistance, 180*Deg2Rad );
         bondCompound( "oh", AlcoholOHGroup(), "CZ/bond2", CZ_Odistance );
         nameAtom("OH", "oh/O");
         nameAtom("HH", "oh/H");
 
-        bondAtom( TrivalentAtom("CE2", Element::Carbon()), "CZ/bond3", C_Cdistance, 0*Deg2Rad );
-        bondAtom( UnivalentAtom("HE2", Element::Hydrogen()), "CE2/bond3", C_Hdistance );
+        bondAtom( TrivalentAtom("CE2", Element::getBySymbol("C")), "CZ/bond3", C_Cdistance, 0*Deg2Rad );
+        bondAtom( UnivalentAtom("HE2", Element::getBySymbol("H")), "CE2/bond3", C_Hdistance );
 
-        bondAtom( TrivalentAtom("CD2", Element::Carbon()), "CE2/bond2", C_Cdistance, 0*Deg2Rad );
-        bondAtom( UnivalentAtom("HD2", Element::Hydrogen()), "CD2/bond3", C_Hdistance );
+        bondAtom( TrivalentAtom("CD2", Element::getBySymbol("C")), "CE2/bond2", C_Cdistance, 0*Deg2Rad );
+        bondAtom( UnivalentAtom("HD2", Element::getBySymbol("H")), "CD2/bond3", C_Hdistance );
 
         addRingClosingBond("CD2/bond2", "CG/bond3", 0.1459);
 

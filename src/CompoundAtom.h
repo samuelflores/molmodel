@@ -538,9 +538,9 @@ public:
 
     SimTK_DEFINE_UNIQUE_LOCAL_INDEX_TYPE(CompoundAtom,BondCenterIndex)
     
-    CompoundAtom(const Element& element, Transform location = Transform());
+    CompoundAtom(const Element * element, Transform location = Transform());
 
-    const Element& getElement() const;
+    const Element * getElement() const;
 
     bool hasBondCenter(BondCenterIndex index) const {
         return 0 <= index && index < (int)bondCenters.size();
@@ -818,7 +818,7 @@ public:
 	}
 
 private:
-    Element                     element;
+    const Element *             element;
 //    int                         formalCharge;
     BiotypeIndex                   biotypeIx;
     Transform                   localTransform; // relative to the parent Compound's frame
