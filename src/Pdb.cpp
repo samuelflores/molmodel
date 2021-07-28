@@ -538,7 +538,7 @@ bool PdbResidue::hasAtom(const SimTK::String &argName) const
     return false;
 }
 
-const PdbAtom& PdbResidue::getAtom(String argName) const 
+const PdbAtom& PdbResidue::getAtom(const String &argName) const
 {
     assert(hasAtom(argName));
 
@@ -556,7 +556,7 @@ const PdbAtom& PdbResidue::getAtom(String argName) const
     return atoms[atomIndex];
 }
 
-PdbAtom& PdbResidue::updAtom(String argName) 
+PdbAtom& PdbResidue::updAtom(const String &argName)
 {
     assert(hasAtom(argName));
 

@@ -268,9 +268,9 @@ public:
 
     bool hasAtom(const SimTK::String &argName) const; 
 
-    const PdbAtom& getAtom(String argName) const;
+    const PdbAtom& getAtom(const String &argName) const;
 
-    PdbAtom& updAtom(String argName);
+    PdbAtom& updAtom(const String &argName);
 
     const PdbResidueId& getResidueId() const {return residueId;}
     const char* getName() const {return residueName;}
