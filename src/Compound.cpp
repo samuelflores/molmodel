@@ -49,9 +49,11 @@
 #include "molmodel/internal/CompoundSystem.h"
 #include "molmodel/internal/Pdb.h"
 
+#include <array>
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <mutex>
 #include <vector>
 #include <algorithm>
 #include <cctype> // std::toupper
@@ -63,6 +65,8 @@ using namespace std;
 
 namespace SimTK {
 
+static std::array<AminoAcidResidue *, 26> AMINOACIDRESIDUES;
+static std::mutex AMINOACIDRESIDUES_MTX;
 
 BiotypeIndex SimTK_MOLMODEL_EXPORT getBiotypeIndex(
                         const Compound::Name& resName, 
@@ -2713,93 +2717,103 @@ const String& BiopolymerResidue::getResidueTypeName() const {
 //  2) at the carbonyl carbon, for the next amino acid residue
 //  3) at the alpha carbon, for the side chain
 
-AminoAcidResidue AminoAcidResidue::create(const PdbResidue& pdbResidue) 
+AminoAcidResidue AminoAcidResidue::create(const PdbResidue& pdbResidue)
 {
     const String& residueName(pdbResidue.getName());
-    
-    AminoAcidResidue answer = Alanine();
-    
-    if      (residueName == "ALA") answer = Alanine();
-    else if (residueName == "CYS") answer = Cysteine();
-    else if (residueName == "ASP") answer = Aspartate();
-    else if (residueName == "GLU") answer = Glutamate();
-    else if (residueName == "PHE") answer = Phenylalanine();
-    else if (residueName == "GLY") answer = Glycine();
-    else if (residueName == "HIS") answer = Histidine();
-    else if (residueName == "ILE") answer = Isoleucine();
-    else if (residueName == "LYS") answer = Lysine();
-    else if (residueName == "LEU") answer = Leucine();
-    else if (residueName == "MET") answer = Methionine();
-    else if (residueName == "ASN") answer = Asparagine();
-    else if (residueName == "PRO") answer = Proline();
-    else if (residueName == "GLN") answer = Glutamine();
-    else if (residueName == "ARG") answer = Arginine();
-    else if (residueName == "SER") answer = Serine();
-    else if (residueName == "THR") answer = Threonine();
-    else if (residueName == "VAL") answer = Valine();
-    else if (residueName == "TRP") answer = Tryptophan();
-    else if (residueName == "TYR") answer = Tyrosine();
-    
-    else 
-        SimTK_THROW1(Exception::UndefinedAminoAcidResidue, residueName);
-    
-    answer.setPdbResidueNumber( pdbResidue.getPdbResidueNumber() );
-    
-    return answer;
+
+    auto aa = [&residueName]() {
+        if      (residueName == "ALA") return create('A');
+        else if (residueName == "CYS") return create('C');
+        else if (residueName == "ASP") return create('D');
+        else if (residueName == "GLU") return create('E');
+        else if (residueName == "PHE") return create('F');
+        else if (residueName == "GLY") return create('G');
+        else if (residueName == "HIS") return create('H');
+        else if (residueName == "ILE") return create('I');
+        else if (residueName == "LYS") return create('K');
+        else if (residueName == "LEU") return create('L');
+        else if (residueName == "MET") return create('M');
+        else if (residueName == "ASN") return create('N');
+        else if (residueName == "PRO") return create('P');
+        else if (residueName == "GLN") return create('Q');
+        else if (residueName == "ARG") return create('R');
+        else if (residueName == "SER") return create('S');
+        else if (residueName == "THR") return create('T');
+        else if (residueName == "VAL") return create('V');
+        else if (residueName == "TRP") return create('W');
+        else if (residueName == "TYR") return create('Y');
+
+	throw std::invalid_argument{"Three letter code " + residueName + " does not correspond to any known aminoacid"};
+    }();
+
+    aa.setPdbResidueNumber( pdbResidue.getPdbResidueNumber() );
+
+    return aa;
 }
 
-AminoAcidResidue AminoAcidResidue::create(char oneLetterCode) 
+AminoAcidResidue AminoAcidResidue::create(char oneLetterCode)
 {
-    switch(oneLetterCode) {
-    case 'A':
-        return Alanine();
-    case 'C':
-        return Cysteine();
-    // SCF created DisulphideBridgedCysteine, see Protein.h and mol.h
-    case 'X':
-        return DisulphideBridgedCysteine();
-    case 'D':
-        return Aspartate();
-    case 'E':
-        return Glutamate();
-    case 'F':
-        return Phenylalanine();
-    case 'G':
-        return Glycine();
-    case 'H':
-        return Histidine();
-    case 'I':
-        return Isoleucine();
-    case 'K':
-        return Lysine();
-    case 'L':
-        return Leucine();
-    case 'M':
-        return Methionine();
-    case 'N':
-        return Asparagine();
-    case 'P':
-        return Proline();
-    case 'Q':
-        return Glutamine();
-    case 'R':
-        return Arginine();
-    case 'S':
-        return Serine();
-    case 'T':
-        return Threonine();
-    case 'V':
-        return Valine();
-    case 'W':
-        return Tryptophan();
-    case 'Y':
-        return Tyrosine();
-    }
-    
+    size_t idx = oneLetterCode - 'A';
+    if (idx >= 26)
+        throw new std::out_of_range{"Nonsensical character " + std::string{oneLetterCode} + " used as AA one letter code"};
 
-    assert(false);
+    std::lock_guard<std::mutex> lk{AMINOACIDRESIDUES_MTX};
 
-    return Alanine();
+    if (AMINOACIDRESIDUES[idx] != nullptr)
+        return *AMINOACIDRESIDUES[idx];
+
+    auto aa = [oneLetterCode]() -> AminoAcidResidue * {
+        switch(oneLetterCode) {
+        case 'A':
+            return new Alanine();
+        case 'C':
+            return new Cysteine();
+        // SCF created DisulphideBridgedCysteine, see Protein.h and mol.h
+        case 'X':
+            return new DisulphideBridgedCysteine();
+        case 'D':
+            return new Aspartate();
+        case 'E':
+            return new Glutamate();
+        case 'F':
+            return new Phenylalanine();
+        case 'G':
+            return new Glycine();
+        case 'H':
+            return new Histidine();
+        case 'I':
+            return new Isoleucine();
+        case 'K':
+            return new Lysine();
+        case 'L':
+            return new Leucine();
+        case 'M':
+            return new Methionine();
+        case 'N':
+            return new Asparagine();
+        case 'P':
+            return new Proline();
+        case 'Q':
+            return new Glutamine();
+        case 'R':
+            return new Arginine();
+        case 'S':
+            return new Serine();
+        case 'T':
+            return new Threonine();
+        case 'V':
+            return new Valine();
+        case 'W':
+            return new Tryptophan();
+        case 'Y':
+            return new Tyrosine();
+        }
+
+	throw std::invalid_argument("One letter code " + std::string{oneLetterCode} + " does no represent any aminoacid");
+    }();
+
+    AMINOACIDRESIDUES[idx] = aa;
+    return *aa;
 }
 
 std::ostream& operator<<(std::ostream& o, const BondInfo& binfo) {
