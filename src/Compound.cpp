@@ -99,20 +99,14 @@ BiotypeIndex SimTK_MOLMODEL_EXPORT getBiotypeIndex(
     std::set<Compound::AtomName> moreAtomNames;
     for (atomI = atomNames.begin(); atomI != atomNames.end(); ++atomI)
     {
-        String atomName = *atomI;
-
         // Atom type never has leading digit found on hydrogen instances
-        int startPos = atomName.find_first_not_of("0123456789");
-        if (startPos != 0)
-            atomName = atomName.substr(startPos);
+        int startPos = atomI->find_first_not_of("0123456789");
 
-        moreAtomNames.insert(atomName); // First atom name is the standard one
+        moreAtomNames.insert(atomI->substr(startPos)); // First atom name is the standard one
 
-        Compound::Name shortAtomName = atomName;
-        int endPos = atomName.find_last_not_of("0123456789");
-        if ( endPos != (atomName.length() - 1) ) {
-            shortAtomName = atomName.substr(0, endPos + 1);
-            moreAtomNames.insert(shortAtomName);
+        int endPos = atomI->find_last_not_of("0123456789");
+        if ( endPos != (atomI->length() - 1) ) {
+            moreAtomNames.insert(atomI->substr(startPos, endPos - startPos + 1));
         }
     }
 

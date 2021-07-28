@@ -243,10 +243,13 @@ int DuMMForceFieldSubsystemRep::realizeSubsystemTopologyImpl(State& s) const
             }
         }
     }
+
+#ifndef NDEBUG
     for (DuMM::AtomIndex ax(0); ax < atoms.size(); ++ax) {
         const DuMMAtom& a = getAtom(ax);
         assert(a.isAttachedToBody()); // TODO catch unassigned atoms
     }
+#endif
 
     //------- Process bonds -------
     // Now we're going to look at each atom again and find all interesting
@@ -373,12 +376,12 @@ int DuMMForceFieldSubsystemRep::realizeSubsystemTopologyImpl(State& s) const
                 assert(newAtom != a.bond12[j]);
                 if (newAtom == anum)
                     continue; // no loop backs!
-                bond13.push_back(AtomIndexPair(a.bond12[j], newAtom));
+                bond13.emplace_back(a.bond12[j], newAtom);
 
                 // if no shorter path, note this short route
                 if (allBondedSoFar.find(newAtom) == allBondedSoFar.end()) {
                     allBondedSoFar.insert(newAtom);
-                    shortPath13.push_back(AtomIndexPair(a.bond12[j], newAtom));
+                    shortPath13.emplace_back(a.bond12[j], newAtom);
                 }
             }
         }
@@ -398,8 +401,7 @@ int DuMMForceFieldSubsystemRep::realizeSubsystemTopologyImpl(State& s) const
                 assert(newAtom != bond13[j][1]);
                 // avoid repeated atoms (loop back)
                 if (newAtom!=anum && newAtom!=bond13[j][0]) {
-                    bond14.push_back(AtomIndexTriple(bond13[j][0],
-                                                 bond13[j][1], newAtom));
+                    bond14.emplace_back(bond13[j][0], bond13[j][1], newAtom);
                 }
             }
         }
@@ -416,8 +418,7 @@ int DuMMForceFieldSubsystemRep::realizeSubsystemTopologyImpl(State& s) const
                  // check if there was already a shorter path
                 if (allBondedSoFar.find(newAtom) == allBondedSoFar.end()) {
                     allBondedSoFar.insert(newAtom);
-                    shortPath14.push_back(AtomIndexTriple(shortPath13[j][0],
-                                                shortPath13[j][1], newAtom));
+                    shortPath14.emplace_back(shortPath13[j][0], shortPath13[j][1], newAtom);
                 }
             }
         }
@@ -435,9 +436,7 @@ int DuMMForceFieldSubsystemRep::realizeSubsystemTopologyImpl(State& s) const
 
                 // avoid repeats and loop back
                 if (newAtom!=anum && newAtom!=bond14[j][0] && newAtom!=bond14[j][1]) {
-                    bond15.push_back(AtomIndexQuad(bond14[j][0],
-                                               bond14[j][1],
-                                               bond14[j][2], newAtom));
+                    bond15.emplace_back(bond14[j][0], bond14[j][1], bond14[j][2], newAtom);
                 }
             }
         }
@@ -454,9 +453,7 @@ int DuMMForceFieldSubsystemRep::realizeSubsystemTopologyImpl(State& s) const
                 // check if there was already a shorter path
                 if (allBondedSoFar.find(newAtom) == allBondedSoFar.end()) {
                     allBondedSoFar.insert(newAtom);
-                    shortPath15.push_back(AtomIndexQuad(shortPath14[j][0],
-                                                    shortPath14[j][1],
-                                                    shortPath14[j][2], newAtom));
+                    shortPath15.emplace_back(shortPath14[j][0], shortPath14[j][1], shortPath14[j][2], newAtom);
                 }
             }
         }
@@ -909,10 +906,10 @@ int DuMMForceFieldSubsystemRep::realizeSubsystemTopologyImpl(State& s) const
                                         c1,
                                         getAtomClassIndex(bx[2]));
                         if (bt) {
-                            ia.forceImproper14.push_back(IncludedAtomIndexTriple(
+                            ia.forceImproper14.emplace_back(
                                                 atoms[bx[0]].inclAtomIndex,
                                                 atoms[bx[1]].inclAtomIndex,
-                                                atoms[bx[2]].inclAtomIndex));
+                                                atoms[bx[2]].inclAtomIndex);
                             ia.aImproperTorsion.push_back(bt);
                         }
                     }
