@@ -1579,8 +1579,7 @@ Real DuMMForceFieldSubsystem::getAtomMass(DuMM::AtomIndex atomIndex) const {
     SimTK_APIARGCHECK1_ALWAYS(mm.isValidAtom(atomIndex), mm.ApiClassName, MethodName,
         "atom %d is not valid", (int) atomIndex);
 
-    const Element e = Element::getByAtomicNumber(mm.getAtomElementNum(atomIndex));
-    return e.getMass();
+    return Element::getByAtomicNumber(mm.getAtomElementNum(atomIndex))->getMass();
 }
 
 // Returns the atomic number (number of protons in nucleus).

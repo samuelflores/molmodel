@@ -543,9 +543,9 @@ public:
 
     SimTK_DEFINE_UNIQUE_LOCAL_INDEX_TYPE(CompoundAtom,BondCenterIndex)
     
-    CompoundAtom(const Element& element, Transform location = Transform());
+    CompoundAtom(const Element * element, Transform location = Transform());
 
-    const Element& getElement() const;
+    const Element * getElement() const;
 
     bool hasBondCenter(BondCenterIndex index) const {
         return 0 <= index && index < (int)bondCenters.size();
@@ -823,7 +823,7 @@ public:
 	}
 
 private:
-    Element                     element;
+    const Element *             element;
 //    int                         formalCharge;
     BiotypeIndex                   biotypeIx;
     Transform                   localTransform; // relative to the parent Compound's frame
@@ -930,6 +930,22 @@ public:
     // One constructor for local atoms
     AtomInfo(Compound::AtomIndex id, const CompoundAtom& atom, bool isBase /*, const Transform& frameInCompound = Transform()*/ );
 
+    AtomInfo(const AtomInfo &other)
+        : id(other.id),
+          name(other.name),
+          synonyms(other.synonyms),
+          bIsBaseAtom(other.bIsBaseAtom),
+          atom(other.atom)
+    {}
+
+    AtomInfo(AtomInfo &&other) noexcept
+        : id(std::move(other.id)),
+          name(std::move(other.name)),
+          synonyms(std::move(other.synonyms)),
+          bIsBaseAtom(other.bIsBaseAtom),
+          atom(std::move(other.atom))
+    {}
+
     bool hasValidAtomName() const {
         return CompoundPathName::isValidAtomName(name);
     }
@@ -943,10 +959,10 @@ public:
         return synonyms;
     }
 
-    const AtomInfo& addName(const Compound::AtomName& n) {
+    const AtomInfo& addName(Compound::AtomName n) {
         // assert(CompoundPathName::isValidAtomName(n));
-        name = n;
-        synonyms.insert(n);
+        name = std::move(n);
+        synonyms.insert(name);
         return *this;
     }
 

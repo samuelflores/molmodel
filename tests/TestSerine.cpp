@@ -50,12 +50,12 @@ int main() {
     serine.writeDefaultPdb(std::cout);
 
     CompoundSystem system;
-	SimbodyMatterSubsystem matter(system);
+    SimbodyMatterSubsystem matter(system);
     DecorationSubsystem decorations(system);
     DuMMForceFieldSubsystem dumm(system);
 
-    if (! serine.assignBiotypes() )
-        assert(false);
+    if (!serine.assignBiotypes())
+        throw std::runtime_error("Failed to assign biotypes");
 
     system.adoptCompound(serine);
 
@@ -83,4 +83,3 @@ int main() {
     ts.initialize(state);
     ts.stepTo(10 * timeInterval);
 }
-

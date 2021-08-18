@@ -136,7 +136,7 @@ public:
     // Add one simple atom unconnected to anything else
     CompoundRep& setBaseAtom(
         const Compound::AtomName& name, 
-        const Element& element,
+        const Element * element,
         const Transform& location);
 
     CompoundRep& setBaseAtom(
@@ -197,7 +197,7 @@ public:
     // Add a subcompound attached by a bond to an existing atom
     // bondCompound("H1", MonovalentAtom(Element::Hydrogen()), "bond", "C/bond2", C_Hdistance );
     CompoundRep& bondCompound(
-        const Compound::Name& name, 
+        Compound::Name name,
         const Compound& subcompound, 
         const Compound::BondCenterPathName& parentBondName, 
         mdunits::Length distance,
@@ -289,11 +289,11 @@ public:
 
     const Compound::AtomName getAtomName(Compound::AtomIndex) const;
 
-    const Element& getAtomElement(Compound::AtomIndex atomIndex) const {
+    const Element * getAtomElement(Compound::AtomIndex atomIndex) const {
         return getAtom(atomIndex).getElement();
     }
 
-    const Element& getAtomElement(const Compound::AtomName& atomName) const {
+    const Element * getAtomElement(const Compound::AtomName& atomName) const {
         return getAtom(atomName).getElement();
     }
 
@@ -1424,85 +1424,60 @@ public:
             const Compound::AtomTargetLocations& atomTargets, 
             Compound::PlanarBondMatchingPolicy policy) 
     {
-        std::vector< AtomIndexList > atomQuads = getBondedAtomRuns(4, atomTargets);
+        const std::vector<AtomIndexList> &atomQuads = getBondedAtomRuns(4, atomTargets);
 
         std::vector< AtomIndexList >::const_iterator bonds14Ix;
         for (bonds14Ix = atomQuads.begin(); bonds14Ix != atomQuads.end(); ++bonds14Ix) 
         {
-            //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
             Compound::AtomIndex atomIndex1 = (*bonds14Ix)[0];
             Compound::AtomIndex atomIndex2 = (*bonds14Ix)[1];
             Compound::AtomIndex atomIndex3 = (*bonds14Ix)[2];
             Compound::AtomIndex atomIndex4 = (*bonds14Ix)[3];
-            // for efficiency, set each dihedral only once
             if (atomIndex4 < atomIndex1) continue;
 
-			// Don't set dihedrals involving ring-closing bonds, as these can damage "real" dihedrals
-			if ( getBond(atomIndex2, atomIndex1).isRingClosingBond() ) continue;
-			if ( getBond(atomIndex3, atomIndex4).isRingClosingBond() ) continue;
+            // Don't set dihedrals involving ring-closing bonds, as these can damage "real" dihedrals
+            if (getBond(atomIndex2, atomIndex1).isRingClosingBond()) continue;
+            if (getBond(atomIndex3, atomIndex4).isRingClosingBond()) continue;
 
             // Compute and set dihedral angle
             UnitVec3 bond12(atomTargets.find(atomIndex2)->second - atomTargets.find(atomIndex1)->second);
             UnitVec3 bond23(atomTargets.find(atomIndex3)->second - atomTargets.find(atomIndex2)->second);
             UnitVec3 bond34(atomTargets.find(atomIndex4)->second - atomTargets.find(atomIndex3)->second);
-            
-            //std::cout<<__FILE__<<":"<<__LINE__<<" bond12 "<<bond12<<std::endl;
-            //std::cout<<__FILE__<<":"<<__LINE__<<" bond23 "<<bond23<<std::endl;
-            //std::cout<<__FILE__<<":"<<__LINE__<<" bond34 "<<bond34<<std::endl;
-            Angle angle = SimTK::calcDihedralAngle(bond12, bond23, bond34);
-            //std::cout<<__FILE__<<":"<<__LINE__<<"angle      = >"<< angle << "<" << std::endl;
 
-            // assert(false);  // need to implement general setDefaultDihedralAngle method
+            Angle angle = SimTK::calcDihedralAngle(bond12, bond23, bond34);
 
             // Don't set torsion for planar bonds, except maybe to Flip them
-            if  (policy == Compound::KeepPlanarBonds)
+            if (policy == Compound::KeepPlanarBonds)
             {
-                //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-                if ( isPlanarBond(atomIndex2, atomIndex3) )
+                if (isPlanarBond(atomIndex2, atomIndex3))
                     continue;
-            }   
-            //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-
-            if (policy == Compound::FlipPlanarBonds)
-                if ( isPlanarBond(atomIndex2, atomIndex3) ) {
+            }
+            else if (policy == Compound::FlipPlanarBonds) {
+                if (isPlanarBond(atomIndex2, atomIndex3)) {
                     // TODO - decide whether to flip the dihedral angle 180 degrees
-                    //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
-                    Angle initialAngle = calcDefaultDihedralAngle(                
-                        atomIndex1, 
-                        atomIndex2, 
-                        atomIndex3, 
+                    Angle initialAngle = calcDefaultDihedralAngle(
+                        atomIndex1,
+                        atomIndex2,
+                        atomIndex3,
                         atomIndex4);
-                    //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
                     Angle diffAngle = angle - initialAngle;
                     // normalize to range (-180 degrees, 180 degrees)
                     while ( -SimTK::Pi >= diffAngle ) diffAngle += 2 * SimTK::Pi;
                     while ( SimTK::Pi < diffAngle )   diffAngle -= 2 * SimTK::Pi;
                     // Either flip the dihedral 180 degrees...
                     if (std::abs(diffAngle) > 0.5 * SimTK::Pi)
-                        angle = initialAngle + SimTK::Pi;          
+                        angle = initialAngle + SimTK::Pi;
                     else // ... or do nothing.
                         continue;
                 }
+            }
 
-            //std::cout<<__FILE__<<":"<<__LINE__<<" angle, atomIndex1, atomIndex2, atomIndex3, atomIndex4 "<<angle<<" , "<< atomIndex1;
-            /*std::cout << ":"<<getAtomName(atomIndex1);  
-            std::cout<<" , "<< atomIndex2;
-            std::cout << ":"<<getAtomName(atomIndex2);
-            std::cout<<" , "<< atomIndex3;
-            std::cout << ":"<<getAtomName(atomIndex3)  <<" , "<< atomIndex4;
-            std::cout << ":"<<getAtomName(atomIndex4)   <<std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"angle      = >"<< angle << "<" << std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"atomIndex1 = >"<< atomIndex1 << "<" << std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"atomIndex2 = >"<< atomIndex2 << "<" << std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"atomIndex3 = >"<< atomIndex3 << "<" << std::endl;
-            std::cout<<__FILE__<<":"<<__LINE__<<"atomIndex4 = >"<< atomIndex4 << "<" << std::endl;*/
-            setDefaultDihedralAngle( 
-                angle, 
-                atomIndex1, 
-                atomIndex2, 
-                atomIndex3, 
+            setDefaultDihedralAngle(
+                angle,
+                atomIndex1,
+                atomIndex2,
+                atomIndex3,
                 atomIndex4);
-            //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
         }
 
         return *this;
@@ -1704,7 +1679,7 @@ public:
             residueNumber = defaultNextResidueNumber;        
         }
 
-        pdbChain.appendResidue( PdbResidue(getOwnerHandle(), residueNumber, myTransform) );
+        pdbChain.appendResidue(getOwnerHandle(), residueNumber, myTransform);
 
         defaultNextResidueNumber = residueNumber + 1;
 
@@ -1741,7 +1716,7 @@ public:
             residueNumber = defaultNextResidueNumber;        
         }
 
-        pdbChain.appendResidue( PdbResidue(state, getOwnerHandle(), residueNumber, myTransform) );
+        pdbChain.appendResidue(state, getOwnerHandle(), residueNumber, myTransform);
 
         defaultNextResidueNumber = residueNumber + 1;
 
@@ -1817,7 +1792,7 @@ public:
 
     // Copy atoms etc.
     // Returns new bond center index of absorbed inboard bond center
-    Compound::BondCenterIndex absorbSubcompound(const Compound::Name& scName, const Compound& subcompound, bool isBase);
+    Compound::BondCenterIndex absorbSubcompound(Compound::Name scName, const Compound& subcompound, bool isBase) noexcept;
 
     const BondInfo& getBondInfo(Compound::BondIndex bi) const {
         return allBonds[bi];
@@ -2291,7 +2266,7 @@ public:
     const String& getPdbResidueName() const;
 
     CompoundRep& setPdbChainId(String);
-    String getPdbChainId() const;
+    const String& getPdbChainId() const;
 
 
     // const Bond& getBond(const String& name) const;
@@ -2529,7 +2504,7 @@ public:
     /*virtual*/ BiopolymerResidueRep* clone() const {return new BiopolymerResidueRep(*this);}
 
     BiopolymerResidueRep(String name, String tlc = "Unk", char olc = '?')
-        : residueName(name), threeLetterCode(tlc), oneLetterCode(olc)
+        : residueName(std::move(name)), threeLetterCode(std::move(tlc)), oneLetterCode(olc)
         {}
 
     BiopolymerResidueRep& setOneLetterCode(char olc) {
@@ -2551,55 +2526,35 @@ public:
 
     // Attempt to deduce correct biotypes from global biotypes database
     /// @return true if all atoms have a valid biotype assigned, false otherwise
-    bool assignBiotypes(Ordinality::Residue ordinality = Ordinality::Any) 
+    bool assignBiotypes(Ordinality::Residue ordinality = Ordinality::Any)
     {
-        bool answer = true; // start optimistic
-
         // for each named atom, look up resname, atomname, ordinality
         // if biotype is still undefined, raise exception
-        std::vector<AtomInfo>::iterator atomI;
-        for (atomI = allAtoms.begin(); atomI != allAtoms.end(); ++atomI) 
+        for (auto &it : allAtoms)
         {
             // debugging
             // int atomIndex = atomI->getIndex();
             // std::cout << "biotype for atom " << atomI->getIndex() << std::endl;
-            
-            CompoundAtom& atom = updAtom(*atomI);
-            
-			// if the atom already has a valid biotype, keep it.
-			if (atom.getBiotypeIndex().isValid()) continue;
 
-            // Examine all possible residue names
-            const std::set<Compound::Name>& residueNames = synonyms;
+            CompoundAtom& atom = updAtom(it);
+
+            // if the atom already has a valid biotype, keep it.
+            if (atom.getBiotypeIndex().isValid()) continue;
 
             // Create a container to hold variations of atom name
-            const std::set<Compound::AtomName>& atomNames = getAtomSynonyms(atomI->getIndex());
+            const std::set<Compound::AtomName>& atomNames = getAtomSynonyms(it.getIndex());
 
             // Loop over residue names and atom names until a match is found
-            bool foundBiotype = false;
-            BiotypeIndex index = getBiotypeIndex(residueNames, atomNames, ordinality);
+            BiotypeIndex index = getBiotypeIndex(synonyms, atomNames, ordinality);
             if (index.isValid()) {
                 atom.setBiotypeIndex(index);
-                foundBiotype = true;
             }
             else {
-                foundBiotype = false;
+                return false;
             }
-
-            if (!foundBiotype) {
-                answer = false;
-                std::set<Compound::AtomName>::const_iterator atomNamesIterator; 
-                for (atomNamesIterator = atomNames.begin(); atomNamesIterator != atomNames.end(); atomNamesIterator++){
-                    //std::cout<<__FILE__<<":"<<__LINE__<<" atomNames = "<<string(*atomNamesIterator)<<std::endl;
-                }
-            }
-            // Perhaps the atom already had a usable biotype...
-            /// assert(atom.getBiotypeIndex().isValid());
-            assert(foundBiotype);
-
         }
 
-        return answer;
+        return true;
     }
 
 private:
@@ -2615,136 +2570,6 @@ public:
     friend class Biopolymer;
 
     BiopolymerRep* clone() const {return new BiopolymerRep(*this);}
-    //const std::vector<String>& getResidueNames() const {
-    //    return residueNames;
-    //}
-
-    //std::vector<String>& updResidueNames() {
-    //    return residueNames;
-    //}
-
-/*BiopolymerRep& fitDefaultConfiguration(
-        const Compound::AtomTargetLocations& atomTargets,
-        SimTK::Real targetRms,
-        bool useObservedPointFitter,
-        Real minimizerTolerance//,
-        //Compound compoundCopy //= *this;
-        )
-{
-    // this is a pointer, *this is its value
-    Compound compoundCopy((*this));
-    // TODO - DuMM should not be required
-    CompoundSystem matchingSystem;
-    SimbodyMatterSubsystem matchingMatter(matchingSystem);
-    DuMMForceFieldSubsystem dumm(matchingSystem);
-    dumm.loadAmber99Parameters();
-    dumm.setAllGlobalScaleFactors(0);
-    GeneralForceSubsystem forces(matchingSystem);
-    matchingSystem.adoptCompound(compoundCopy);
-    matchingSystem.modelCompounds();
-    matchingSystem.realizeTopology();
-    State& state = matchingSystem.updDefaultState();
-    matchingSystem.realize(state, Stage::Position);
-    // cout << "Number of atom matches(2) = " << optimizationAtomTargets.size() << endl;
-    std::map<MobilizedBodyIndex, std::vector<Vec3> > stations;
-    std::map<MobilizedBodyIndex, std::vector<Vec3> > targetLocations;
-    for (Compound::AtomTargetLocations::const_iterator targetIx = atomTargets.begin();
-         targetIx != atomTargets.end();
-         ++targetIx)
-    {
-        Compound::AtomIndex atomId = targetIx->first;
-        MobilizedBodyIndex bodyId = compoundCopy.getAtomMobilizedBodyIndex(atomId);
-        stations[bodyId].push_back(compoundCopy.getAtomLocationInMobilizedBodyFrame(atomId));
-        targetLocations[bodyId].push_back(targetIx->second);
-    }
-   
-    // Use ObservedPointFitter to optimize geometry
-    std::vector<MobilizedBodyIndex> bodyList;
-    std::vector<std::vector<Vec3> > stationList;
-    std::vector<std::vector<Vec3> > targetList;
-    for (std::map<MobilizedBodyIndex, std::vector<Vec3> >::const_iterator iter = stations.begin(); iter != stations.end(); iter++) {
-        bodyList.push_back(iter->first);
-        stationList.push_back(iter->second);
-        targetList.push_back(targetLocations.find(iter->first)->second);
-    }
-
-
-    // ObservedPointFitter takes a while, and occasionally aborts with line search trouble,
-    // So lets try a minimization using custom forces
-    //bool useObservedPointFitter = true;
-    if (useObservedPointFitter) {
-        // sherm 100307: Optimizers now use relative tolerance.
-        Real tolerance = .001; // 0.1%
-        ObservedPointFitter::findBestFit(matchingSystem, state, bodyList, stationList, targetList, tolerance);
-    }
-    else {
-        const MobilizedBody& groundBody = matchingMatter.getGround();
-        for (int b = 0; b < (int)bodyList.size(); ++b)
-        {
-            const MobilizedBody& atomBody = matchingMatter.getMobilizedBody(bodyList[b]);
-            for (int s = 0; s < (int)stationList[b].size(); ++s)
-            {
-                const Vec3& atomLocation = stationList[b][s];
-                const Vec3& targetLocation = targetList[b][s];
-                Force::TwoPointLinearSpring(forces, atomBody, atomLocation, groundBody, targetLocation, 1000000.0, 0.0);
-            }
-        }
-
-        state = matchingSystem.realizeTopology();
-        matchingSystem.realize(state, Stage::Position);
-        matchingSystem.realize(state, Stage::Position);
-            LocalEnergyMinimizer::minimizeEnergy(matchingSystem, state,  minimizerTolerance);
-
-            // Stuff optimized coordinates into a string
-            std::ostringstream optimizedPdbStringOut;
-            matchingSystem.realize(state, Stage::Position);
-            compoundCopy.writePdb(state, optimizedPdbStringOut);
-            // Create another PdbStructure, and match the dihedral angles to that
-            std::istringstream optimizedPdbStringIn(optimizedPdbStringOut.str());
-            PdbStructure optimizedStructure(optimizedPdbStringIn);
-            //Compound::AtomTargetLocations optimizedAtomTargets =
-            //        createAtomTargets(optimizedStructure,false); // scf set guessCoordinates to false here to make sure it's done exactly as before
-        std::ofstream myofstream("match1e.pdb");
-        optimizedStructure.write(myofstream, SimTK::Transform(Vec3(0)));
-    }
-    // Stuff optimized coordinates into a string
-    std::ostringstream optimizedPdbStringOut;
-    matchingSystem.realize(state, Stage::Position);
-    compoundCopy.writePdb(state, optimizedPdbStringOut);
-    // Create another PdbStructure, and match the dihedral angles to that
-    std::istringstream optimizedPdbStringIn(optimizedPdbStringOut.str());
-    PdbStructure optimizedStructure(optimizedPdbStringIn);
-    Compound::AtomTargetLocations optimizedAtomTargets =
-            createAtomTargets(optimizedStructure,false); // scf set guessCoordinates to false here to make sure it's done exactly as before
-    bool matchHydrogenAtomLocations = false;
-    if (! matchHydrogenAtomLocations) {
-        std::map<Compound::AtomIndex, Vec3>::iterator it;
-        std::map<Compound::AtomIndex, Vec3>::iterator next;
-        next = optimizedAtomTargets.begin();
-        while (next != optimizedAtomTargets.end()) {
-            it = next;
-            Compound::AtomIndex m = (*it).first;
-            Element myAtomElement = getAtomElement(m);
-            next++;
-            if  ((myAtomElement.getName()).compare("hydrogen") == 0) {
-                //cout<<__FILE__<<":"<<__LINE__<<" erasing "<<m<<endl;
-                optimizedAtomTargets.erase(it);
-            }
-            //cout<<__FILE__<<":"<<__LINE__<<" "<<m<<","<<(getAtomName(m))<<endl;
-        }
-    }
-    
-    //not sure that this was ever needed.  In any event, cutting out from the BiopolymerRep version:
-    matchDefaultBondLengths(optimizedAtomTargets);
-    matchDefaultBondAngles(optimizedAtomTargets);
-    matchDefaultDihedralAngles(optimizedAtomTargets);
-    // Use original atom locations for top level transform
-    matchDefaultTopLevelTransform(optimizedAtomTargets);
-    
-    return *this;
-} */
-
-
 
     int getNumResidues() const;
     const String& getResidueName(int residueIndex) const;
@@ -2784,17 +2609,20 @@ public:
             insertionCode = ' '; // make sure insertion code goes back to the default of ' '.
         }
         PdbResidue pdbResidue(residue.getPdbResidueName(), PdbResidueId(residueNumber,insertionCode));
-        for (ResidueInfo::AtomIndex a(0); a < residue.getNumAtoms(); ++a) 
+
+	const auto numAtoms = residue.getNumAtoms();
+	pdbResidue.reserveMoreSpace(numAtoms);
+        for (ResidueInfo::AtomIndex a(0); a < numAtoms; ++a)
         {
             Compound::AtomIndex atomIx = residue.getAtomIndex(a);
             const CompoundAtom& atom = getAtom(atomIx);
 
             PdbAtom pdbAtom(residue.getAtomName(a), getAtomElement(atomIx));
             pdbAtom.setLocation(PdbAtomLocation(transform * atomFrameCache[atomIx].p()));
-            pdbResidue.addAtom(pdbAtom);
+            pdbResidue.addAtom(std::move(pdbAtom));
         }
 
-        pdbChain.appendResidue(pdbResidue);
+        pdbChain.appendResidue(std::move(pdbResidue));
 
         defaultNextResidueNumber = residueNumber + 1;
 
@@ -2852,7 +2680,10 @@ public:
             ++residueNumber;
 
         PdbResidue pdbResidue(residue.getPdbResidueName(), PdbResidueId(residueNumber,insertionCode ));
-        for (ResidueInfo::AtomIndex a(0); a < residue.getNumAtoms(); ++a) 
+
+	const auto numAtoms = residue.getNumAtoms();
+	pdbResidue.reserveMoreSpace(numAtoms);
+        for (ResidueInfo::AtomIndex a(0); a < numAtoms; ++a)
         {
             Compound::AtomIndex atomIx = residue.getAtomIndex(a);
             const CompoundAtom& atom = getAtom(atomIx);
@@ -2861,9 +2692,9 @@ public:
             pdbAtom.setLocation(
                 PdbAtomLocation(transform * calcAtomLocationInGroundFrame(state, atomIx))
             );
-            pdbResidue.addAtom(pdbAtom);
+            pdbResidue.addAtom(std::move(pdbAtom));
         }
-        pdbChain.appendResidue(pdbResidue);
+        pdbChain.appendResidue(std::move(pdbResidue));
 
         defaultNextResidueNumber = residueNumber + 1;
 

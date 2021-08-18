@@ -85,7 +85,7 @@ public:
     static const Biotype& SerineOG();
     static const Biotype& SerineHG();
 
-    const Element&  getElement() const;
+    const Element * getElement() const;
     int             getValence() const;
     BiotypeIndex       getIndex() const;
     TinkerBiotypeIndex getTinkerBiotypeIfAny() const;
@@ -112,7 +112,7 @@ public:
 
     static bool exists(BiotypeIndex biotypeIndex);
 
-    static BiotypeIndex defineBiotype(const Element& element,
+    static BiotypeIndex defineBiotype(const Element *element,
                                    int valence,
                                    const char* residueName, 
                                    const char* atomName, 
@@ -127,7 +127,7 @@ public:
     }
 
     static BiotypeIndex defineTinkerBiotype(TinkerBiotypeIndex tinkerBiotypeIndex, 
-                                         const Element& element,
+                                         const Element *element,
                                          int valence,
                                          const char* residueName, 
                                          const char* atomName, 
@@ -150,7 +150,7 @@ private:
 
     Biotype( BiotypeIndex biotypeIndex, 
              TinkerBiotypeIndex tinkerBiotypeIndex, 
-             const Element& element,
+             const Element* element,
              int valence,
              const char* residueName, 
              const char* atomName, 

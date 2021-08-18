@@ -283,7 +283,7 @@ public:
      */
     Compound& setBaseAtom(
         const Compound::AtomName& name,   ///< name of the new atom being created
-        const Element& element,           ///< chemical element of the new atom being created
+        const Element * element,          ///< chemical element of the new atom being created
         const Transform& location = Vec3(0)  ///< default location of the new atom being created in orthogonal nanometers.  Defaults to (0,0,0)
         );
     /** 
@@ -939,10 +939,10 @@ public:
         ) const;
 
     /// \return chemical element of atom
-    const Element& getAtomElement(Compound::AtomIndex ///< integer index for Atom with respect to this Compound.
+    const Element * getAtomElement(Compound::AtomIndex ///< integer index for Atom with respect to this Compound.
         ) const;
 
-    const Element& getAtomElement(const Compound::AtomName& ///< name for Atom in the context of this Compound.
+    const Element * getAtomElement(const Compound::AtomName& ///< name for Atom in the context of this Compound.
         ) const;
 
     /**
@@ -1031,7 +1031,7 @@ public:
         );
 
     /// \return character that would populate "chain id" field for PDB file output for this Compound
-    String getPdbChainId() const;
+    const String& getPdbChainId() const;
 
     /**
      * \brief Define a local name for a particular BondCenter in this Compound
@@ -1255,7 +1255,7 @@ public:
     */
     SingleAtom(
         const Compound::AtomName& atomName, ///< name for new atom
-        const Element& element ///< chemical element of new atom
+        const Element * element ///< chemical element of new atom
         ) 
     {
         setBaseAtom( atomName, element );
@@ -1285,7 +1285,7 @@ class  UnivalentAtom : public Compound::SingleAtom {
 public:
     UnivalentAtom(
         const Compound::AtomName& atomName, ///< name for new atom
-        const Element& element ///< chemical element for new atom
+        const Element * element ///< chemical element for new atom
         ) 
         : Compound::SingleAtom(atomName, element)
     {
@@ -1306,7 +1306,7 @@ class  BivalentAtom : public Compound::SingleAtom {
 public:
     BivalentAtom(
         const Compound::AtomName& atomName,  ///< name for new atom
-        const Element& element,  ///< chemical element for new atom
+        const Element * element,  ///< chemical element for new atom
         Angle angle = 180*Deg2Rad ///< default (initial) bond angle between new atom's two BondCenters
         ) 
         : Compound::SingleAtom(atomName, element)
@@ -1332,7 +1332,7 @@ class  TrivalentAtom : public Compound::SingleAtom {
 public:
     TrivalentAtom(
         const Compound::AtomName& atomName,   ///< name for new atom
-        const Element& element,   ///< chemical element for new atom
+        const Element * element,   ///< chemical element for new atom
         Angle angle1 = 120*Deg2Rad, ///< angle between first and second BondCenters
         Angle angle2 = 120*Deg2Rad ///< angle between first and third BondCenters
         ) 
@@ -1360,8 +1360,8 @@ class  QuadrivalentAtom : public Compound::SingleAtom {
 public:
     QuadrivalentAtom(
         const Compound::AtomName& atomName, ///< name for new atom
-        const Element& element ///< chemical element for new atom
-        ) 
+        const Element * element ///< chemical element for new atom
+        )
         : Compound::SingleAtom(atomName, element)
     {
         static const Angle TetrahedralAngle = 109.47 * Deg2Rad;
@@ -1387,7 +1387,7 @@ public:
         
     QuadrivalentAtom(
         const Compound::AtomName& atomName, ///< name for new atom
-        const Element& element, ///< chemical element for new atom
+        const Element * element, ///< chemical element for new atom
         Angle bond12Angle, ///< bond angle in radians between bond center 1 and bond center 2
         Angle bond13Angle, ///< bond angle in radians between bond center 1 and bond center 3
         Angle bond14Angle, ///< bond angle in radians between bond center 1 and bond center 4
@@ -1447,7 +1447,7 @@ class  AliphaticHydrogen : public UnivalentAtom {
 public:
     explicit AliphaticHydrogen(const AtomName& atomName = "H" ///< name for new atom, defaults to "H"
         ) 
-        : UnivalentAtom(atomName, Element::Hydrogen())
+        : UnivalentAtom(atomName, Element::getBySymbol("H"))
     {
         setDefaultInboardBondLength(0.1112); // for bonding to aliphatic carbon
 
@@ -1465,7 +1465,7 @@ class  AliphaticCarbon : public QuadrivalentAtom {
 public:
     explicit AliphaticCarbon(const AtomName& atomName = "C" ///< name for new atom, defaults to "C"
         ) 
-        : QuadrivalentAtom(atomName, Element::Carbon()) 
+        : QuadrivalentAtom(atomName, Element::getBySymbol("C"))
     {
         // In case this bonds to another aliphatic carbon
         setDefaultInboardBondLength(0.15620); // for bonding to another aliphatic carbon
@@ -1525,8 +1525,8 @@ public:
         static const mdunits::Length C_Hdistance = 0.1080; // in nanometers, from tinker amber99.dat
         static const mdunits::Length C_Cdistance = 0.1400; // in nanometers, from tinker amber99.dat
 
-        setBaseAtom( TrivalentAtom("C", Element::Carbon(), 120*Deg2Rad, 120*Deg2Rad) );
-        bondAtom( UnivalentAtom("H", Element::Hydrogen()), "C/bond3", C_Hdistance);
+        setBaseAtom( TrivalentAtom("C", Element::getBySymbol("C"), 120*Deg2Rad, 120*Deg2Rad) );
+        bondAtom( UnivalentAtom("H", Element::getBySymbol("H")), "C/bond3", C_Hdistance);
 
         // remember to change default length for bonding other other things
         setDefaultInboardBondLength(C_Cdistance); // for bonding to other aromatic CH
@@ -1544,9 +1544,9 @@ public:
     AlcoholOHGroup() {
         static const mdunits::Length O_Hdistance = 0.0960; // nanometers
 
-        setBaseAtom( BivalentAtom("O", Element::Oxygen(), 108.50 * Deg2Rad) );
+        setBaseAtom( BivalentAtom("O", Element::getBySymbol("O"), 108.50 * Deg2Rad) );
 
-        bondAtom( UnivalentAtom("H", Element::Hydrogen()), "O/bond2", O_Hdistance );
+        bondAtom( UnivalentAtom("H", Element::getBySymbol("H")), "O/bond2", O_Hdistance );
         nameBondCenter("bond", "O/bond1");
 
         // In case of bonding to aliphatic carbon
@@ -1566,10 +1566,10 @@ public:
         static const mdunits::Length H_Ndistance = 0.1010; // nanometers
         static const mdunits::Length N_Cdistance = 0.1471; // in nanometers, for bonding to aliphatic carbon
 
-        setBaseAtom( QuadrivalentAtom("N", Element::Nitrogen()) );
-        bondAtom( UnivalentAtom("H1", Element::Hydrogen()), "N/bond2", H_Ndistance);
-        bondAtom( UnivalentAtom("H2", Element::Hydrogen()), "N/bond3", H_Ndistance);
-        bondAtom( UnivalentAtom("H3", Element::Hydrogen()), "N/bond4", H_Ndistance);
+        setBaseAtom( QuadrivalentAtom("N", Element::getBySymbol("N")) );
+        bondAtom( UnivalentAtom("H1", Element::getBySymbol("H")), "N/bond2", H_Ndistance);
+        bondAtom( UnivalentAtom("H2", Element::getBySymbol("H")), "N/bond3", H_Ndistance);
+        bondAtom( UnivalentAtom("H3", Element::getBySymbol("H")), "N/bond4", H_Ndistance);
 
         setDefaultInboardBondLength(N_Cdistance); // for bonding to aliphatic carbon
     }
@@ -1590,9 +1590,9 @@ public:
         // we actually use the inboard-C-O angle during construction
         static const Angle O_C_CtAngle = 180*Deg2Rad - 0.5*O_C_Oangle;
 
-        setBaseAtom( TrivalentAtom("C", Element::Carbon(), O_C_CtAngle, O_C_CtAngle) );
-        bondAtom( UnivalentAtom("O1", Element::Oxygen()), "C/bond2", O_Cdistance);
-        bondAtom( UnivalentAtom("O2", Element::Oxygen()), "C/bond3", O_Cdistance);
+        setBaseAtom( TrivalentAtom("C", Element::getBySymbol("C"), O_C_CtAngle, O_C_CtAngle) );
+        bondAtom( UnivalentAtom("O1", Element::getBySymbol("O")), "C/bond2", O_Cdistance);
+        bondAtom( UnivalentAtom("O2", Element::getBySymbol("O")), "C/bond3", O_Cdistance);
 
         setDefaultInboardBondLength(C_CtDistance);
 
@@ -1736,8 +1736,8 @@ public:
      * \brief Constructor for BiopolymerResidue
      */
     BiopolymerResidue(
-        const Compound::Name& residueTypeName, ///< name for the type of BiopolymerResidue, e.g. "glycine"
-        const String& threeLetterCode, ///< three letter code for the type of residue, e.g. "GLY".  This name will be used in the ResidueType field when PDB files are created.
+        Compound::Name residueTypeName, ///< name for the type of BiopolymerResidue, e.g. "glycine"
+        String threeLetterCode, ///< three letter code for the type of residue, e.g. "GLY".  This name will be used in the ResidueType field when PDB files are created.
         char oneLetterCode ///< one letter code for the type of residue.  e.g 'G'.  Use 'X' if the residue type is non-canonical.
         );
 
@@ -1796,10 +1796,24 @@ public:
     public:
         friend class ResidueInfo;
 
-        AtomInfo(Compound::AtomIndex index, const Compound::AtomName& name) 
-            : pdbAtomName(name), biopolymerAtomIndex(index)
+        AtomInfo(Compound::AtomIndex index, Compound::AtomName name)
+            : biopolymerAtomIndex(index), pdbAtomName(std::move(name))
         {
             synonyms.insert(name);
+        }
+
+        AtomInfo(const AtomInfo &other)
+            : biopolymerAtomIndex(other.biopolymerAtomIndex),
+              pdbAtomName(other.pdbAtomName),
+              synonyms(other.synonyms)
+        {
+        }
+
+        AtomInfo(AtomInfo &&other) noexcept
+            : biopolymerAtomIndex(std::move(other.biopolymerAtomIndex)),
+              pdbAtomName(std::move(other.pdbAtomName)),
+              synonyms(std::move(other.synonyms))
+        {
         }
 
         const std::set<Compound::AtomName>& getNames() const {
@@ -1814,15 +1828,15 @@ public:
 
 
     ResidueInfo(
-        ResidueInfo::Index ix, 
-        const Compound::Name& name, 
+        ResidueInfo::Index ix,
+        const Compound::Name& name,
         const BiopolymerResidue& res,
         Compound::AtomIndex atomOffset,
         char insertionCode = ' ');
 
-    AtomIndex addAtom(Compound::AtomIndex index, const Compound::AtomName& name) {
+    AtomIndex addAtom(Compound::AtomIndex index, Compound::AtomName name) noexcept {
         ResidueInfo::AtomIndex answer(atoms.size());
-        atoms.push_back(AtomInfo(index, name));
+        atoms.emplace_back(index, std::move(name));
         atomIdsByName[name] = answer;
         return answer;
     }
@@ -1995,16 +2009,16 @@ public:
      * \brief Attach a new residue onto the end of the current Biopolymer chain
      */
     ResidueInfo::Index appendResidue(
-        const Compound::Name& resName, ///< new name for the new residue, local to this parent Biopolymer.
-        const BiopolymerResidue& residue ///< template residue to copy onto the end of the chain.  The residue will be copied, not incorporated.
+        Compound::Name resName, ///< new name for the new residue, local to this parent Biopolymer.
+        BiopolymerResidue residue ///< template residue to copy onto the end of the chain.  The residue will be copied, not incorporated.
         );
 
     /**
      * \brief Attach a new residue onto the end of the current Biopolymer chain
      */
     ResidueInfo::Index appendResidue(
-        const Compound::Name& resName, ///< new residue name, from the viewpoint of this parent Biopolymer
-        const BiopolymerResidue& residue, ///< template residue to copy onto the end of the chain.  The residue will be copied, not incorporated.
+        Compound::Name resName, ///< new residue name, from the viewpoint of this parent Biopolymer
+        BiopolymerResidue residue, ///< template residue to copy onto the end of the chain.  The residue will be copied, not incorporated.
         BondMobility::Mobility mobility ///< allowed motion of the new bond connecting the new residue to the rest of the chain
         );
 

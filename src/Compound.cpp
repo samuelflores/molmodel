@@ -49,9 +49,11 @@
 #include "molmodel/internal/CompoundSystem.h"
 #include "molmodel/internal/Pdb.h"
 
+#include <array>
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <mutex>
 #include <vector>
 #include <algorithm>
 #include <cctype> // std::toupper
@@ -63,6 +65,8 @@ using namespace std;
 
 namespace SimTK {
 
+static std::array<AminoAcidResidue *, 26> AMINOACIDRESIDUES;
+static std::mutex AMINOACIDRESIDUES_MTX;
 
 BiotypeIndex SimTK_MOLMODEL_EXPORT getBiotypeIndex(
                         const Compound::Name& resName, 
@@ -95,20 +99,14 @@ BiotypeIndex SimTK_MOLMODEL_EXPORT getBiotypeIndex(
     std::set<Compound::AtomName> moreAtomNames;
     for (atomI = atomNames.begin(); atomI != atomNames.end(); ++atomI)
     {
-        String atomName = *atomI;
-
         // Atom type never has leading digit found on hydrogen instances
-        int startPos = atomName.find_first_not_of("0123456789");
-        if (startPos != 0)
-            atomName = atomName.substr(startPos);
+        int startPos = atomI->find_first_not_of("0123456789");
 
-        moreAtomNames.insert(atomName); // First atom name is the standard one
+        moreAtomNames.insert(atomI->substr(startPos)); // First atom name is the standard one
 
-        Compound::Name shortAtomName = atomName;
-        int endPos = atomName.find_last_not_of("0123456789");
-        if ( endPos != (atomName.length() - 1) ) {
-            shortAtomName = atomName.substr(0, endPos + 1);
-            moreAtomNames.insert(shortAtomName);
+        int endPos = atomI->find_last_not_of("0123456789");
+        if ( endPos != (atomI->length() - 1) ) {
+            moreAtomNames.insert(atomI->substr(startPos, endPos - startPos + 1));
         }
     }
 
@@ -233,15 +231,15 @@ class CompoundRep;
 /// Atom ///
 ////////////
     
-CompoundAtom::CompoundAtom(const Element& element, Transform location)
-  : 
-    element(element), 
-    biotypeIx(InvalidBiotypeIndex), 
+CompoundAtom::CompoundAtom(const Element *element, Transform location)
+  :
+    element(element),
+    biotypeIx(InvalidBiotypeIndex),
     localTransform(location)
 {
 }
 
-const Element& CompoundAtom::getElement() const {
+const Element * CompoundAtom::getElement() const {
     return element;
 }
 
@@ -268,12 +266,12 @@ template class PIMPLImplementation<Compound,CompoundRep>;
 // Add one simple atom unconnected to anything else
 CompoundRep& CompoundRep::setBaseAtom(
     const Compound::AtomName& name, 
-    const Element& element,
+    const Element * element,
     const Transform& location) 
 {
     // Add an AtomInfo reference in the list of all atoms
     const Compound::AtomIndex compoundAtomIndex = Compound::AtomIndex(allAtoms.size());
-    allAtoms.push_back(AtomInfo(compoundAtomIndex, CompoundAtom(element, location), true));
+    allAtoms.emplace_back(compoundAtomIndex, CompoundAtom(element, location), true);
 
     // Set name
     nameAtom(name, compoundAtomIndex);
@@ -286,7 +284,7 @@ CompoundRep& CompoundRep::setBaseAtom(
     const Biotype& biotype,
     const Transform& location) 
 {
-    const Element& element = biotype.getElement();
+    const Element * element = biotype.getElement();
 
     setBaseAtom(name, element, location);
 
@@ -383,7 +381,7 @@ Vec3 CompoundRep::calcDefaultAtomLocationInGroundFrame(const Compound::AtomName&
 // Add a subcompound attached by a bond to an existing atom
 // bondCompound("H1", MonovalentAtom(Element::Hydrogen()), "bond", "C/bond2", C_Hdistance );
 CompoundRep& CompoundRep::bondCompound(
-    const Compound::Name&           name, 
+    Compound::Name           name,
     const Compound&                 subcompoundArg, 
     const Compound::BondCenterPathName&   parentBondName, 
     mdunits::Length                        distance,
@@ -394,7 +392,7 @@ CompoundRep& CompoundRep::bondCompound(
     assert(! isNaN(dihedral) );
 
     const Compound::BondCenterIndex inboardBondCenterIndex = 
-        absorbSubcompound(name, subcompoundArg, false);
+        absorbSubcompound(std::move(name), subcompoundArg, false);
 
     // Get atoms to bond
     const Compound::BondCenterIndex outboardBondCenterIndex = getBondCenterInfo(parentBondName).getIndex();
@@ -416,8 +414,6 @@ CompoundRep& CompoundRep::bondCompound(
 
     //const Compound::BondIndex bondIndex = 
     //    bondBondCenters(outboardBondCenterIndex, inboardBondCenterIndex, distance, dihedral);
-
-    const BondInfo& bondInfo = getBondInfo(bondIndex);
 
     // Set bond mobility
     Bond& bond = updBond(updBondInfo(bondIndex));
@@ -1047,7 +1043,7 @@ void CompoundRep::buildCif( const State& state, gemmi::Model* gemmiModel, gemmi:
             gemmiAtom.name.erase                      ( std::remove ( gemmiAtom.name.begin(), gemmiAtom.name.end(), ' ' ), gemmiAtom.name.end() );
             gemmiAtom.altloc                          = '\0';
             gemmiAtom.charge                          = 0;
-            gemmiAtom.element                         = gemmi::Element ( atomI->element.getSymbol() );
+            gemmiAtom.element                         = gemmi::Element ( atomI->element->getSymbol() );
             const PdbAtomLocation& location           = atomI->getPdbAtomLocation();
             Vec3 modCoords                            = transform * location.getCoordinates();
             gemmiAtom.pos                             = gemmi::Position ( static_cast<double> ( std::ceil ( (modCoords[0] * 10.0) * std::pow ( 10.0, decimal_places ) ) / std::pow ( 10.0, decimal_places ) ),
@@ -1201,44 +1197,41 @@ Compound::BondCenterIndex CompoundRep::addLocalCompound(
 
 
 Compound::BondCenterIndex CompoundRep::absorbSubcompound(
-    const Compound::Name& scName,
+    Compound::Name scName,
     const Compound& subcompound,
-    bool isBaseCompound)
+    bool isBaseCompound) noexcept
 {
     const CompoundRep& subcompoundRep  = subcompound.getImpl();
 
     // copy atoms
-    std::map<Compound::AtomIndex, Compound::AtomIndex> parentAtomIndicesBySubcompoundAtomIndex;
-    for (Compound::AtomIndex a(0); a < subcompound.getNumAtoms(); ++a) {
+    const auto refAtomCount = allAtoms.size();
+    auto parentIx = Compound::AtomIndex(refAtomCount);
+    for (Compound::AtomIndex a(0); a < subcompound.getNumAtoms(); ++a, ++parentIx) {
         const CompoundAtom& childAtom = subcompoundRep.getAtom(a);
         const AtomInfo& childAtomInfo = subcompoundRep.getAtomInfo(a);
-
-        const Compound::AtomIndex parentAtomIndex = Compound::AtomIndex(allAtoms.size());
-        bool isBase = childAtomInfo.isBaseAtom();
-        if (!isBaseCompound) isBase = false;
-        const AtomInfo atomInfo(parentAtomIndex, childAtom, isBase);
-
-        allAtoms.push_back(atomInfo);
-        parentAtomIndicesBySubcompoundAtomIndex[a] = parentAtomIndex;
+        bool isBase = childAtomInfo.isBaseAtom() & isBaseCompound;
+        allAtoms.emplace_back(parentIx, childAtom, isBase);
     }
+
     // Copy atom names
     std::map<Compound::AtomName, Compound::AtomIndex>::const_iterator an;
     for (an = subcompoundRep.atomIdsByName.begin(); an != subcompoundRep.atomIdsByName.end(); ++an)
     {
-        Compound::AtomIndex parentIx = parentAtomIndicesBySubcompoundAtomIndex[an->second];
+        Compound::AtomIndex parIx = Compound::AtomIndex(refAtomCount + an->second);
         Compound::AtomName parentName = scName + "/" + an->first;
-        AtomInfo& parentAtomInfo = updAtomInfo(parentIx);
-        parentAtomInfo.addName(parentName);
-        atomIdsByName[parentName] = parentIx;
+        AtomInfo& parentAtomInfo = updAtomInfo(parIx);
+        atomIdsByName[parentName] = parIx;
+        parentAtomInfo.addName(std::move(parentName));
     }
     // Set "main" atom name last, to make it stick
-    for (Compound::AtomIndex a(0); a < subcompound.getNumAtoms(); ++a) {
+    parentIx = Compound::AtomIndex(refAtomCount);
+    for (Compound::AtomIndex a(0); a < subcompound.getNumAtoms(); ++a, ++parentIx) {
         const AtomInfo& childAtomInfo = subcompoundRep.getAtomInfo(a);
-        Compound::AtomIndex parentIx = parentAtomIndicesBySubcompoundAtomIndex[a];
+
         AtomInfo& parentAtomInfo = updAtomInfo(parentIx);
         Compound::AtomName parentName = scName + "/" + childAtomInfo.getName();
-        parentAtomInfo.addName(parentName);
         atomIdsByName[parentName] = parentIx;
+        parentAtomInfo.addName(std::move(parentName));
     }
 
     // copy bondCenters
@@ -1246,10 +1239,9 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
     std::map<Compound::BondCenterIndex, Compound::BondCenterIndex> parentBondCenterIndicesBySubcompoundBondCenterIndex;
     for (Compound::BondCenterIndex bond(0); bond < subcompound.getNumBondCenters(); ++bond) 
     {
-        const BondCenter&   scBc     = subcompoundRep.getBondCenter(bond);
         const BondCenterInfo&     scBcInfo = subcompoundRep.getBondCenterInfo(bond);
 
-        const AtomInfo& atomInfo = getAtomInfo(parentAtomIndicesBySubcompoundAtomIndex[scBcInfo.getAtomIndex()]);
+        const AtomInfo& atomInfo = getAtomInfo(Compound::AtomIndex(refAtomCount + scBcInfo.getAtomIndex()));
 
         addBondCenterInfo( atomInfo.getIndex(), scBcInfo.getAtomBondCenterIndex() );
         const BondCenterInfo& parentBondCenterInfo = getBondCenterInfo( atomInfo.getIndex(), scBcInfo.getAtomBondCenterIndex() );
@@ -1260,50 +1252,46 @@ Compound::BondCenterIndex CompoundRep::absorbSubcompound(
     std::map<String, Compound::BondCenterIndex>::const_iterator bcn;
     for (bcn = subcompoundRep.bondCenterIndicesByName.begin(); bcn != subcompoundRep.bondCenterIndicesByName.end(); ++bcn)
     {
-        Compound::BondCenterIndex parentIx = parentBondCenterIndicesBySubcompoundBondCenterIndex[bcn->second];
+        Compound::BondCenterIndex parIx = parentBondCenterIndicesBySubcompoundBondCenterIndex[bcn->second];
         Compound::BondCenterName parentName = scName + "/" + bcn->first;
-        bondCenterIndicesByName[parentName] = parentIx;
+        bondCenterIndicesByName[parentName] = parIx;
     }
 
     // copy bonds
-    std::map<Compound::BondIndex, Compound::BondIndex> parentBondIndicesBySubcompoundBondIndex;
-    for (Compound::BondIndex bond(0); bond < subcompoundRep.getNumBonds(); ++bond)
+    auto bondIx = Compound::BondIndex(allBonds.size());
+    for (Compound::BondIndex bond(0); bond < subcompoundRep.getNumBonds(); ++bond, ++bondIx)
     {
         // 1) Index Info relative to subcompound
         const BondInfo&       scBondInfo = subcompoundRep.getBondInfo(bond);
         const BondCenterInfo& scBc1      = subcompoundRep.getBondCenterInfo( scBondInfo.getParentBondCenterIndex() );
         const BondCenterInfo& scBc2      = subcompoundRep.getBondCenterInfo( scBondInfo.getChildBondCenterIndex() );
-        const AtomInfo&       scAtom1    = subcompoundRep.getAtomInfo(scBc1.getAtomIndex());
-        const AtomInfo&       scAtom2    = subcompoundRep.getAtomInfo(scBc2.getAtomIndex());
 
         // 2) Index Info relative to parent compound
-        const AtomInfo& atom1Info = getAtomInfo(parentAtomIndicesBySubcompoundAtomIndex[scBc1.getAtomIndex()]);
-        const AtomInfo& atom2Info = getAtomInfo(parentAtomIndicesBySubcompoundAtomIndex[scBc2.getAtomIndex()]);
+        const AtomInfo& atom1Info = getAtomInfo(Compound::AtomIndex(refAtomCount + scBc1.getAtomIndex()));
+        const AtomInfo& atom2Info = getAtomInfo(Compound::AtomIndex(refAtomCount + scBc2.getAtomIndex()));
         BondCenterInfo& bc1Info   = updBondCenterInfo(atom1Info.getIndex(), scBc1.getAtomBondCenterIndex());
         BondCenterInfo& bc2Info   = updBondCenterInfo(atom2Info.getIndex(), scBc2.getAtomBondCenterIndex());
 
-        const Compound::BondIndex bondIndex = Compound::BondIndex(allBonds.size());
-        allBonds.push_back( BondInfo(
-            bondIndex, 
-            bc1Info.getIndex(), 
+        allBonds.emplace_back(
+            bondIx,
+            bc1Info.getIndex(),
             bc2Info.getIndex(),
             scBondInfo.getBond()
-            ) );
-        const BondInfo& bondInfo = getBondInfo(bondIndex);
+            );
 
-        parentBondIndicesBySubcompoundBondIndex[bond] = bondIndex;
+        //parentBondIndicesBySubcompoundBondIndex[bond] = bondIndex;
 
         // Update cross references in BondCenters
-        bc1Info.setBondIndex(bondIndex);
-        bc2Info.setBondIndex(bondIndex);
+        bc1Info.setBondIndex(bondIx);
+        bc2Info.setBondIndex(bondIx);
         bc1Info.setBondPartnerBondCenterIndex(bc2Info.getIndex());
         bc2Info.setBondPartnerBondCenterIndex(bc1Info.getIndex());
 
         // map bonds to atomId pairs
         const std::pair<Compound::AtomIndex, Compound::AtomIndex> key1(atom1Info.getIndex(), atom2Info.getIndex());
         const std::pair<Compound::AtomIndex, Compound::AtomIndex> key2(atom2Info.getIndex(), atom1Info.getIndex());
-        bondIndicesByAtomIndexPair[key1] = bondIndex;
-        bondIndicesByAtomIndexPair[key2] = bondIndex;
+        bondIndicesByAtomIndexPair[key1] = bondIx;
+        bondIndicesByAtomIndexPair[key2] = bondIx;
     }
 
     // copy dihedral angles
@@ -1501,11 +1489,6 @@ void CompoundRep::calcDefaultAtomFramesInCompoundFrame(std::vector<Transform>& a
         Transform& transform = atomFrameCache[aI->getIndex()];
         if (isNaN(transform.p()[0])) {
             //std::cout<<__FILE__<<":"<<__LINE__<<" calculating default atom frame for atom ";
-            AtomInfo myAtomInfo = *aI;
-            std::set <Compound::AtomName>   tempSet    =myAtomInfo.getNames();
-            for ( std::set <Compound::AtomName>::iterator tempSetIterator = tempSet.begin(); tempSetIterator != tempSet.end(); tempSetIterator++){
-                //std::cout<<(*tempSetIterator)<<", ";
-            }
             //std::cout<<std::endl;
             //String tempString = String(aI->getNames()); //<<std::endl;
             transform = calcDefaultAtomFrameInCompoundFrame(aI->getIndex(), atomFrameCache);
@@ -1536,7 +1519,7 @@ CompoundRep& CompoundRep::setPdbChainId(String c) {
 
     return *this;
 }
-String CompoundRep::getPdbChainId() const {return pdbChainId;}
+const String& CompoundRep::getPdbChainId() const {return pdbChainId;}
 
 
 
@@ -1631,7 +1614,7 @@ Compound& Compound::addCompoundSynonym(const Compound::Name& synonym) {
     return *this;
 }
 
-Compound& Compound::setBaseAtom(const Compound::AtomName& name, const Element& element, const Transform& location) 
+Compound& Compound::setBaseAtom(const Compound::AtomName& name, const Element * element, const Transform& location)
 {
     updImpl().setBaseAtom(name, element, location);
     return *this;
@@ -1914,11 +1897,11 @@ Compound::AtomIndex Compound::getAtomIndex(const Compound::AtomName& name) const
     return getImpl().getAtomInfo(name).getIndex();
 }
 
-const Element& Compound::getAtomElement(Compound::AtomIndex atomIndex) const {
+const Element * Compound::getAtomElement(Compound::AtomIndex atomIndex) const {
     return getImpl().getAtomElement(atomIndex);
 }
 
-const Element& Compound::getAtomElement(const Compound::AtomName& atomName) const {
+const Element * Compound::getAtomElement(const Compound::AtomName& atomName) const {
     return getImpl().getAtomElement(atomName);
 }
 
@@ -2077,7 +2060,7 @@ Compound& Compound::setPdbChainId(String chainId) {
     updImpl().setPdbChainId(chainId);
     return *this;
 }
-String Compound::getPdbChainId() const {
+const String& Compound::getPdbChainId() const {
     return getImpl().getPdbChainId();
 }
 
@@ -2438,7 +2421,9 @@ ResidueInfo::ResidueInfo(ResidueInfo::Index ix,
       synonyms(res.getImpl().synonyms)
 {
     setOneLetterCode(res.getOneLetterCode());
-    for (Compound::AtomIndex a(0); a < res.getNumAtoms(); ++a) {
+    const auto numAtoms = res.getNumAtoms();
+    atoms.reserve(atoms.size() + numAtoms);
+    for (Compound::AtomIndex a(0); a < numAtoms; ++a) {
         const SimTK::AtomInfo& compoundAtom = res.getImpl().getAtomInfo(a);
         ResidueInfo::AtomIndex raIx = addAtom(Compound::AtomIndex(a + atomOffset), res.getAtomName(a));
         ResidueInfo::AtomInfo& residueAtom = updAtomInfo(raIx);
@@ -2449,7 +2434,6 @@ ResidueInfo::ResidueInfo(ResidueInfo::Index ix,
         }
     }
 }
-
 
 //////////////////
 /// Biopolymer ///
@@ -2512,29 +2496,28 @@ void Biopolymer::assignBiotypes() {
     }
 }
 
-ResidueInfo::Index Biopolymer::appendResidue(const String& resName, const BiopolymerResidue& r) 
+ResidueInfo::Index Biopolymer::appendResidue(String resName, BiopolymerResidue r)
 {
     ResidueInfo::Index resId(getImpl().residues.size());
-    updImpl().residues.push_back(ResidueInfo(resId, resName, r, Compound::AtomIndex(getNumAtoms())));
+    updImpl().residues.emplace_back(resId, resName, r, Compound::AtomIndex(getNumAtoms()));
     updImpl().residueIdsByName[resName] = resId;
-    ResidueInfo& residue = updResidue(resId);
 
     // Note that new (empty) residue has already been added to residue count
     if (getNumResidues() <= 1) {
-        setBaseCompound(resName, r);
+        setBaseCompound(std::move(resName), std::move(r));
     }
     else {
-        const String& previousResidueName = getResidue(ResidueInfo::Index(getNumResidues()-2)).getName();
+        String previousResidueName = getResidue(ResidueInfo::Index(getNumResidues()-2)).getName();
         // attach residue directly to the biopolymer instead of to the residue
-        bondCompound(resName, r, previousResidueName + "/bondNext");
+        bondCompound(std::move(resName), std::move(r), previousResidueName + "/bondNext");
     }
 
     return resId;
 }
 
 //Sam added polymorphism with mobility parameter
-ResidueInfo::Index Biopolymer::appendResidue(const String& resName, const BiopolymerResidue& residue, BondMobility::Mobility mobility) {
-    ResidueInfo::Index r = appendResidue(resName, residue);
+ResidueInfo::Index Biopolymer::appendResidue(String resName, BiopolymerResidue residue, BondMobility::Mobility mobility) {
+    ResidueInfo::Index r = appendResidue(std::move(resName), std::move(residue));
     setResidueBondMobility(r, mobility);
     return r;
 }
@@ -2554,14 +2537,12 @@ Compound::AtomTargetLocations Biopolymer::createAtomTargets(const PdbStructure& 
 }
 
 Compound::AtomTargetLocations Biopolymer::
-createAtomTargets(const PdbChain& targetChain, 
+createAtomTargets(const PdbChain& targetChain,
                   bool guessCoordinates // optional parameter, defaults to FALSE
-                 ) const 
+                 ) const
 {
     Compound::AtomTargetLocations answer;
-   
-    //cout<<__FILE__<<":"<<__LINE__<<endl;
-    // If chain id does not match, we won't find any matches
+
     String chainId = getPdbChainId();
     if (targetChain.getChainId() != chainId)
         return answer;
@@ -2572,57 +2553,36 @@ createAtomTargets(const PdbChain& targetChain,
         int residueNumber = residue.getPdbResidueNumber();
         char insertionCode = residue.getPdbInsertionCode(); // TODO - make this an attribute of the residue?
         PdbResidueId residueId(residueNumber, insertionCode);
-        // scf added guessCoords exception
-        //cout<<__FILE__<<":"<<__LINE__<<"getNumResidues() "<<getNumResidues()<<endl;
-        if ((!targetChain.hasResidue(residueId)) && (! guessCoordinates)) 
+        if ((!targetChain.hasResidue(residueId)) && (!guessCoordinates))
             continue;
 
         for(ResidueInfo::AtomIndex a(0); a < residue.getNumAtoms(); ++a) {
-            String atomName = residue.getAtomName(a);            
-            String oldAtomName = atomName; // atomName can potentially be stuffed with odd values in the loop below.  Let's keep a copy with the original name.
+            const string &atomName = residue.getAtomName(a);
             const std::set<Compound::AtomName>& atomNames = residue.getAtomSynonyms(a);
-            std::set<Compound::AtomName>::const_iterator nameIx;
-            int myCount =0;
-            for (nameIx = atomNames.begin(); nameIx != atomNames.end(); ++nameIx)
+            std::set<Compound::AtomName>::const_iterator nameIt;
+            for (nameIt = atomNames.begin(); nameIt != atomNames.end(); ++nameIt)
             {
-                myCount++;
-            }
-            for (nameIx = atomNames.begin(); nameIx != atomNames.end(); ++nameIx)
-            {
-                atomName = *nameIx;
-                if ( targetChain.hasAtom(atomName, residueId) )
-                    break;
-            }
-            //cout<<__FILE__<<":"<<__LINE__<<endl;
-            if ( targetChain.hasAtom(atomName, residueId) ) {
-                const PdbAtom& pdbAtom = targetChain.getAtom(atomName, residueId);
-                if (pdbAtom.hasLocation()) {
-                    // atom index in Biopolymer, as opposed to in residue
-                    Compound::AtomIndex atomIndex = residue.getAtomIndex(a);
-                    answer[atomIndex] = pdbAtom.getLocation();
-
-                    std::stringstream sstm;
-                    sstm << int(r) <<"/"<< oldAtomName;
-                    string atomPath = sstm.str();
-                    //cout<<__FILE__<<":"<<__LINE__<<" atomPath = "<<atomPath<<endl;
-                    //cout<<__FILE__<<":"<<__LINE__<<" calcDefaultAtomLocationInGroundFrame(atomPath ) "<< calcDefaultAtomLocationInGroundFrame(atomPath )  << endl;
+                if (targetChain.hasAtom(*nameIt, residueId)) {
+                    const PdbAtom& pdbAtom = targetChain.getAtom(*nameIt, residueId);
+		    if (pdbAtom.hasLocation()) {
+                        // atom index in Biopolymer, as opposed to in residue
+                        Compound::AtomIndex atomIndex = residue.getAtomIndex(a);
+		        answer[atomIndex] = pdbAtom.getLocation();
+                    }
                 }
             }
-            else if (guessCoordinates)  //&&
-                    //(getAtomElement(residue.getAtomIndex(a) ).getName().compare("hydrogen") != 0)) // scf added
-            {
-                    Compound::AtomIndex atomIndex = residue.getAtomIndex(a);
-                    std::stringstream sstm;
-                    sstm << int(r) <<"/"<< oldAtomName;
-                    string atomPath = sstm.str();
-                    //cout<<__FILE__<<":"<<__LINE__<<" atomIndex = "<<atomIndex<<endl;
-                    cout<<__FILE__<<":"<<__LINE__<<"answer.size() "<<   answer.size()<< endl;
-                    Element myAtomElement = getAtomElement ( atomPath );
-                    if ((myAtomElement.getName()).compare("hydrogen") != 0 ) { // don't bother guessing hydrogen positions
-                        cout<<__FILE__<<":"<<__LINE__<<" calcDefaultAtomLocationInGroundFrame(atomPath ) "<< calcDefaultAtomLocationInGroundFrame(atomPath )  << endl;
-                        answer[atomIndex] = calcDefaultAtomLocationInGroundFrame(atomPath );
-                    }
-                    cout<<__FILE__<<":"<<__LINE__<<endl;
+
+            if (nameIt == atomNames.end() && guessCoordinates) {
+                Compound::AtomIndex atomIndex = residue.getAtomIndex(a);
+		string atomPath = std::to_string(r) + "/" + atomName;
+                //cout<<__FILE__<<":"<<__LINE__<<" atomIndex = "<<atomIndex<<endl;
+                cout<<__FILE__<<":"<<__LINE__<<"answer.size() "<<   answer.size()<< endl;
+                const auto &myAtomElement = getAtomElement(atomPath);
+                if ((myAtomElement->getName()).compare("hydrogen") != 0) { // don't bother guessing hydrogen positions
+                    cout<<__FILE__<<":"<<__LINE__<<" calcDefaultAtomLocationInGroundFrame(atomPath ) "<< calcDefaultAtomLocationInGroundFrame(atomPath)  << endl;
+                    answer[atomIndex] = calcDefaultAtomLocationInGroundFrame(atomPath);
+                }
+                cout<<__FILE__<<":"<<__LINE__<<endl;
             }
         }
     }
@@ -2706,14 +2666,13 @@ bool BiopolymerResidue::assignBiotypes(Ordinality::Residue ordinality) {
     return updImpl().assignBiotypes(ordinality);
 }
 
-BiopolymerResidue::BiopolymerResidue(const String& name, const String& threeLetterCode, char oneLetterCode)
+BiopolymerResidue::BiopolymerResidue(String name, String threeLetterCode, char oneLetterCode)
     : Compound( new BiopolymerResidueRep(name, threeLetterCode, oneLetterCode) )
 {
     // set pdb residue name
-    String pdbRes = threeLetterCode;
     // convert to upper case
-    std::transform(pdbRes.begin(), pdbRes.end(), pdbRes.begin(), (int(*)(int)) toupper);
-    setPdbResidueName(pdbRes);
+    std::transform(threeLetterCode.begin(), threeLetterCode.end(), threeLetterCode.begin(), (int(*)(int)) toupper);
+    setPdbResidueName(threeLetterCode);
 
     setCompoundName(name);
     if ( (threeLetterCode != "UNK") && (threeLetterCode.length() > 1) )
@@ -2752,93 +2711,103 @@ const String& BiopolymerResidue::getResidueTypeName() const {
 //  2) at the carbonyl carbon, for the next amino acid residue
 //  3) at the alpha carbon, for the side chain
 
-AminoAcidResidue AminoAcidResidue::create(const PdbResidue& pdbResidue) 
+AminoAcidResidue AminoAcidResidue::create(const PdbResidue& pdbResidue)
 {
     const String& residueName(pdbResidue.getName());
-    
-    AminoAcidResidue answer = Alanine();
-    
-    if      (residueName == "ALA") answer = Alanine();
-    else if (residueName == "CYS") answer = Cysteine();
-    else if (residueName == "ASP") answer = Aspartate();
-    else if (residueName == "GLU") answer = Glutamate();
-    else if (residueName == "PHE") answer = Phenylalanine();
-    else if (residueName == "GLY") answer = Glycine();
-    else if (residueName == "HIS") answer = Histidine();
-    else if (residueName == "ILE") answer = Isoleucine();
-    else if (residueName == "LYS") answer = Lysine();
-    else if (residueName == "LEU") answer = Leucine();
-    else if (residueName == "MET") answer = Methionine();
-    else if (residueName == "ASN") answer = Asparagine();
-    else if (residueName == "PRO") answer = Proline();
-    else if (residueName == "GLN") answer = Glutamine();
-    else if (residueName == "ARG") answer = Arginine();
-    else if (residueName == "SER") answer = Serine();
-    else if (residueName == "THR") answer = Threonine();
-    else if (residueName == "VAL") answer = Valine();
-    else if (residueName == "TRP") answer = Tryptophan();
-    else if (residueName == "TYR") answer = Tyrosine();
-    
-    else 
-        SimTK_THROW1(Exception::UndefinedAminoAcidResidue, residueName);
-    
-    answer.setPdbResidueNumber( pdbResidue.getPdbResidueNumber() );
-    
-    return answer;
+
+    auto aa = [&residueName]() {
+        if      (residueName == "ALA") return create('A');
+        else if (residueName == "CYS") return create('C');
+        else if (residueName == "ASP") return create('D');
+        else if (residueName == "GLU") return create('E');
+        else if (residueName == "PHE") return create('F');
+        else if (residueName == "GLY") return create('G');
+        else if (residueName == "HIS") return create('H');
+        else if (residueName == "ILE") return create('I');
+        else if (residueName == "LYS") return create('K');
+        else if (residueName == "LEU") return create('L');
+        else if (residueName == "MET") return create('M');
+        else if (residueName == "ASN") return create('N');
+        else if (residueName == "PRO") return create('P');
+        else if (residueName == "GLN") return create('Q');
+        else if (residueName == "ARG") return create('R');
+        else if (residueName == "SER") return create('S');
+        else if (residueName == "THR") return create('T');
+        else if (residueName == "VAL") return create('V');
+        else if (residueName == "TRP") return create('W');
+        else if (residueName == "TYR") return create('Y');
+
+	throw std::invalid_argument{"Three letter code " + residueName + " does not correspond to any known aminoacid"};
+    }();
+
+    aa.setPdbResidueNumber( pdbResidue.getPdbResidueNumber() );
+
+    return aa;
 }
 
-AminoAcidResidue AminoAcidResidue::create(char oneLetterCode) 
+AminoAcidResidue AminoAcidResidue::create(char oneLetterCode)
 {
-    switch(oneLetterCode) {
-    case 'A':
-        return Alanine();
-    case 'C':
-        return Cysteine();
-    // SCF created DisulphideBridgedCysteine, see Protein.h and mol.h
-    case 'X':
-        return DisulphideBridgedCysteine();
-    case 'D':
-        return Aspartate();
-    case 'E':
-        return Glutamate();
-    case 'F':
-        return Phenylalanine();
-    case 'G':
-        return Glycine();
-    case 'H':
-        return Histidine();
-    case 'I':
-        return Isoleucine();
-    case 'K':
-        return Lysine();
-    case 'L':
-        return Leucine();
-    case 'M':
-        return Methionine();
-    case 'N':
-        return Asparagine();
-    case 'P':
-        return Proline();
-    case 'Q':
-        return Glutamine();
-    case 'R':
-        return Arginine();
-    case 'S':
-        return Serine();
-    case 'T':
-        return Threonine();
-    case 'V':
-        return Valine();
-    case 'W':
-        return Tryptophan();
-    case 'Y':
-        return Tyrosine();
-    }
-    
+    size_t idx = oneLetterCode - 'A';
+    if (idx >= 26)
+        throw new std::out_of_range{"Nonsensical character " + std::string{oneLetterCode} + " used as AA one letter code"};
 
-    assert(false);
+    std::lock_guard<std::mutex> lk{AMINOACIDRESIDUES_MTX};
 
-    return Alanine();
+    if (AMINOACIDRESIDUES[idx] != nullptr)
+        return *AMINOACIDRESIDUES[idx];
+
+    auto aa = [oneLetterCode]() -> AminoAcidResidue * {
+        switch(oneLetterCode) {
+        case 'A':
+            return new Alanine();
+        case 'C':
+            return new Cysteine();
+        // SCF created DisulphideBridgedCysteine, see Protein.h and mol.h
+        case 'X':
+            return new DisulphideBridgedCysteine();
+        case 'D':
+            return new Aspartate();
+        case 'E':
+            return new Glutamate();
+        case 'F':
+            return new Phenylalanine();
+        case 'G':
+            return new Glycine();
+        case 'H':
+            return new Histidine();
+        case 'I':
+            return new Isoleucine();
+        case 'K':
+            return new Lysine();
+        case 'L':
+            return new Leucine();
+        case 'M':
+            return new Methionine();
+        case 'N':
+            return new Asparagine();
+        case 'P':
+            return new Proline();
+        case 'Q':
+            return new Glutamine();
+        case 'R':
+            return new Arginine();
+        case 'S':
+            return new Serine();
+        case 'T':
+            return new Threonine();
+        case 'V':
+            return new Valine();
+        case 'W':
+            return new Tryptophan();
+        case 'Y':
+            return new Tyrosine();
+        }
+
+	throw std::invalid_argument("One letter code " + std::string{oneLetterCode} + " does no represent any aminoacid");
+    }();
+
+    AMINOACIDRESIDUES[idx] = aa;
+    return *aa;
 }
 
 std::ostream& operator<<(std::ostream& o, const BondInfo& binfo) {

@@ -59,6 +59,9 @@ public:
     Element();
     Element(int atomicNumber, Name name, Symbol symbol, mdunits::Mass typicalMass);
 
+    Element(const Element &src);
+    Element(Element &&src) noexcept;
+
     Symbol getSymbol() const;
     Name getName() const;
 	int getAtomicNumber() const;
@@ -70,8 +73,12 @@ public:
         return true;
     }
 
-    static Element getByAtomicNumber(int atomicNumber);
-    static Element getBySymbol(const SimTK::String& symbol); 
+    Element & operator=(const Element &src);
+    Element & operator=(Element &&src) noexcept;
+
+    static const Element * getByAtomicNumber(int atomicNumber);
+    static const Element * getByName(Name name);
+    static const Element * getBySymbol(const Symbol& symbol);
 
     class Hydrogen;
     class Deuterium;

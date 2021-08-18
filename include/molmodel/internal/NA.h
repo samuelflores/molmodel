@@ -46,7 +46,7 @@ public:
     RiboseCore(const String& name, const String& tlc, char olc) 
         : BiopolymerResidue(name, tlc, olc)
     {
-        setBaseAtom(BivalentAtom("O5'", Element::Oxygen(), 120.90*Deg2Rad));
+        setBaseAtom(BivalentAtom("O5'", Element::getBySymbol("O"), 120.90*Deg2Rad));
 
         bondAtom(AliphaticCarbon("C5'"), "O5'/bond2", 0.1423, 180*Deg2Rad);
         bondAtom(AliphaticHydrogen("H5'1"), "C5'/bond4");
@@ -55,12 +55,12 @@ public:
         bondAtom(AliphaticCarbon("C4'"), "C5'/bond2", 0.1510); // length from (Gelbin et al 1996)
         bondAtom(AliphaticHydrogen("H4'"), "C4'/bond4");
 
-        bondAtom(BivalentAtom("O4'", Element::Oxygen(), 112.0*Deg2Rad), "C4'/bond2", 0.1453);
+        bondAtom(BivalentAtom("O4'", Element::getBySymbol("O"), 112.0*Deg2Rad), "C4'/bond2", 0.1453);
 
         bondAtom(AliphaticCarbon("C3'"), "C4'/bond3", 0.1524);
         bondAtom(AliphaticHydrogen("H3'"), "C3'/bond4");
 
-        bondAtom(BivalentAtom("O3'", Element::Oxygen(), 119.7*Deg2Rad), "C3'/bond2", 0.1423);
+        bondAtom(BivalentAtom("O3'", Element::getBySymbol("O"), 119.7*Deg2Rad), "C3'/bond2", 0.1423);
  
         bondAtom(AliphaticCarbon("C2'"), "C3'/bond3", 0.1525);
         //bondAtom(AliphaticHydrogen("H2'"), "C2'/bond3");
@@ -133,7 +133,7 @@ public:
     {
 		instantiateBiotypes();
 		
-		setBaseAtom( UnivalentAtom("H5T", Element::Hydrogen()) );
+		setBaseAtom( UnivalentAtom("H5T", Element::getBySymbol("H")) );
 		
         nameBondCenter("bondNext", "H5T/bond");
 
@@ -143,11 +143,11 @@ public:
 	static void instantiateBiotypes() 
 	{
 		if ( ! Biotype::exists("Hydroxyl, RNA", "H5T", SimTK::Ordinality::Initial) )
-			Biotype::defineBiotype(Element::Hydrogen(), 1, "Hydroxyl, RNA", "H5T", SimTK::Ordinality::Initial);
+			Biotype::defineBiotype(Element::getBySymbol("H"), 1, "Hydroxyl, RNA", "H5T", SimTK::Ordinality::Initial);
 		
 		// This oxygen biotype should get applied to the 5' oxygen of the nucleotide this hydroxyl attaches to
 		if ( ! Biotype::exists("Hydroxyl, RNA", "O5'", SimTK::Ordinality::Initial) )
-			Biotype::defineBiotype(Element::Oxygen(), 2, "Hydroxyl, RNA", "O5'", SimTK::Ordinality::Initial);
+			Biotype::defineBiotype(Element::getBySymbol("O"), 2, "Hydroxyl, RNA", "O5'", SimTK::Ordinality::Initial);
 	}
 	
 };
@@ -162,11 +162,11 @@ public:
     {
 		instantiateBiotypes();
 		
-		setBaseAtom( QuadrivalentAtom("P", Element::Phosphorus()) );
+		setBaseAtom( QuadrivalentAtom("P", Element::getBySymbol("P")) );
 		
-        bondAtom(UnivalentAtom("OP1", Element::Oxygen()), "P/bond4", 0.14800);
-        bondAtom(UnivalentAtom("OP2", Element::Oxygen()), "P/bond3", 0.14800);
-        bondAtom(UnivalentAtom("OP3", Element::Oxygen()), "P/bond2", 0.14800);
+        bondAtom(UnivalentAtom("OP1", Element::getBySymbol("O")), "P/bond4", 0.14800);
+        bondAtom(UnivalentAtom("OP2", Element::getBySymbol("O")), "P/bond3", 0.14800);
+        bondAtom(UnivalentAtom("OP3", Element::getBySymbol("O")), "P/bond2", 0.14800);
 		
         nameBondCenter("bondNext", "P/bond1");
 
@@ -179,9 +179,9 @@ public:
 	static void instantiateBiotypes() 
 	{
 		if ( ! Biotype::exists("Phosphate, RNA", "P", SimTK::Ordinality::Initial) )
-			Biotype::defineBiotype(Element::Phosphorus(), 4, "Phosphate, RNA", "P", SimTK::Ordinality::Initial);
+			Biotype::defineBiotype(Element::getBySymbol("P"), 4, "Phosphate, RNA", "P", SimTK::Ordinality::Initial);
 		if ( ! Biotype::exists("Phosphate, RNA", "OP", SimTK::Ordinality::Initial) )
-			Biotype::defineBiotype(Element::Oxygen(), 1, "Phosphate, RNA", "OP", SimTK::Ordinality::Initial);
+			Biotype::defineBiotype(Element::getBySymbol("O"), 1, "Phosphate, RNA", "OP", SimTK::Ordinality::Initial);
 	}
 	
 };
@@ -197,7 +197,7 @@ public:
 		instantiateBiotypes();
 
         // TODO - set bond angles: 102.6 between ether oxygens, 119.9 between lone oxygen, 108.23 between mismatched pairs
-		setBaseAtom( QuadrivalentAtom("P", Element::Phosphorus() 
+		setBaseAtom( QuadrivalentAtom("P", Element::getBySymbol("P") 
 				   ,  104.0*Deg2Rad // 03'-P-O5' from Gelbin et al
 				   ,  107.9*Deg2Rad // 03'-P-OP? from Gelbin et al
 				   ,  107.9*Deg2Rad // 03'-P-OP? from Gelbin et al
@@ -205,8 +205,8 @@ public:
 				   ,  108.15*Deg2Rad // to make OP1-P-OP2 angle 119.6
 				   ) );
 
-        bondAtom(UnivalentAtom("OP1", Element::Oxygen()), "P/bond3", 0.14800);
-        bondAtom(UnivalentAtom("OP2", Element::Oxygen()), "P/bond4", 0.14800);
+        bondAtom(UnivalentAtom("OP1", Element::getBySymbol("O")), "P/bond3", 0.14800);
+        bondAtom(UnivalentAtom("OP2", Element::getBySymbol("O")), "P/bond4", 0.14800);
 
         nameBondCenter("bondPrevious", "P/bond1");
         nameBondCenter("bondNext", "P/bond2");
@@ -224,9 +224,9 @@ public:
 	static void instantiateBiotypes() 
 	{
 		if ( ! Biotype::exists("Phosphodiester, RNA", "P") )
-			Biotype::defineBiotype(Element::Phosphorus(), 4, "Phosphodiester, RNA", "P");
+			Biotype::defineBiotype(Element::getBySymbol("P"), 4, "Phosphodiester, RNA", "P");
 		if ( ! Biotype::exists("Phosphodiester, RNA", "OP") )
-			Biotype::defineBiotype(Element::Oxygen(), 1, "Phosphodiester, RNA", "OP");
+			Biotype::defineBiotype(Element::getBySymbol("O"), 1, "Phosphodiester, RNA", "OP");
 	}
 };
 
@@ -240,7 +240,7 @@ public:
     {
 		instantiateBiotypes();
 		
-		setBaseAtom( UnivalentAtom("H3T", Element::Hydrogen()) );
+		setBaseAtom( UnivalentAtom("H3T", Element::getBySymbol("H")) );
 		
         nameBondCenter("bondNext", "H3T/bond");
 
@@ -250,11 +250,11 @@ public:
 	static void instantiateBiotypes() 
 	{
 		if ( ! Biotype::exists("Hydroxyl, RNA", "H3T", SimTK::Ordinality::Final) )
-			Biotype::defineBiotype(Element::Hydrogen(), 1, "Hydroxyl, RNA", "H3T", SimTK::Ordinality::Final);
+			Biotype::defineBiotype(Element::getBySymbol("H"), 1, "Hydroxyl, RNA", "H3T", SimTK::Ordinality::Final);
 		
 		// This oxygen biotype should get applied to the 3' oxygen of the nucleotide this hydroxyl attaches to
 		if ( ! Biotype::exists("Hydroxyl, RNA", "O3'", SimTK::Ordinality::Final) )
-			Biotype::defineBiotype(Element::Oxygen(), 2, "Hydroxyl, RNA", "O3'", SimTK::Ordinality::Final);
+			Biotype::defineBiotype(Element::getBySymbol("O"), 2, "Hydroxyl, RNA", "O3'", SimTK::Ordinality::Final);
 	}
 	
 };
@@ -268,11 +268,11 @@ public:
     {
 		instantiateBiotypes();
 		
-		setBaseAtom( QuadrivalentAtom("P", Element::Phosphorus()) );
+		setBaseAtom( QuadrivalentAtom("P", Element::getBySymbol("P")) );
 		
-        bondAtom(UnivalentAtom("OP1", Element::Oxygen()), "P/bond4", 0.14800);
-        bondAtom(UnivalentAtom("OP2", Element::Oxygen()), "P/bond3", 0.14800);
-        bondAtom(UnivalentAtom("OP3", Element::Oxygen()), "P/bond2", 0.14800);
+        bondAtom(UnivalentAtom("OP1", Element::getBySymbol("O")), "P/bond4", 0.14800);
+        bondAtom(UnivalentAtom("OP2", Element::getBySymbol("O")), "P/bond3", 0.14800);
+        bondAtom(UnivalentAtom("OP3", Element::getBySymbol("O")), "P/bond2", 0.14800);
 		
         nameBondCenter("bondNext", "P/bond1");
 
@@ -285,9 +285,9 @@ public:
 	static void instantiateBiotypes() 
 	{
 		if ( ! Biotype::exists("Phosphate, RNA", "P", SimTK::Ordinality::Final) )
-			Biotype::defineBiotype(Element::Phosphorus(), 4, "Phosphate, RNA", "P", SimTK::Ordinality::Final);
+			Biotype::defineBiotype(Element::getBySymbol("P"), 4, "Phosphate, RNA", "P", SimTK::Ordinality::Final);
 		if ( ! Biotype::exists("Phosphate, RNA", "OP", SimTK::Ordinality::Final) )
-			Biotype::defineBiotype(Element::Oxygen(), 1, "Phosphate, RNA", "OP", SimTK::Ordinality::Final);
+			Biotype::defineBiotype(Element::getBySymbol("O"), 1, "Phosphate, RNA", "OP", SimTK::Ordinality::Final);
 	}
 	
 };

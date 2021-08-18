@@ -1669,9 +1669,9 @@ public:
     int getAtomElementNum(DuMM::AtomIndex atomIndex) const 
     {   const AtomClass& cl = atomClasses[getAtomClassIndex(atomIndex)];
         return cl.element; }
-    Element getElement(int atomicNumber) const 
+    const Element & getElement(int atomicNumber) const
     {   assert(isValidElement(atomicNumber));
-        return Element::getByAtomicNumber(atomicNumber); }
+        return *Element::getByAtomicNumber(atomicNumber); }
 
     // These return 0 if no entry can be found for the given series of atom classes.
     const BondStretch* getBondStretch(DuMM::AtomClassIndex class1, 

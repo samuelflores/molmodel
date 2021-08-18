@@ -83,7 +83,7 @@ namespace Exception
 class SimTK_MOLMODEL_EXPORT PdbAtomLocation {
 public:
     explicit PdbAtomLocation(SimTK::Vec3 coords, char altLoc = ' ', SimTK::Real tFac = 0.00, SimTK::Real occ = 1.0) 
-        : coordinates(coords), alternateLocationIndicator(altLoc), temperatureFactor(tFac), occupancy(occ)
+        : coordinates(std::move(coords)), alternateLocationIndicator(altLoc), temperatureFactor(tFac), occupancy(occ)
     {}
 
     /// write columns 31 to 66 of a PDB ATOM/HETATM record at this location
@@ -122,7 +122,7 @@ class SimTK_MOLMODEL_EXPORT PdbAtom {
     friend class PdbResidue;
     typedef std::vector<SimTK::String> AtomNameList;
 public:
-    explicit PdbAtom(const SimTK::String& name, const Element& e);
+    explicit PdbAtom(const SimTK::String& name, const Element *e);
 
     explicit PdbAtom( 
         const class Compound& compound, 
@@ -166,12 +166,25 @@ public:
 
     PdbAtom& setLocation(const PdbAtomLocation& loc) {
         char alt_loc = loc.getAlternateLocationIndicator();
-        if (locationIndicesById.find(alt_loc) == locationIndicesById.end()) {
+	auto it = locationIndicesById.find(alt_loc);
+	if (it == locationIndicesById.end()) {
             locationIndicesById[alt_loc] = locations.size();
             locations.push_back(loc);
+        } else {
+            locations[it->second] = loc;
         }
-        else {
-            locations[locationIndicesById.find(alt_loc)->second] = loc;
+
+        return *this;
+    }
+
+    PdbAtom& setLocation(PdbAtomLocation&& loc) {
+        char alt_loc = loc.getAlternateLocationIndicator();
+	auto it = locationIndicesById.find(alt_loc);
+	if (it == locationIndicesById.end()) {
+            locationIndicesById[alt_loc] = locations.size();
+            locations.push_back(std::move(loc));
+        } else {
+            locations[it->second] = std::move(loc);
         }
 
         return *this;
@@ -212,7 +225,7 @@ protected:
     static std::vector<SimTK::String> generatePossibleAtomNames(SimTK::String name);
 
 public:
-    Element element;
+    const Element *element;
 
     // avoid dll export warnings for these private types
 #if defined(_MSC_VER)
@@ -253,11 +266,11 @@ public:
 
     std::ostream& write(std::ostream& os, int& nextAtomSerialNumber, String chainId, const Transform& transform) const;
 
-    bool hasAtom(SimTK::String argName) const; 
+    bool hasAtom(const SimTK::String &argName) const; 
 
-    const PdbAtom& getAtom(String argName) const;
+    const PdbAtom& getAtom(const String &argName) const;
 
-    PdbAtom& updAtom(String argName);
+    PdbAtom& updAtom(const String &argName);
 
     const PdbResidueId& getResidueId() const {return residueId;}
     const char* getName() const {return residueName;}
@@ -271,6 +284,16 @@ public:
     }
 
     void addAtom(const PdbAtom& atom);
+    void addAtom(PdbAtom &&atom) noexcept;
+
+    template <typename ...Args>
+    void addAtom(Args&& ...args) noexcept {
+        atoms.emplace_back(std::forward<Args>(args)...);
+	const auto &a = atoms.back();
+	atomIndicesByName[a.getName()] = atoms.size() - 1;
+    }
+
+    void reserveMoreSpace(const std::size_t count);
 
 protected:
     void parsePdbLine(const String& line);
@@ -306,7 +329,7 @@ class Compound;
 class SimTK_MOLMODEL_EXPORT PdbChain {
     friend class PdbModel;
 public:
-    explicit PdbChain(String id = " ") : chainId(id) {}
+    explicit PdbChain(String id = " ") : chainId(std::move(id)) {}
 
     explicit PdbChain(
         const Compound& compound,
@@ -327,7 +350,7 @@ public:
 
     PdbAtom& updAtom(String atomName, PdbResidueId residueId);
 
-    PdbResidue& appendResidue( const PdbResidue& residue )
+    PdbResidue& appendResidue(const PdbResidue& residue)
     {
             //std::cout<<__FILE__<<":"<<__LINE__<<std::endl;
             //std::cout<<__FILE__<<":"<<__LINE__<<" You have tried to add a residue with ID : "<<residue.getResidueId().residueNumber << residue.getResidueId().insertionCode <<std::endl;//" which is incompatible with : "<<(residueIndicesById.end()).residueNumber<< std::endl;
@@ -343,6 +366,32 @@ public:
         residueIndicesById[residue.getResidueId()] = residues.size() - 1;
 
         return residues.back();
+    }
+
+    PdbResidue& appendResidue(PdbResidue&& residue) noexcept {
+        if ( residueIndicesById.find(residue.getResidueId()) != residueIndicesById.end() ) {
+            std::cout<<__FILE__<<":"<<__LINE__<<" But there is an existing residue : "<<((residueIndicesById.find(residue.getResidueId()))->first   ).residueNumber << ((residueIndicesById.find(residue.getResidueId()))->first   ).insertionCode <<std::endl; //<<residueIndicesById.find(residue.getResidueId()).insertionCode<<std::endl;
+	    std::abort();
+        }
+
+        residues.push_back(std::move(residue));
+        residueIndicesById[residue.getResidueId()] = residues.size() - 1;
+
+        return residues.back();
+    }
+
+    template <typename ...Args>
+    PdbResidue& appendResidue(Args&& ...args) noexcept {
+        residues.emplace_back(std::forward<Args>(args)...);
+
+	auto &residue = residues.back();
+        if ( residueIndicesById.find(residue.getResidueId()) != residueIndicesById.end() ) {
+            std::cout<<__FILE__<<":"<<__LINE__<<" But there is an existing residue : "<<((residueIndicesById.find(residue.getResidueId()))->first   ).residueNumber << ((residueIndicesById.find(residue.getResidueId()))->first   ).insertionCode <<std::endl; //<<residueIndicesById.find(residue.getResidueId()).insertionCode<<std::endl;
+	    std::abort();
+        }
+
+        residueIndicesById[residue.getResidueId()] = residues.size() - 1;
+	return residue;
     }
 
     size_t getNumResidues() const { return residues.size(); }
@@ -365,7 +414,6 @@ public:
     }
 
     String getChainId() const {return chainId;}
-
 
 protected:
     void parsePdbLine(const String& line);
@@ -479,6 +527,20 @@ public:
 
     /// Empty constructor to allow later initialisation
     explicit PdbStructure();
+
+    PdbStructure(const PdbStructure &other);
+    PdbStructure(PdbStructure &&other) noexcept;
+
+    PdbStructure& operator=(const PdbStructure &other) {
+        models = other.models;
+	return *this;
+    }
+
+    PdbStructure& operator=(PdbStructure &&other) noexcept {
+        models = std::move(other.models);
+	return *this;
+    }
+
 
     bool hasAtom(String atomName, PdbResidueId residueId, String chainId) const;
 

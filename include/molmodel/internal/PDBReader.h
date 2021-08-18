@@ -48,15 +48,14 @@ public:
      * Create a PDBReader object that encapsulates the information in a PDB file.
      * The second parameter is optional, defaults to an empty vector.  If non-empty, it contains strings corresponding to chain ID , residue number, insertion code combinations which are not to be read from the input PDB file.
      */
-    explicit PDBReader(std::string filename);
-    explicit PDBReader(std::string filename, char chainsPrefix);
+    explicit PDBReader(const std::string &filename, bool onlyFirstModel);
     ~PDBReader();
     /**
      * Create one or more Compounds representing the protein or nucleic acid described in the PDB file.  You
      * pass to this method a CompoundSystem which has all the necessary subsystems.  It then creates
      * Compounds based on the sequence in the PDB file and adds them to the CompoundSystem.
      */
-    void createCompounds(CompoundSystem& system, const String & chainsPrefix );
+    void createCompounds(CompoundSystem& system, const String & chainsPrefix);
     /**
      * Create a State reflecting the structure loaded from the PDB file.  Before calling this method,
      * you must first call createCompounds(), then call modelCompounds() on the CompoundSystem.  You

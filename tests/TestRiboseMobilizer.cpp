@@ -112,9 +112,9 @@ int main() { try
     VanderWallSphere boundary(forces, dumm, Vec3(0,0,0), 1.00, 0.2, 1.046);
     
     if (! Biotype::exists("ethane", "C"))
-        Biotype::defineBiotype(Element::Carbon(), 4, "ethane", "C");
+        Biotype::defineBiotype(Element::getBySymbol("C"), 4, "ethane", "C");
     if (! Biotype::exists("ethane", "H"))
-        Biotype::defineBiotype(Element::Hydrogen(), 1, "ethane", "H");
+        Biotype::defineBiotype(Element::getBySymbol("H"), 1, "ethane", "H");
 
     dumm.defineChargedAtomType(
         DuMM::ChargedAtomTypeIndex(5000), 

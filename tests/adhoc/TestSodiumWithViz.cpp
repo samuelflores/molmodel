@@ -56,7 +56,7 @@ int main() {
     dumm.loadAmber99Parameters();
 
     if (! Biotype::exists("Sodium Ion", "Na+") )
-        Biotype::defineBiotype(Element::Sodium(), 0, "Sodium Ion", "Na+");
+        Biotype::defineBiotype(Element::getBySymbol("Na"), 0, "Sodium Ion", "Na+");
     BiotypeIndex sodiumBiotype = Biotype::get("Sodium Ion", "Na+").getIndex();
     dumm.setBiotypeChargedAtomType(DuMM::ChargedAtomTypeIndex(2004), sodiumBiotype);
     dumm.setCoulombGlobalScaleFactor(1);

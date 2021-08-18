@@ -60,13 +60,13 @@ public:
 
 
         if (! Biotype::exists("Methanol", "C") )
-            Biotype::defineBiotype(Element::Carbon(), 4, "Methanol", "C");
+            Biotype::defineBiotype(Element::getBySymbol("C"), 4, "Methanol", "C");
         if (! Biotype::exists("Methanol", "HC") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "Methanol", "HC");
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "Methanol", "HC");
         if (! Biotype::exists("Methanol", "O") )
-            Biotype::defineBiotype(Element::Oxygen(), 2, "Methanol", "O");
+            Biotype::defineBiotype(Element::getBySymbol("O"), 2, "Methanol", "O");
         if (! Biotype::exists("Methanol", "HO") )
-            Biotype::defineBiotype(Element::Hydrogen(), 1, "Methanol", "HO");
+            Biotype::defineBiotype(Element::getBySymbol("H"), 1, "Methanol", "HO");
 
         setBiotypeIndex( "C", Biotype::get("Methanol", "C").getIndex() );
         setBiotypeIndex( "1HC", Biotype::get("Methanol", "HC").getIndex() );

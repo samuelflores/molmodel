@@ -11,7 +11,7 @@ void testBaseAtomTransform()
     Compound compound;
 
     Vec3 baseTransform(17, 0, 0);
-    compound.setBaseAtom( QuadrivalentAtom("A", Element::Carbon()), baseTransform );
+    compound.setBaseAtom( QuadrivalentAtom("A", Element::getBySymbol("C")), baseTransform );
 
     // test initial default location
     Vec3 atomLocation = compound.calcDefaultAtomLocationInGroundFrame("A");
@@ -38,7 +38,7 @@ void testAdoptCompoundTransform()
 {
     Compound compound;
 
-    compound.setBaseAtom( QuadrivalentAtom("A", Element::Carbon()) );
+    compound.setBaseAtom( QuadrivalentAtom("A", Element::getBySymbol("C")) );
 
     Vec3 atomLocation = compound.calcDefaultAtomLocationInGroundFrame("A");
     assert(dot(atomLocation, atomLocation) < 0.1);
@@ -72,7 +72,7 @@ void testMatchTopLevelTransform()
 {
     Compound compound;
 
-    compound.setBaseAtom( QuadrivalentAtom("A", Element::Carbon()) );
+    compound.setBaseAtom( QuadrivalentAtom("A", Element::getBySymbol("C")) );
 
     Vec3 atomLocation = compound.calcDefaultAtomLocationInGroundFrame("A");
     assert(dot(atomLocation, atomLocation) < 0.1);

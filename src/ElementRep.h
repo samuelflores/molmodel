@@ -51,6 +51,20 @@ public:
         : atomicNumber(an), name(nm), symbol(sm), averageMass(ms)
     {}
 
+    Impl(const Impl &other)
+        : symbol(other.symbol),
+	  name(other.name),
+	  averageMass(other.averageMass),
+          atomicNumber(other.atomicNumber)
+    {}
+
+    Impl(Impl &&other) noexcept
+        : symbol(std::move(other.symbol)),
+	  name(std::move(other.name)),
+	  averageMass(std::move(other.averageMass)),
+          atomicNumber(std::move(other.atomicNumber))
+    {}
+
     Element::Symbol getSymbol() const {return symbol;}
 	int getAtomicNumber() const {return atomicNumber;}
     Element::Name   getName() const {return name;}

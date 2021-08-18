@@ -46,13 +46,13 @@ public:
 
     Impl(BiotypeIndex b,
                TinkerBiotypeIndex tinkerBiotypeIndex, 
-               const Element& e,
+               const Element* e,
                int v,
                const char* r, 
                const char* a, 
                Ordinality::Residue o);
 
-    const Element&  getElement()            const {return element;}
+    const Element * getElement()            const {return element;}
     int             getValence()            const {return valence;}
     BiotypeIndex       getIndex()                 const {return biotypeIndex;}
     TinkerBiotypeIndex getTinkerBiotypeIfAny() const {return tinkerBiotypeIndexIfAny;}
@@ -115,7 +115,7 @@ public:
             os << indent3 << "TinkerBiotypeIndex(" << tinkerBiotypeIndexIfAny << ")" << std::endl;
 
         // element
-        String elementName = element.getName();
+        String elementName = element->getName();
         elementName[0] = toupper(elementName[0]); // capitalize element to create class name
         os << indent3 << ", Element::" << elementName << "()" << std::endl;
 
@@ -141,7 +141,7 @@ private:
     // Moved all private data into Impl from Biotype class
     BiotypeIndex biotypeIndex;
     TinkerBiotypeIndex tinkerBiotypeIndexIfAny;
-    Element  element;
+    const Element* element;
     int      valence;
     // int      formalCharge;
     String residueName;

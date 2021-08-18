@@ -3,6 +3,7 @@
 //
 #include "molmodel/internal/Pdb.h"
 #include "molmodel/internal/Compound.h"
+#include "molmodel/internal/Exceptions.h"
 #include <cstdlib>
 #include <gemmi/cif.hpp>
 #include <gemmi/cifdoc.hpp>
@@ -146,7 +147,7 @@ std::ostream& PdbAtomLocation::writePdb(std::ostream& os, const Transform& trans
 /*static*/bool PdbAtom::getWriteFullPrecisionLocation() 
 {   return writeExtraPrecision; }
 
-PdbAtom::PdbAtom(const SimTK::String& name, const Element& e) : element(e) 
+PdbAtom::PdbAtom(const SimTK::String& name, const Element *e) : element(e)
 {
     atomName = canonicalizeAtomName(name);
 }
@@ -158,7 +159,7 @@ PdbAtom::PdbAtom(
     : element(compound.getAtomElement(n))
 {
     atomName = canonicalizeAtomName(n);
-    locations.push_back( PdbAtomLocation(transform * compound.calcDefaultAtomLocationInCompoundFrame(n)) );
+    locations.emplace_back(transform * compound.calcDefaultAtomLocationInCompoundFrame(n));
 }
 
 PdbAtom::PdbAtom( 
@@ -170,8 +171,8 @@ PdbAtom::PdbAtom(
 {
     atomName = canonicalizeAtomName(n);
     Compound::AtomIndex atomIndex = compound.getAtomIndex(n);
-  
-    locations.push_back( PdbAtomLocation(transform * compound.calcAtomLocationInGroundFrame(state, atomIndex)) );
+
+    locations.emplace_back(transform * compound.calcAtomLocationInGroundFrame(state, atomIndex));
 }
 
 std::ostream& PdbAtom::write(
@@ -241,7 +242,7 @@ std::ostream& PdbAtom::write(
 
     // element
     // convert to upper case
-    std::string e = element.getSymbol();
+    std::string e = element->getSymbol();
     std::transform(e.begin(), e.end(), e.begin(), (int(*)(int)) toupper);
     os << std::right << std::setw(2) << e;
 
@@ -428,38 +429,35 @@ void PdbAtom::parsePdbLine(const String& line)
 /// Try to be smart about guessing correct atom name for names that are not 4 characters long
 /* static */ std::vector<SimTK::String> PdbAtom::generatePossibleAtomNames(SimTK::String name)
 {
-    AtomNameList possibleNames;
-
     // 1) convert to upper case
     std::transform(name.begin(), name.end(), name.begin(), (int(*)(int)) std::toupper);
 
-    if (4 == name.length()) 
-        possibleNames.push_back(name); // easy case
-
+    if (4 == name.length())
+        return { name };
     else if (4 < name.length())
     {
         // truncate name
-        possibleNames.push_back(name.substr(0, 4));
+        return { name.substr(0, 4) };
     }
-
     else
     {
+	AtomNameList possibleNames;
         // 1) append spaces to make four characters
         SimTK::String name1 = name;
         while (name1.length() < 4) name1 += " ";
-        possibleNames.push_back(name1);
+        possibleNames.push_back(std::move(name1));
 
         // 2) prepend one space, append rest
         SimTK::String name2 = String(" ") + name;
         while (name2.length() < 4) name2 += " ";
-        possibleNames.push_back(name2);
-    }
+        possibleNames.push_back(std::move(name2));
 
-    return possibleNames;
+	return possibleNames;
+    }
 }
 
 PdbResidue::PdbResidue(String name, PdbResidueId id)
-    : residueId(id)
+    : residueId(std::move(id))
 {
     name.resize(3, '\0');
 
@@ -480,11 +478,13 @@ PdbResidue::PdbResidue(const Compound& compound, int resNum, const Transform& tr
     residueName[2] = name[2];
     residueName[3] = 0;
 
-    for (Compound::AtomIndex aIx(0); aIx < compound.getNumAtoms(); ++aIx)
+    const auto N = compound.getNumAtoms();
+    atoms.reserve(N);
+    for (Compound::AtomIndex aIx(0); aIx < N; ++aIx)
     {
         Compound::AtomName atomName = compound.getAtomName(aIx);
         //std::cout<<__FILE__<<":"<<__LINE__<< " atomName "<<atomName<<std::endl;
-        addAtom(PdbAtom(compound, atomName, transform));
+        addAtom(compound, atomName, transform);
     }
 }
 
@@ -503,10 +503,12 @@ PdbResidue::PdbResidue(
     residueName[2] = name[2];
     residueName[3] = 0;
 
-    for (Compound::AtomIndex aIx(0); aIx < compound.getNumAtoms(); ++aIx)
+    const auto N = compound.getNumAtoms();
+    atoms.reserve(N);
+    for (Compound::AtomIndex aIx(0); aIx < N; ++aIx)
     {
         Compound::AtomName atomName = compound.getAtomName(aIx);
-        addAtom(PdbAtom(state, compound, atomName, transform));
+        addAtom(state, compound, atomName, transform);
     }
 }
 
@@ -521,10 +523,8 @@ std::ostream& PdbResidue::write(std::ostream& os, int& nextAtomSerialNumber,Stri
     return os;
 }
 
-bool PdbResidue::hasAtom(SimTK::String argName) const 
+bool PdbResidue::hasAtom(const SimTK::String &argName) const
 {
-    //std::cout<<__FILE__<<":"<<__LINE__<< std::endl;
-    // try variations of atom name spelling
     PdbAtom::AtomNameList possibleNames = PdbAtom::generatePossibleAtomNames(argName);
     PdbAtom::AtomNameList::const_iterator nameI;
     for (nameI = possibleNames.begin(); nameI != possibleNames.end(); ++nameI)
@@ -538,7 +538,7 @@ bool PdbResidue::hasAtom(SimTK::String argName) const
     return false;
 }
 
-const PdbAtom& PdbResidue::getAtom(String argName) const 
+const PdbAtom& PdbResidue::getAtom(const String &argName) const
 {
     assert(hasAtom(argName));
 
@@ -556,7 +556,7 @@ const PdbAtom& PdbResidue::getAtom(String argName) const
     return atoms[atomIndex];
 }
 
-PdbAtom& PdbResidue::updAtom(String argName) 
+PdbAtom& PdbResidue::updAtom(const String &argName)
 {
     assert(hasAtom(argName));
 
@@ -611,8 +611,8 @@ void PdbResidue::parsePdbLine(const String& line)
             if ( ('H' == atomName[0]) && (std::string::npos == atomName.find_first_of(" ")) )
                 elementSymbol = "H";
 
-            const Element& element = Element::getBySymbol(elementSymbol);
-            addAtom(PdbAtom(atomName, element));
+            const Element *element = Element::getBySymbol(elementSymbol);
+            addAtom(atomName, element);
         }
 
         atoms[atomIndicesByName[atomName]].parsePdbLine(line);
@@ -638,6 +638,19 @@ void PdbResidue::addAtom(const PdbAtom& atom)
     atomIndicesByName[atomName] = atoms.size();
     atoms.push_back(atom);
 }
+
+void PdbResidue::addAtom(PdbAtom &&atom) noexcept
+{
+    const String& atomName = atom.getName();
+    atomIndicesByName[atomName] = atoms.size();
+    atoms.push_back(std::move(atom));
+}
+
+void PdbResidue::reserveMoreSpace(std::size_t count)
+{
+    atoms.reserve(atoms.size() + count);
+}
+
 
 PdbChain::PdbChain(const Compound& compound,
         const Transform& transform)
@@ -736,9 +749,9 @@ void PdbChain::parsePdbLine(const String& line)
 
         String residueName = line.substr(17, 3);
 
-        if (! hasResidue(residueId)) {
+        if (!hasResidue(residueId)) {
             residueIndicesById[residueId] = residues.size();
-            residues.push_back(PdbResidue(residueName, residueId));
+            residues.emplace_back(std::move(residueName), residueId);
         }
 
         residues[residueIndicesById[residueId]].parsePdbLine(line);
@@ -754,11 +767,11 @@ PdbModel::PdbModel(const Compound& compound, int number,
         const Transform& transform)
     : modelNumber(number)
 {
-    String chainId = compound.getPdbChainId();
+    const auto &chainId = compound.getPdbChainId();
 
     assert( 0 == chains.size() );
     chainIndicesById[chainId] = chains.size();
-    chains.push_back(PdbChain(compound, transform));
+    chains.emplace_back(compound, transform);
 }
 
 PdbModel::PdbModel(
@@ -768,11 +781,11 @@ PdbModel::PdbModel(
         const Transform& transform)
     : modelNumber(number)
 {
-    String chainId = compound.getPdbChainId();
+    const auto &chainId = compound.getPdbChainId();
 
     assert( 0 == chains.size() );
     chainIndicesById[chainId] = chains.size();
-    chains.push_back(PdbChain(state, compound, transform));
+    chains.emplace_back(state, compound, transform);
 }
 
 std::ostream& PdbModel::write(std::ostream& os, const Transform& transform) const 
@@ -848,10 +861,11 @@ void PdbModel::parsePdbLine(const String& line, String longChainId = String(" ")
 
 PdbChain& PdbModel::updOrCreateChain(String chainId)
 {
-    if (! hasChain(chainId) ) {
+    if (!hasChain(chainId)) {
         chainIndicesById[chainId] = chains.size();
         //std::cout<<__FILE__":"<<__LINE__<<" chain ID is >"<<PdbChain(chainId).getChainId()<<"< "<<std::endl;
-        chains.push_back(PdbChain(chainId));
+        chains.emplace_back(std::move(chainId));
+	return chains.back();
     }
 
     return chains[chainIndicesById[chainId]];
@@ -871,29 +885,36 @@ const PdbChain& PdbModel::getChain(String chainId) const
 
 PdbStructure::PdbStructure(const Compound& compound,
         const Transform& transform) {
-    models.push_back(PdbModel(compound, 1, transform));
+    models.emplace_back(compound, 1, transform);
 }
 
 PdbStructure::PdbStructure(
-        const State& state, 
+        const State& state,
         const Compound& compound,
         const Transform& transform) {
-    models.push_back(PdbModel(state, compound, 1, transform));
+    models.emplace_back(state, compound, 1, transform);
 }
 
-PdbStructure::PdbStructure( ) {
-    return;
+PdbStructure::PdbStructure() {
+}
+
+PdbStructure::PdbStructure(const PdbStructure &other) :
+    models(other.models)
+{
+}
+
+PdbStructure::PdbStructure(PdbStructure &&other) noexcept :
+    models{std::move(other.models)}
+{
 }
 
 
 PdbStructure::PdbStructure(const std::string& fileName, const std::string& chainsPrefix) try {
     initialize(gemmiStructFromFile(fileName), chainsPrefix);
 } catch (const std::runtime_error &ex) {
-    std::cout << "!!! Error !!! " << ex.what() << std::endl;
-    std::exit(EXIT_FAILURE);
+    throw UnrecoverableMolmodelError(ex.what());
 } catch (const std::logic_error &ex) {
-    std::cout << "!!! Logic Error !!! " << ex.what() << std::endl;
-    std::exit(EXIT_FAILURE);
+    throw UnrecoverableMolmodelError(ex.what());
 }
 
 PdbStructure::PdbStructure(std::istream &input, const InputType iType, const std::string &chainsPrefix)
@@ -923,14 +944,16 @@ const PdbAtom& PdbStructure::getAtom(String atomName, PdbResidueId residueId, St
 }
 
 void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &chainsPrefix) {
+    models.reserve(models.size() + gs.models.size());
     //================================================ For each model
     for ( const auto &mo : gs.models )
     {
         //============================================ Create molmodel model (first and only)
-        models.emplace_back                              ( PdbModel ( models.size() + 1 ) );
+        models.emplace_back                              ( models.size() + 1 );
 
         auto &model = models.back();
 
+	model.chains.reserve(model.chains.size() + mo.chains.size());
         //============================================ For each chain
         for ( const auto &ch : mo.chains )
         {
@@ -947,12 +970,13 @@ void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &cha
             if ( !model.hasChain ( chainIdWithoutPrefix ) )
             {
                 model.chainIndicesById[chainIdWithPrefix] = models.back().chains.size();
-                model.chains.emplace_back                 ( PdbChain ( chainIdWithoutPrefix ) );
+                model.chains.emplace_back                 ( chainIdWithoutPrefix );
             }
 
             assert ( model.chainIndicesById.find (chainIdWithPrefix) != model.chainIndicesById.end () );
             auto &chain                                   = model.chains[ model.chainIndicesById.at ( chainIdWithPrefix ) ];
 
+	    chain.residues.reserve(chain.residues.size() + ch.residues.size());
             //======================================== For each residue
             int resNumGemmi                           = 0;
             for ( const auto &re : ch.residues)
@@ -976,6 +1000,7 @@ void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &cha
                 assert ( chain.residueIndicesById.find (residueId) != chain.residueIndicesById.end () );
                 auto &residue                           = chain.residues[ chain.residueIndicesById.at (residueId) ];
 
+		residue.atoms.reserve(residue.atoms.size() + re.atoms.size());
                 //==================================== For each atom
                 for ( const auto &at : re.atoms )
                 {
@@ -991,10 +1016,10 @@ void PdbStructure::initialize(const gemmi::Structure& gs, const std::string &cha
                         //============================ Molmodel makes assumption that second element symbol (if it exists) must be lowercase, if the first one is uppercase. Keeping in line with this assumption
                         String elementSymbol                 = std::string ( at.element.name() );
                         //============================ Add the atom
-                        const Element& element               = Element::getBySymbol ( elementSymbol );
+                        const Element *element               = Element::getBySymbol ( elementSymbol );
 
                         residue.atomIndicesByName[ at.name ] = residue.atoms.size();
-                        residue.addAtom                      ( PdbAtom ( at.name, element ) );
+                        residue.addAtom                      ( at.name, element );
                     }
 
                     assert ( residue.atomIndicesByName.find ( at.name ) != residue.atomIndicesByName.end () );
