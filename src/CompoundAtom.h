@@ -415,7 +415,7 @@ public:
 
             Real v1 = (cosTheta1 - cosTheta*cosTheta2) / sinSquaredTheta;
             Real v2 = (cosTheta2 - cosTheta*cosTheta1) / sinSquaredTheta;
-            std::cout<<__FILE__<<":"<<__LINE__<<" v1 v2 = "<<v1<<", "<<v2<<std::endl;
+            //std::cout<<__FILE__<<":"<<__LINE__<<" v1 v2 = "<<v1<<", "<<v2<<std::endl;
             Real v3Squared = 1.0 - (v1*v1 + v2*v2 + 2.0*v1*v2*cosTheta);
 
 	    //std::cout<<__FILE__<<":"<<__LINE__<<" v1 v2 cosTheta = "<<v1<<", "<<v2<<", "<<cosTheta<<std::endl; 
