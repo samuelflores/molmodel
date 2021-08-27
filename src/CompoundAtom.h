@@ -418,10 +418,12 @@ public:
             std::cout<<__FILE__<<":"<<__LINE__<<" v1 v2 = "<<v1<<", "<<v2<<std::endl;
             Real v3Squared = 1.0 - (v1*v1 + v2*v2 + 2.0*v1*v2*cosTheta);
 
-	    std::cout<<__FILE__<<":"<<__LINE__<<" v1 v2 cosTheta = "<<v1<<", "<<v2<<", "<<cosTheta<<std::endl; 
-	    std::cout<<__FILE__<<":"<<__LINE__<<" 1.0 - (v1*v1 + v2*v2 + 2.0*v1*v2*cosTheta) = "<<1.0 - (v1*v1 + v2*v2 + 2.0*v1*v2*cosTheta)<<std::endl;
-            if ( chirality == LeftHanded )     {std::cout<<__FILE__<<":"<<__LINE__<<" chiralit =  LeftHanded"<<std::endl; }
-	    else if (chirality == RightHanded) {std::cout<<__FILE__<<":"<<__LINE__<<" chiralit = RightHanded"<<std::endl; }
+	    //std::cout<<__FILE__<<":"<<__LINE__<<" v1 v2 cosTheta = "<<v1<<", "<<v2<<", "<<cosTheta<<std::endl; 
+	    //std::cout<<__FILE__<<":"<<__LINE__<<" 1.0 - (v1*v1 + v2*v2 + 2.0*v1*v2*cosTheta) = "<<1.0 - (v1*v1 + v2*v2 + 2.0*v1*v2*cosTheta)<<std::endl;
+            if ( chirality == LeftHanded )     {//std::cout<<__FILE__<<":"<<__LINE__<<" chiralit =  LeftHanded"<<std::endl; 
+	    }
+	    else if (chirality == RightHanded) {//std::cout<<__FILE__<<":"<<__LINE__<<" chiralit = RightHanded"<<std::endl; 
+	    }
 	    else                               {std::cout<<__FILE__<<":"<<__LINE__<<" unknown chirality     "<<std::endl; }
             // no solutions for certain sets of angles
             //assert(v3Squared >= 0);
