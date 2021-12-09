@@ -35,7 +35,7 @@ try {
         );
 
     if (! Biotype::exists("argon", "argon"))
-        Biotype::defineBiotype(Element::Argon(), 0, "argon", "argon");
+        Biotype::defineBiotype(new Element::Argon(), 0, "argon", "argon");
 
     forceField.setBiotypeChargedAtomType( forceField.getChargedAtomTypeIndex("argon"), Biotype::get("argon", "argon").getIndex() );
     forceField.setGbsaGlobalScaleFactor(0);

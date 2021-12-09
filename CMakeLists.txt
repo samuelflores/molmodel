@@ -28,7 +28,7 @@
 # And there is no static version.
 #----------------------------------------------------
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
 PROJECT(Molmodel)
 
@@ -39,9 +39,12 @@ SET(MOLMODEL_PATCH_VERSION 0)
 SET(MOLMODEL_COPYRIGHT_YEARS "2006-12")
 
 # underbar separated list of dotted authors, no spaces or commas
-SET(MOLMODEL_AUTHORS "Christopher.Bruns_Michael.Sherman")
-SET(CMAKE_CXX_STANDARD 14)
-SET(CMAKE_CXX_EXTENSIONS OFF)
+set(MOLMODEL_AUTHORS "Christopher.Bruns_Michael.Sherman")
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(ASSUME_VERSIONED_SIMBODY "Assume that Simbody libraries were built with the version tag appended to the libraries name" OFF)
 
 # Report the version number to the CMake UI. Don't include the
 # build version if it is zero.
@@ -50,18 +53,27 @@ IF(MOLMODEL_PATCH_VERSION)
     SET(PATCH_VERSION_STRING ".${MOLMODEL_PATCH_VERSION}")
 ENDIF()
 
-SET(MOLMODEL_VERSION
-    "${MOLMODEL_MAJOR_VERSION}.${MOLMODEL_MINOR_VERSION}${PATCH_VERSION_STRING}"
-    CACHE STRING
-    "This is the version that will be built (can't be changed here)."
-    FORCE)
+set(
+    MOLMODEL_VERSION
+    "${MOLMODEL_MAJOR_VERSION}.${MOLMODEL_MINOR_VERSION}${MOLMODEL_PATCH_VERSION}"
+)
 
-# This is the suffix if we're building and depending on versioned libraries.
-SET(VN "_${MOLMODEL_VERSION}")
+set(
+    MOLMODEL_SONAME_VERSION
+    "${MOLMODEL_MAJOR_VERSION}.${MOLMODEL_MINOR_VERSION}"
+)
 
-SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
-    CACHE PATH
-    "The Molmodel build (not the install) puts all the libraries and executables together here (with /Release, etc. appended on some platforms).")
+# Permit use of custom FindOpenMM and FindSimbody modules
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules")
+
+# Find Simbody using the local FindSimbody.cmake if present.
+find_package(Simbody REQUIRED)
+find_package(OpenMM REQUIRED)
+find_package(ZLIB REQUIRED)
+
+include_directories(SYSTEM ${Simbody_INCLUDE_DIR})
+include_directories(SYSTEM ${OpenMM_INCLUDE_DIR})
+include_directories(SYSTEM ${ZLIB_INCLUDE_DIRS})
 
 # Make everything go in the same binary directory. (These are CMake-defined
 # variables.)
@@ -84,40 +96,20 @@ ENDIF()
 SET(BUILD_USING_NAMESPACE "" CACHE STRING
 	"All library names will be prefixed with 'xxx_' if this is SET to xxx.")
 
-SET(BUILD_UNVERSIONED_LIBRARIES TRUE CACHE BOOL
-    "Build library names, and assume dependency names, with no version numbers?")
-
-SET(BUILD_VERSIONED_LIBRARIES FALSE CACHE BOOL
-    "Build library names, and assume dependency names, with version numbers?")
-
-SET(GEMMI_PATH "" CACHE PATH "Where is the Gemmi library installed?")
-
-IF(WIN32)
-    SET(zlib_INSTALL_DIR "" CACHE PATH
-	    "Where to find zlib files")
-ENDIF()
-
 SET(NS)
-IF(BUILD_USING_NAMESPACE)
+IF (BUILD_USING_NAMESPACE)
     SET(NS "${BUILD_USING_NAMESPACE}_")
-ENDIF()
+ENDIF ()
 
 SET(MOLMODEL_LIBRARY_NAME ${NS}SimTKmolmodel CACHE STRING
     "Base name of the library being built; can't be changed here; see BUILD_USING_NAMESPACE variable."
     FORCE)
 
+if (ASSUME_VERSIONED_SIMBODY)
+    set(SIMBODY_VERTAG _${Simbody_VERSION})
+endif ()
 
-# Permit use of custom FindOpenMM and FindSimbody modules
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules")
 SET(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL "Control volume of build output" )
-
-SET(OpenMM_ON OFF)
-FIND_PACKAGE(OpenMM)
-IF(OpenMM_FOUND)
-    SET(OpenMM_ON ON)
-ENDIF()
-SET(MOLMODEL_USE_OpenMM ${OpenMM_ON} CACHE BOOL
-    "Control whether Molmodel builds the OpenMM Plugin (requires that OpenMM is installed on the build machine)." )
 
 # Caution: this variable is automatically created by the CMake
 # ENABLE_TESTING() command, but we'll take it over here for
@@ -155,7 +147,7 @@ ELSE()
 ENDIF()
 
 IF(WIN32)
-    ADD_DEFINITIONS(-DNOMINMAX -DWIN32_LEAN_AND_MEAN -D_USE_MATH_DEFINES -D_WIN32_WINNT=0x0501)
+    ADD_DEFINITIONS(-DNOMINMAX -DWIN32_LEAN_AND_MEAN -D_USE_MATH_DEFINES)
 
 	IF(MSVC)
 	    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
@@ -166,11 +158,6 @@ SET(BUILD_PLATFORM "${CMAKE_HOST_SYSTEM_NAME}:${PLATFORM_ABI}" CACHE STRING
     "This is the platform and ABI we're building for. Not changeable here; use a different CMake generator instead."
     FORCE)
 
-# Find Simbody using the local FindSimbody.cmake if present.
-find_package(Simbody REQUIRED)
-include_directories(${Simbody_INCLUDE_DIR})
-link_directories(${Simbody_LIB_DIR})
-
 IF(WIN32)
     IF (zlib_INSTALL_DIR STREQUAL "")
         MESSAGE(FATAL_ERROR "Path to zlib is not set")
@@ -179,54 +166,6 @@ IF(WIN32)
 	INCLUDE_DIRECTORIES(${zlib_INSTALL_DIR}/include)
 	LINK_DIRECTORIES(${zlib_INSTALL_DIR}/lib)
 ENDIF()
-
-# If CMAKE_INSTALL_PREFIX is /usr/local, then the LIBDIR should necessarily be
-# lib/. Sometimes (on Linux), LIBDIR is something like x86_64-linux-gnu. The
-# linker will search /usr/lib/x86_64-linux-gnu (this path is in
-# HOWEVER, it WILL search /usr/local/lib. So that Linux users needn't modify
-# their LD_LIBRARY_PATH if installing to /usr/local, we force the LIBDIR to be
-# lib/.
-# Note: CMake 3.0 fixes this issue. When we move to CMake 3.0, we can
-# remove this if-statement. See issue #151.
-IF("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr/local" OR
-   "${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr/local/")
-    # Overwrite both of these variables; we use both of them.
-    SET(CMAKE_INSTALL_LIBDIR "lib")
-    SET(CMAKE_INSTALL_FULL_LIBDIR
-        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-ENDIF()
-
-
-IF(NOT MSVC AND NOT XCODE AND NOT CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-        "Debug, RelWithDebInfo (recommended), or Release build"
-        FORCE)
-ENDIF()
-
-## Choose the maximum level of x86 instruction SET that the compiler is
-## allowed to use.
-## Was using sse2 but changed to let the compilers choose. Most will
-## probably use sse2 or later by default.
-## On 64 bit MSVC 2013, the default is sse2 and the argument
-## isn't recognized so don't specify it.
-IF(CMAKE_CL_64)
-    SET(default_build_inst_SET)
-ELSE()
-    SET(default_build_inst_SET)
-ENDIF()
-
-## This can be SET to a different value by the person running CMake.
-SET(BUILD_INST_SET ""
-    CACHE STRING
-    "CPU instruction level compiler is permitted to use (default: let compiler decide).")
-MARK_AS_ADVANCED(BUILD_INST_SET)
-
-IF(BUILD_INST_SET)
-    SET(inst_SET_to_use ${BUILD_INST_SET})
-ELSE()
-    SET(inst_SET_to_use ${default_build_inst_SET})
-ENDIF()
-
 
 ## When building in any of the Release modes, tell VC++ cl compiler to use
 ## intrinsics (i.e. sqrt instruction rather than sqrt subroutine) with
@@ -270,68 +209,14 @@ ENDIF()
 # this CMakeLists file rather than letting CMake visit them as SUBDIRS.
 SET(MOLMODEL_SOURCE_SUBDIRS .)
 
-
-# Collect up information about the version of the molmodel library we're building
-# and make it available to the code so it can be built into the binaries.
-
-# Get the subversion revision number if we can
-# It's possible that WIN32 installs use svnversion through cygwin
-# so we'll try for both svnversion.exe and svnversion. Note that
-# this will result in warnings if all you have is Tortoise without
-# Cygwin, and your "about" string will say "unknown" rather than
-# providing the SVN version of the source.
-
-# If there is an actual reason for the SVNVERSION vs. SVNVERSION_EXE
-# nonsense that was here before, come talk to me.  --Chris Bruns
-# 1) CMake already understands that Windows executables have ".exe" at the end.
-# 2) Providing a PATHS argument to find_program is *NOT* hard coding a single path.
-# Please read the CMake documentation for more details.
-FIND_PROGRAM(SVNVERSION_EXECUTABLE svnversion PATHS "C:/cygwin/bin")
-
-IF(SVNVERSION_EXECUTABLE)
-    EXEC_PROGRAM(${SVNVERSION_EXECUTABLE}
-              # Works better on Windows to SET working directory rather than
-              # passing argument to svnversion
-                 ${CMAKE_SOURCE_DIR} # cwd for run
-                 OUTPUT_VARIABLE OUT)
-    SET(MOLMODEL_SVN_REVISION "${OUT}" CACHE STRING "Molmodel svn revision number" FORCE)
-ELSE(SVNVERSION_EXECUTABLE)
-    MESSAGE(STATUS
-            "Could not find 'svnversion' executable; 'about' will be wrong. (Cygwin provides one on Windows.)")
-    SET(MOLMODEL_SVN_REVISION "unknown" CACHE STRING "Molmodel svn revision number")
-ENDIF(SVNVERSION_EXECUTABLE)
-MARK_AS_ADVANCED(MOLMODEL_SVN_REVISION)
-
-# Remove colon from build version, for easier placement in directory names
-STRING(REPLACE ":" "_" MOLMODEL_SVN_REVISION ${MOLMODEL_SVN_REVISION})
-
 ADD_DEFINITIONS(-DSimTK_MOLMODEL_LIBRARY_NAME=${MOLMODEL_LIBRARY_NAME}
                 -DSimTK_MOLMODEL_MAJOR_VERSION=${MOLMODEL_MAJOR_VERSION}
                 -DSimTK_MOLMODEL_MINOR_VERSION=${MOLMODEL_MINOR_VERSION}
                 -DSimTK_MOLMODEL_PATCH_VERSION=${MOLMODEL_PATCH_VERSION})
 
-# CMake quotes automatically when building Visual Studio projects but we need
-# to add them ourselves for Linux or Cygwin. Two cases to avoid duplicate quotes
-# in Visual Studio which end up in the binary.
-
-IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-   SET(NEED_QUOTES FALSE)
-ELSE(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-   SET(NEED_QUOTES TRUE)
-ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-
-##TODO: doesn't work without quotes in nightly build
-SET(NEED_QUOTES TRUE)
-
-IF(NEED_QUOTES)
-   ADD_DEFINITIONS(-DSimTK_MOLMODEL_SVN_REVISION="${MOLMODEL_SVN_REVISION}"
-                   -DSimTK_MOLMODEL_COPYRIGHT_YEARS="${MOLMODEL_COPYRIGHT_YEARS}"
-                   -DSimTK_MOLMODEL_AUTHORS="${MOLMODEL_AUTHORS}")
-ELSE(NEED_QUOTES)
-   ADD_DEFINITIONS(-DSimTK_MOLMODEL_SVN_REVISION=${MOLMODEL_SVN_REVISION}
-                   -DSimTK_MOLMODEL_COPYRIGHT_YEARS=${MOLMODEL_COPYRIGHT_YEARS}
-                   -DSimTK_MOLMODEL_AUTHORS=${MOLMODEL_AUTHORS})
-ENDIF(NEED_QUOTES)
+ADD_DEFINITIONS(-DSimTK_MOLMODEL_SVN_REVISION="${MOLMODEL_SVN_REVISION}"
+                -DSimTK_MOLMODEL_COPYRIGHT_YEARS="${MOLMODEL_COPYRIGHT_YEARS}"
+                -DSimTK_MOLMODEL_AUTHORS="${MOLMODEL_AUTHORS}")
 
 # -DSimTK_MOLMODEL_TYPE has to be defined in the target subdirectories.
 # -Dmolmodel_EXPORTS defined automatically when Windows DLL build is being done.
@@ -341,29 +226,10 @@ SET(STATIC_TARGET ${MOLMODEL_LIBRARY_NAME}_static)
 SET(SHARED_TARGET_VN ${MOLMODEL_LIBRARY_NAME}${VN})
 SET(STATIC_TARGET_VN ${MOLMODEL_LIBRARY_NAME}${VN}_static)
 
-# Ensure that debug libraries have "_d" appended to their names.
-# CMake gets this right on Windows automatically with this definition.
-IF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
-    SET(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
-ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio")
+set(CMAKE_DEBUG_POSTFIX "_d")
 
-# But on Unix or Cygwin we have to add the suffix manually
-IF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
-    SET(SHARED_TARGET ${SHARED_TARGET}_d)
-    SET(STATIC_TARGET ${STATIC_TARGET}_d)
-    SET(SHARED_TARGET_VN ${SHARED_TARGET_VN}_d)
-    SET(STATIC_TARGET_VN ${STATIC_TARGET_VN}_d)
-ENDIF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
-
-## Test against the unversioned libraries if they are being built;
-## otherwise against the versioned libraries.
-IF(BUILD_UNVERSIONED_LIBRARIES)
-    SET(TEST_SHARED_TARGET ${SHARED_TARGET} ${Simbody_LIBRARIES})
-    SET(TEST_STATIC_TARGET ${STATIC_TARGET} ${Simbody_STATIC_LIBRARIES})
-ELSE(BUILD_UNVERSIONED_LIBRARIES)
-    SET(TEST_SHARED_TARGET ${SHARED_TARGET_VN} ${Simbody_LIBRARIES}_${Simbody_VERSION})
-    SET(TEST_STATIC_TARGET ${STATIC_TARGET_VN} ${Simbody_STATIC_LIBRARIES}_${Simbody_VERSION})
-ENDIF(BUILD_UNVERSIONED_LIBRARIES)
+SET(TEST_SHARED_TARGET ${SHARED_TARGET} ${Simbody_LIBRARIES})
+SET(TEST_STATIC_TARGET ${STATIC_TARGET} ${Simbody_STATIC_LIBRARIES})
 
 # These are all the places to search for header files which are
 # to be part of the API.
@@ -410,53 +276,107 @@ FOREACH(subdir ${MOLMODEL_SOURCE_SUBDIRS})
 ENDFOREACH(subdir)
 
 INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src)
-INCLUDE_DIRECTORIES(BEFORE ${GEMMI_PATH})
+
+if (NOT ${GEMMI_DIR} STREQUAL "")
+    include_directories("${GEMMI_DIR}/include")
+endif ()
 
 #
 # Allow automated build and dashboard.
 #
 
 INCLUDE (Dart)
-IF (BUILD_TESTING)
-    #IF (UNIX AND NOT CYGWIN AND NOT APPLE)
-    #  IF (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE MATCHES Debug)
-    #    ADD_DEFINITIONS(-fprofile-arcs -ftest-coverage)
-    #    LINK_LIBRARIES(gcov)
-    #  ENDIF (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE MATCHES Debug)
-    #ENDIF (UNIX AND NOT CYGWIN AND NOT APPLE)
-    #
-    # Testing
-    #
+if (BUILD_TESTING)
     ENABLE_TESTING()
-ENDIF (BUILD_TESTING)
-
-INCLUDE(ApiDoxygen.cmake)
-# libraries are installed from their subdirectories; headers here
-# install headers
-FILE(GLOB CORE_HEADERS     include/*.h                  */include/*.h)
-FILE(GLOB TOP_HEADERS      include/molmodel/*.h          */include/molmodel/*.h)
-FILE(GLOB INTERNAL_HEADERS include/molmodel/internal/*.h */include/molmodel/internal/*.h)
-INSTALL_FILES(/include/                  FILES ${CORE_HEADERS})
-INSTALL_FILES(/include/molmodel/         FILES ${TOP_HEADERS})
-INSTALL_FILES(/include/molmodel/internal FILES ${INTERNAL_HEADERS})
-
-# Install documents.
-FILE(GLOB TOPLEVEL_DOCS doc/*.pdf doc/*.txt)
-INSTALL(FILES ${TOPLEVEL_DOCS} DESTINATION doc)
+endif ()
 
 # all the various variables have been SET above.
 
-IF(BUILD_STATIC_LIBRARIES)
-    ADD_SUBDIRECTORY(staticTarget)
-ENDIF()
+# Fixup Simbody library names in case we are building against versioned Simbody libraries
+if (ASSUME_VERSIONED_SIMBODY)
+    foreach(SL ${Simbody_LIBRARIES})
+        list(APPEND SIMBODY_FIXED_LIBS ${SL}${SIMBODY_VERTAG})
+        list(APPEND SIMBODY_FIXED_STATIC_LIBS ${SL}${SIMBODY_VERTAG}_static)
+    endforeach()
+else ()
+    set(SIMBODY_FIXED_LIBS ${Simbody_LIBRARIES})
+    set(SIMBODY_FIXED_STATIC_LIBS ${Simbody_STATIC_LIBRARIES})
+endif ()
 
-IF(BUILD_SHARED_LIBRARIES)
-    ADD_SUBDIRECTORY(sharedTarget)
-ENDIF(BUILD_SHARED_LIBRARIES)
+if (BUILD_SHARED_LIBRARIES)
+    add_library(
+        ${SHARED_TARGET} SHARED
+        ${SOURCE_FILES}
+        ${SOURCE_INCLUDE_FILES}
+        ${API_ABS_INCLUDE_FILES}
+    )
+    set_target_properties(
+        ${SHARED_TARGET}
+        PROPERTIES
+            PROJECT_LABEL "Library - ${SHARED_TARGET}"
+    )
+    target_compile_definitions(${SHARED_TARGET} PRIVATE -DSimTK_MOLMODEL_BUILDING_SHARED_LIBRARY)
 
-IF(MOLMODEL_USE_OpenMM)
-    ADD_SUBDIRECTORY(OpenMMPlugin)
-ENDIF (MOLMODEL_USE_OpenMM)
+    if (WIN32)
+        target_link_libraries(
+            ${SHARED_TARGET}
+            PRIVATE ${SIMBODY_FIXED_LIBS}
+            PRIVATE ${ZLIB_LIBRARIES}
+            PRIVATE ws2_32
+        )
+    else ()
+        target_link_libraries(
+            ${SHARED_TARGET}
+            PRIVATE ${SIMBODY_FIXED_LIBS}
+            PRIVATE ${ZLIB_LIBRARIES}
+        )
+    endif ()
+
+    install(
+        TARGETS ${SHARED_TARGET} EXPORT MolmodelTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+endif ()
+
+if (BUILD_STATIC_LIBRARIES)
+    add_library(
+        ${STATIC_TARGET} STATIC
+        ${SOURCE_FILES}
+        ${SOURCE_INCLUDE_FILES}
+        ${API_ABS_INCLUDE_FILES}
+    )
+    set_target_properties(
+        ${STATIC_TARGET}
+        PROPERTIES
+            PROJECT_LABEL "Library - ${STATIC_TARGET}"
+    )
+    target_compile_definitions(${STATIC_TARGET} PRIVATE -DSimTK_MOLMODEL_BUILDING_STATIC_LIBRARY -DSimTK_USE_STATIC_LIBRARIES)
+
+    if (WIN32)
+        target_link_libraries(
+            ${STATIC_TARGET}
+            PRIVATE ${SIMBODY_FIXED_STATIC_LIBS}
+            PRIVATE ${ZLIB_LIBRARIES}
+            PRIVATE ws2_32
+        )
+    else ()
+        target_link_libraries(
+            ${STATIC_TARGET}
+            PRIVATE ${SIMBODY_FIXED_STATIC_LIBS}
+            PRIVATE ${ZLIB_LIBRARIES}
+        )
+    endif ()
+
+    install(
+        TARGETS ${STATIC_TARGET} EXPORT MolmodelTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+endif ()
+
+ADD_SUBDIRECTORY(OpenMMPlugin)
 
 IF(BUILD_EXAMPLES)
     ADD_SUBDIRECTORY(examples)
@@ -465,3 +385,90 @@ ENDIF()
 IF(BUILD_TESTING)
     ADD_SUBDIRECTORY(tests)
 ENDIF()
+
+if (UNIX)
+    include(GNUInstallDirs)
+elseif (WIN32)
+    set(CMAKE_INSTALL_LIBDIR "lib")
+    set(CMAKE_INSTALL_INCLUDEDIR "include")
+    set(CMAKE_INSTALL_BINDIR "bin")
+endif ()
+
+if (WIN32)
+    # Install include files into base include folder since it's a sandbox
+    set(MOLMODEL_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+else ()
+    # Install include files in simbody subfolder to avoid polluting the
+    # global build folder
+    set(MOLMODEL_INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/molmodel)
+endif ()
+
+INCLUDE(ApiDoxygen.cmake)
+# libraries are installed from their subdirectories; headers here
+# install headers
+FILE(GLOB CORE_HEADERS     include/*.h                   */include/*.h)
+FILE(GLOB TOP_HEADERS      include/molmodel/*.h          */include/molmodel/*.h)
+FILE(GLOB INTERNAL_HEADERS include/molmodel/internal/*.h */include/molmodel/internal/*.h)
+install(FILES ${CORE_HEADERS} DESTINATION ${MOLMODEL_INCLUDE_INSTALL_DIR})
+install(FILES ${TOP_HEADERS} DESTINATION ${MOLMODEL_INCLUDE_INSTALL_DIR}/molmodel)
+install(FILES ${INTERNAL_HEADERS} DESTINATION ${MOLMODEL_INCLUDE_INSTALL_DIR}/molmodel/internal)
+
+# Install documents.
+FILE(GLOB TOPLEVEL_DOCS doc/*.pdf doc/*.txt)
+INSTALL(FILES ${TOPLEVEL_DOCS} DESTINATION doc)
+
+set(PKG_NAME ${PROJECT_NAME})
+set(PKG_LIBRARIES ${MOLMODEL_LIBRARY_NAME})
+
+if (WIN32)
+    set(MOLMODEL_CMAKE_DIR cmake)
+else ()
+    set(MOLMODEL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/molmodel/)
+endif ()
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    ${CMAKE_SOURCE_DIR}/cmake/MolmodelConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/MolmodelConfigForInstall.cmake
+    INSTALL_DESTINATION "${MOLMODEL_CMAKE_DIR}"
+    PATH_VARS
+        CMAKE_INSTALL_PREFIX
+        MOLMODEL_INCLUDE_INSTALL_DIR
+        CMAKE_INSTALL_LIBDIR
+        CMAKE_INSTALL_BINDIR
+)
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/MolmodelConfigForInstall.cmake
+    DESTINATION ${MOLMODEL_CMAKE_DIR}
+    RENAME MolmodelConfig.cmake
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/MolmodelConfigVersion.cmake
+    VERSION "${MOLMODEL_VERSION}"
+    COMPATIBILITY SameMinorVersion
+)
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/MolmodelConfigVersion.cmake
+    DESTINATION ${MOLMODEL_CMAKE_DIR}
+)
+
+install(EXPORT MolmodelTargets DESTINATION "${MOLMODEL_CMAKE_DIR}")
+
+if (WIN32)
+    # Nothing specific is required on Win32
+elseif (APPLE)
+    set(PKGCONFIG_PLATFORM_LIBS "-ldl")
+else ()
+    set(PKGCONFIG_PLATFORM_LIBS "-lpthread -lrt -ldl -lm")
+endif ()
+
+configure_file(
+    ${CMAKE_SOURCE_DIR}/cmake/pkgconfig/molmodel.pc.in
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/pkgconfig/molmodel.pc @ONLY
+)
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/pkgconfig/molmodel.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/
+)

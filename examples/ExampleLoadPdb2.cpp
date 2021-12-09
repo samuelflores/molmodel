@@ -15,8 +15,10 @@ try {
     DuMMForceFieldSubsystem forceField(system);
     forceField.loadAmber99Parameters();
 
+	std::string pdb;
 	std::ifstream pdbFile("1AKGtrim.pdb");
-	Protein protein(pdbFile);
+	pdbFile >> pdb;
+	Protein protein(pdb);
 
     protein.assignBiotypes();
 	system.adoptCompound(protein);

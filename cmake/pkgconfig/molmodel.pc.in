@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@MOLMODEL_INCLUDE_INSTALL_DIR@
+
+Name: molmodel
+Description: Molmodel Libraries
+Version: @MOLMODEL_VERSION@
+Requires:
+Libs: -L${libdir} -lmolmodel @PKGCONFIG_PLATFORM_LIBS@
+CFlags: -I${includedir} -std=c++14

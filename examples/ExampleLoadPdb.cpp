@@ -14,7 +14,7 @@ try {
     DuMMForceFieldSubsystem forceField(system);
     forceField.loadAmber99Parameters();
 
-    PDBReader pdb("1AKG.pdb");
+    PDBReader pdb("1AKG.pdb", true);
     pdb.createCompounds(system,"");
     system.modelCompounds();
 

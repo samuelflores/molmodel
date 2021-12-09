@@ -18,9 +18,9 @@ try {
     forceField.loadAmber99Parameters();
 
     if (! Biotype::exists("ethane", "C"))
-        Biotype::defineBiotype(Element::Carbon(), 4, "ethane", "C");
+        Biotype::defineBiotype(new Element::Carbon(), 4, "ethane", "C");
     if (! Biotype::exists("ethane", "H"))
-        Biotype::defineBiotype(Element::Hydrogen(), 1, "ethane", "H");
+        Biotype::defineBiotype(new Element::Hydrogen(), 1, "ethane", "H");
 
     forceField.defineChargedAtomType(
         forceField.getNextUnusedChargedAtomTypeIndex(), 

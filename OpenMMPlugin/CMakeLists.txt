@@ -26,20 +26,11 @@ ENDIF (UNIX AND CMAKE_BUILD_TYPE MATCHES Debug)
 # The plugin depends on the OpenMM.dll that is part of
 # the OpenMM distribution.
 
-IF (BUILD_UNVERSIONED_LIBRARIES)
-    TARGET_LINK_LIBRARIES(OpenMMPlugin
-        ${SHARED_TARGET}			   # SimTKMolmodel.dll
-		SimTKcommon
-        ${OpenMM_LIBRARIES})
-ELSEIF(BUILD_VERSIONED_LIBRARIES)
-    TARGET_LINK_LIBRARIES(OpenMMPlugin
-        ${SHARED_TARGET_VN}			   # SimTKMolmodel.dll
-		SimTKcommon_${Simbody_VERSION}
-        ${OpenMM_LIBRARIES})
-ELSE()
-    MESSAGE(FATAL_ERROR "SimTKmolmodel was not configured to build")
-ENDIF()
-    
+TARGET_LINK_LIBRARIES(OpenMMPlugin
+    ${SHARED_TARGET}			   # SimTKMolmodel.dll
+    SimTKcommon
+    ${OpenMM_LIBRARIES})
+
 SET_TARGET_PROPERTIES(OpenMMPlugin PROPERTIES
 	PROJECT_LABEL "Plugin - OpenMMPlugin")
 
