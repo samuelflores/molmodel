@@ -376,8 +376,6 @@ if (BUILD_STATIC_LIBRARIES)
     )
 endif ()
 
-ADD_SUBDIRECTORY(OpenMMPlugin)
-
 IF(BUILD_EXAMPLES)
     ADD_SUBDIRECTORY(examples)
 ENDIF()
@@ -472,3 +470,6 @@ install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/pkgconfig/molmodel.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/
 )
+
+# Build the OpenMM plugin
+add_subdirectory(OpenMMPlugin)
