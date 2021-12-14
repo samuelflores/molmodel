@@ -36,6 +36,27 @@
 #include "molmodel/internal/common.h"
 #include "molmodel/internal/Compound.h"
 
+/* Default */
+#define O4_C4_L 0.1453
+#define C3_C4_L 0.1524
+#define C2_C3_L 0.1525
+#define C1_C2_L 0.1528
+#define C1_O4_L 0.1414
+
+/* Default angles */
+#define C1_O4_C4_A 109.6
+#define O4_C4_C3_A 105.5
+#define C4_C3_C2_A 102.7
+#define C3_C2_C1_A 101.5
+#define C2_C1_O4_A 106.4
+
+/* nu angles selected from resdue U52 of 1EHZ - hopefully */
+#define NU_0   2.2
+#define NU_1 -24.5
+#define NU_2  35.8
+#define NU_3 -35.9
+#define NU_4  21.6
+
 namespace SimTK {
 
 // RiboseCore leaves 4 bond centers open:
@@ -55,28 +76,27 @@ public:
         bondAtom(AliphaticCarbon("C4'"), "C5'/bond2", 0.1510); // length from (Gelbin et al 1996)
         bondAtom(AliphaticHydrogen("H4'"), "C4'/bond4");
 
-        bondAtom(BivalentAtom("O4'", Element::getBySymbol("O"), 112.0*Deg2Rad), "C4'/bond2", 0.1453);
-
-        bondAtom(AliphaticCarbon("C3'"), "C4'/bond3", 0.1524);
+	/* This is a modified build-up code that goes around the circle from the outside
+	 * and closes the ribose ring with O4' - C4' */
+        bondAtom(AliphaticCarbon("C3'"), "C4'/bond3", C3_C4_L);
+        bondAtom(BivalentAtom("O3'", Element::getBySymbol("O"), 119.7*Deg2Rad), "C3'/bond2", 0.1423);
         bondAtom(AliphaticHydrogen("H3'"), "C3'/bond4");
 
-        bondAtom(BivalentAtom("O3'", Element::getBySymbol("O"), 119.7*Deg2Rad), "C3'/bond2", 0.1423);
- 
-        bondAtom(AliphaticCarbon("C2'"), "C3'/bond3", 0.1525);
-        //bondAtom(AliphaticHydrogen("H2'"), "C2'/bond3");
-        //bondAtom(AliphaticHydrogen("H2'2"), "C2'/bond4");
+        bondAtom(AliphaticCarbon("C2'"), "C3'/bond3", C2_C3_L);
 
-        bondAtom(AliphaticCarbon("C1'"), "C2'/bond2", 0.1528);
+        bondAtom(AliphaticCarbon("C1'"), "C2'/bond2", C1_C2_L);
         bondAtom(AliphaticHydrogen("H1'"), "C1'/bond4");
 
-        addRingClosingBond("C1'/bond2", "O4'/bond2", 0.1414);
+        bondAtom(BivalentAtom("O4'", Element::getBySymbol("O"), 112.0*Deg2Rad), "C1'/bond2", C1_O4_L);
+
+        addRingClosingBond("O4'/bond2", "C4'/bond2", O4_C4_L);
 
         // Ring strain reduces ring bond angles
-        setDefaultBondAngle(109.6*Deg2Rad, "C1'", "O4'", "C4'"); 
-        setDefaultBondAngle(105.5*Deg2Rad, "O4'", "C4'", "C3'"); 
-        setDefaultBondAngle(102.7*Deg2Rad, "C4'", "C3'", "C2'"); 
-        setDefaultBondAngle(101.5*Deg2Rad, "C3'", "C2'", "C1'"); 
-        setDefaultBondAngle(106.4*Deg2Rad, "C2'", "C1'", "O4'");
+        setDefaultBondAngle(C1_O4_C4_A*Deg2Rad, "C1'", "O4'", "C4'"); 
+        setDefaultBondAngle(O4_C4_C3_A*Deg2Rad, "O4'", "C4'", "C3'"); 
+        setDefaultBondAngle(C4_C3_C2_A*Deg2Rad, "C4'", "C3'", "C2'"); 
+        setDefaultBondAngle(C3_C2_C1_A*Deg2Rad, "C3'", "C2'", "C1'"); 
+        setDefaultBondAngle(C2_C1_O4_A*Deg2Rad, "C2'", "C1'", "O4'");
 
         nameBondCenter("bondO5", "O5'/bond1");
         nameBondCenter("bondO3", "O3'/bond2");
@@ -108,12 +128,11 @@ public:
         //setDefaultDihedralAngle("epsilon", 190*Deg2Rad);
         // setDefaultDihedralAngle("zeta", -70*Deg2Rad);
 
-        // nu angles selected from resdue U52 of 1EHZ
-        setDefaultDihedralAngle("nu0", 2.2*Deg2Rad);
-        setDefaultDihedralAngle("nu1", -24.5*Deg2Rad);
-        setDefaultDihedralAngle("nu2", 35.8*Deg2Rad);
-        setDefaultDihedralAngle("nu3", -35.9*Deg2Rad); // same bond as delta, different reference atoms
-        setDefaultDihedralAngle("nu4", 21.6*Deg2Rad);
+        setDefaultDihedralAngle("nu0", NU_0*Deg2Rad);
+        setDefaultDihedralAngle("nu1", NU_1*Deg2Rad);
+        setDefaultDihedralAngle("nu2", NU_2*Deg2Rad);
+        setDefaultDihedralAngle("nu3", NU_3*Deg2Rad); // same bond as delta, different reference atoms
+        setDefaultDihedralAngle("nu4", NU_4*Deg2Rad);
 
         nameBondCenter("bondNext", "bondO3");
         nameBondCenter("bondPrevious", "bondO5");

@@ -2797,4 +2797,3 @@ MassProperties Cluster::calcMassProperties
 void DuMMBody::realizeTopologicalCache(const DuMMForceFieldSubsystemRep& mm) {
     // nothing
 }
-
