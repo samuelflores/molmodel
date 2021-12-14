@@ -8,12 +8,12 @@
 # and version number (vn).
 #
 # Windows:
-#   [ns_]SimTKmolmodel[_vn][_d].dll
-#   [ns_]SimTKmolmodel[_vn][_d].lib
-#   [ns_]SimTKmolmodel[_vn]_static[_d].lib
+#   [ns_]SimTKmolmodel[_d].dll
+#   [ns_]SimTKmolmodel[_d].lib
+#   [ns_]SimTKmolmodel_static[_d].lib
 # Unix:
-#   lib[ns_]SimTKmolmodel[_vn][_d].so
-#   lib[ns_]SimTKmolmodel[_vn]_static[_d].a
+#   lib[ns_]SimTKmolmodel[_d].so
+#   lib[ns_]SimTKmolmodel_static[_d].a
 #
 # All libraries are installed in
 #   %ProgramFiles%\SimTK\lib    (Windows)
@@ -223,8 +223,6 @@ ADD_DEFINITIONS(-DSimTK_MOLMODEL_SVN_REVISION="${MOLMODEL_SVN_REVISION}"
 
 SET(SHARED_TARGET ${MOLMODEL_LIBRARY_NAME})
 SET(STATIC_TARGET ${MOLMODEL_LIBRARY_NAME}_static)
-SET(SHARED_TARGET_VN ${MOLMODEL_LIBRARY_NAME}${VN})
-SET(STATIC_TARGET_VN ${MOLMODEL_LIBRARY_NAME}${VN}_static)
 
 set(CMAKE_DEBUG_POSTFIX "_d")
 
