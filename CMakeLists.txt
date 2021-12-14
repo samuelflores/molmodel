@@ -158,15 +158,6 @@ SET(BUILD_PLATFORM "${CMAKE_HOST_SYSTEM_NAME}:${PLATFORM_ABI}" CACHE STRING
     "This is the platform and ABI we're building for. Not changeable here; use a different CMake generator instead."
     FORCE)
 
-IF(WIN32)
-    IF (zlib_INSTALL_DIR STREQUAL "")
-        MESSAGE(FATAL_ERROR "Path to zlib is not set")
-	ENDIF()
-
-	INCLUDE_DIRECTORIES(${zlib_INSTALL_DIR}/include)
-	LINK_DIRECTORIES(${zlib_INSTALL_DIR}/lib)
-ENDIF()
-
 ## When building in any of the Release modes, tell VC++ cl compiler to use
 ## intrinsics (i.e. sqrt instruction rather than sqrt subroutine) with
 ## flag /Oi.
