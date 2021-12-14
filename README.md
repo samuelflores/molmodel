@@ -6,6 +6,7 @@ Molmodel uses [CMake](https://cmake.org/) build system to configure and build it
 
 Molmodel depends on a series of libraries that must be installed in order to build and use Molmodel. Current list of Molmodel dependencies is as follows:
 
+- [zlib](https://zlib.net/)
 - [Simbody](https://simtk.org/projects/simbody)
 - [OpenMM](https://openmm.org/)
 - [Gemmi](https://gemmi.readthedocs.io/en/latest/)
