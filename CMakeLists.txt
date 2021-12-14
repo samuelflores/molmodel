@@ -292,6 +292,15 @@ else ()
     set(SIMBODY_FIXED_STATIC_LIBS ${Simbody_STATIC_LIBRARIES})
 endif ()
 
+# Set installation directories
+if (UNIX)
+    include(GNUInstallDirs)
+elseif (WIN32)
+    set(CMAKE_INSTALL_LIBDIR "lib")
+    set(CMAKE_INSTALL_INCLUDEDIR "include")
+    set(CMAKE_INSTALL_BINDIR "bin")
+endif ()
+
 if (BUILD_SHARED_LIBRARIES)
     add_library(
         ${SHARED_TARGET} SHARED
@@ -372,14 +381,6 @@ ENDIF()
 IF(BUILD_TESTING)
     ADD_SUBDIRECTORY(tests)
 ENDIF()
-
-if (UNIX)
-    include(GNUInstallDirs)
-elseif (WIN32)
-    set(CMAKE_INSTALL_LIBDIR "lib")
-    set(CMAKE_INSTALL_INCLUDEDIR "include")
-    set(CMAKE_INSTALL_BINDIR "bin")
-endif ()
 
 if (WIN32)
     # Install include files into base include folder since it's a sandbox
