@@ -28,7 +28,7 @@
 # And there is no static version.
 #----------------------------------------------------
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 PROJECT(Molmodel)
 
@@ -432,10 +432,10 @@ install(
 )
 
 include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
+write_basic_config_version_file(
     ${CMAKE_CURRENT_BINARY_DIR}/cmake/MolmodelConfigVersion.cmake
     VERSION "${MOLMODEL_VERSION}"
-    COMPATIBILITY SameMinorVersion
+    COMPATIBILITY SameMajorVersion
 )
 install(
     FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/MolmodelConfigVersion.cmake
