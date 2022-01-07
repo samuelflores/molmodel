@@ -9,35 +9,53 @@ set(CMAKE_DEBUG_POSTFIX "_d")
 # The library is dependent on its local .cpp file and some of
 # the Molmodel classes. We'll list everything to be safe.
 
-IF (OpenMM_STATIC_LIBRARY)
-    ADD_LIBRARY(OpenMMPlugin STATIC
+if (BUILD_STATIC_LIBRARIES)
+    ADD_LIBRARY(OpenMMPlugin_static STATIC
         OpenMMPlugin.cpp
         ${SOURCE_INCLUDE_FILES}
         ${API_ABS_INCLUDE_FILES})
-ELSE ()
-    ADD_LIBRARY(OpenMMPlugin SHARED
+
+    SET_TARGET_PROPERTIES(OpenMMPlugin_static
+                          PROPERTIES
+                          OUTPUT_NAME OpenMMPlugin
+                              PROJECT_LABEL "Plugin - OpenMMPlugin (static)")
+
+    TARGET_LINK_LIBRARIES(
+        OpenMMPlugin_static
+        PRIVATE ${STATIC_TARGET}                # SimTKMolmodel.dll
+        PRIVATE ${SIMBODY_FIXED_STATIC_LIBS}    # We actually just need SimTKcommon but there is no easy way how to extract it from the list of all libs
+        PRIVATE ${OpenMM_LIBRARIES}
+    )
+
+    install(
+        TARGETS OpenMMPlugin_static EXPORT MolmodelTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/plugins
+    )
+endif ()
+if (BUILD_SHARED_LIBRARIES)
+    ADD_LIBRARY(OpenMMPlugin_shared SHARED
         OpenMMPlugin.cpp
         ${SOURCE_INCLUDE_FILES}
         ${API_ABS_INCLUDE_FILES})
-ENDIF ()
 
-SET_TARGET_PROPERTIES(OpenMMPlugin PROPERTIES
-	PROJECT_LABEL "Plugin - OpenMMPlugin")
+    SET_TARGET_PROPERTIES(OpenMMPlugin_shared
+                          PROPERTIES
+                              OUTPUT_NAME OpenMMPlugin
+                              PROJECT_LABEL "Plugin - OpenMMPlugin")
 
-# The plugin depends on the OpenMM.dll that is part of
-# the OpenMM distribution.
+    TARGET_LINK_LIBRARIES(
+        OpenMMPlugin_shared
+        PRIVATE ${SHARED_TARGET}         # SimTKMolmodel.dll
+        PRIVATE ${SIMBODY_FIXED_LIBS}    # We actually just need SimTKcommon but there is no easy way how to extract it from the list of all libs
+        PRIVATE ${OpenMM_LIBRARIES}
+    )
 
-TARGET_LINK_LIBRARIES(
-    OpenMMPlugin
-    PRIVATE ${SHARED_TARGET}        # SimTKMolmodel.dll
-    PRIVATE ${SIMBODY_FIXED_LIBS}   # We actually just need SimTKcommon but there is no easy way how to extract it from the list of all libs
-    PRIVATE ${OpenMM_LIBRARIES}
-)
-
-
-install(
-    TARGETS OpenMMPlugin EXPORT MolmodelTargets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/plugins
-)
+    install(
+        TARGETS OpenMMPlugin_shared EXPORT MolmodelTargets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/plugins
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}/plugins
+    )
+endif ()
