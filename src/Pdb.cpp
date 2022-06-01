@@ -226,7 +226,8 @@ std::ostream& PdbAtom::write(
 
     // residue number
     // replacing  std::right with std::setfill('0') . this means residue numbers will be padded with zeros on the left. Makes sort by alphabetization easier.  have to turn off setfill with ' '.
-    os << /*std::right*/ std::setfill('0')  << std::setw(4) << residueId.residueNumber << std::setfill(' ') ;
+    // SCF turned off fill on left with zeros, because that does mucks up negative residue numbers which I think we should have.
+    os << /*std::right*/ std::setfill(' ')  << std::setw(4) << residueId.residueNumber << std::setfill(' ') ;
 
     // residue insertion code at position 27
     os << residueId.insertionCode;
