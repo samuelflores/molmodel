@@ -2388,13 +2388,11 @@ void DuMMForceFieldSubsystemRep::setBiotypeChargedAtomType(DuMM::ChargedAtomType
     assert(chargedAtomTypesByBiotype.find(biotypeIx) != chargedAtomTypesByBiotype.end());
 }
 
-DuMM::ChargedAtomTypeIndex DuMMForceFieldSubsystemRep::getBiotypeChargedAtomType(BiotypeIndex biotypeIx) const {
+DuMM::ChargedAtomTypeIndex DuMMForceFieldSubsystemRep::getBiotypeChargedAtomType(BiotypeIndex biotypeIx) const
+{
     assert(biotypeIx.isValid());
+    assert(chargedAtomTypesByBiotype.find(biotypeIx) != chargedAtomTypesByBiotype.end());
 
-//std::cout << "getBiotypeChargedAtomType  biotypeIx= " <<  biotypeIx << "  atom=" << Biotype::get(biotypeIx).getAtomName() 
-//<< "  residue=" << Biotype::get(biotypeIx).getResidueName() << std::endl;
-      
-  //  assert (chargedAtomTypesByBiotype.find(biotypeIx) != chargedAtomTypesByBiotype.end());
     return chargedAtomTypesByBiotype.find(biotypeIx)->second;
 }
 
