@@ -24,6 +24,8 @@
 #     endif()
 #
 
+cmake_minimum_required(VERSION 3.10)
+
 # Generic locations to search for OpenMM files
 set(OpenMM_SEARCH_PATHS 
     ${SimTK_SDK} # SimTK.org nightly builds location

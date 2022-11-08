@@ -71,7 +71,7 @@
 #       environment variables if present. Note that this has the same name
 #       as one of the environment variables but is distinct.
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 
 # Get values of relevant environment variables for convenient testing.
 set(ENV_SIMBODY_HOME_VALUE $ENV{SIMBODY_HOME})
