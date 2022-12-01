@@ -39,6 +39,8 @@
 #include "molmodel/internal/Biotype.h"
 #include "DuMMForceFieldSubsystemRep.h"
 
+#include "SimbodyVersionCheck.h"
+
 using namespace SimTK;
 
 
@@ -1067,6 +1069,7 @@ int DuMMForceFieldSubsystemRep::realizeSubsystemTopologyImpl(State& s) const
     }
 
     if (!usingOpenMM) {
+#if SIMBODY_CURRENT_VERSION >= SIMBODY_VERSION_CHECK(3, 8, 0)
         // If the caller specified how many threads to use, even if only one,
         // and says "useMultithreadedComputation" then we will use the
         // multithreaded code.
@@ -1098,6 +1101,7 @@ int DuMMForceFieldSubsystemRep::realizeSubsystemTopologyImpl(State& s) const
                                  " worker thread.\n";
             }
         }
+#endif // SIMBODY_VERSION_CHECK
     }
     
     // If we're not using openMM, but we are using multithreaded computation, create 

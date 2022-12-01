@@ -52,6 +52,8 @@
 
 #include "OpenMMPlugin.h"
 
+#include "SimbodyVersionCheck.h"
+
 #include <string>
 #include <vector>
 #include <cmath>
@@ -1396,7 +1398,8 @@ public:
     :   ForceSubsystem::Guts("DuMMForceFieldSubsystem", "2.2.0"), 
 	    forceEvaluationCount(0),
 	    nextUnusedAtomClassIndex(0),
-	    nextUnusedChargedAtomTypeIndex(0)
+	    nextUnusedChargedAtomTypeIndex(0),
+	    usingMultithreaded(false)
     {
         vdwMixingRule = DuMMForceFieldSubsystem::WaldmanHagler;
         vdwGlobalScaleFactor=coulombGlobalScaleFactor=gbsaGlobalScaleFactor     = 1;
@@ -1424,7 +1427,6 @@ public:
         usingOpenMM     = false;
         openMMPluginIfc = 0;
 
-        usingMultithreaded = false;
         numThreadsInUse   = 0;
         nonbondedExecutor = 0;  // these are allocated if we end up multithreaded
         gbsaExecutor      = 0;
@@ -1849,11 +1851,13 @@ private:
         delete openMMPluginIfc;     openMMPluginIfc = 0;
         openMMPlugin.unload();  // nothing happens if it wasn't loaded
 
+#if SIMBODY_CURRENT_VERSION >= SIMBODY_VERSION_CHECK(3, 8, 0)
         usingMultithreaded = false;
         numThreadsInUse    = 0;
         delete nonbondedExecutor;   nonbondedExecutor = 0;
         delete gbsaExecutor;        gbsaExecutor = 0;
         delete executor;            executor = 0;
+#endif // SIMBODY_VERSION_CHECK
 
         vdwScaleSingleThread.clear();
         coulombScaleSingleThread.clear();
@@ -2144,7 +2148,12 @@ public:
     mutable Array_<Real, DuMM::NonbondAtomIndex> coulombScaleSingleThread;
     
     // Used for multithreaded computation.
-    bool                    usingMultithreaded;
+#if SIMBODY_CURRENT_VERSION >= SIMBODY_VERSION_CHECK(3, 8, 0)
+    bool usingMultithreaded;
+#else
+    // Do not allow multithreading unless we have Simbody 3.8 or newer
+    const bool usingMultithreaded;
+#endif // SIMBODY_VERSION_CHECK
     int                     numThreadsInUse;
     Parallel2DExecutor*     nonbondedExecutor;
     Parallel2DExecutor*     gbsaExecutor;
