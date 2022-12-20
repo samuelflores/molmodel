@@ -30,6 +30,27 @@
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
+function(GET_SIMBODY_VERSION VERTAG)
+    string(REGEX MATCH "[0-9].[0-9]" VERTAG_MATCHED ${VERTAG})
+    string(REGEX MATCHALL "[0-9]" SIMBODY_VER ${VERTAG_MATCHED})
+
+    list(LENGTH SIMBODY_VER SIMBODY_VER_LEN)
+    if (NOT ${SIMBODY_VER_LEN} EQUAL 2)
+        message(FATAL_ERROR "Unknown Simbody version string ${VERTAG}")
+    endif ()
+
+    list(GET SIMBODY_VER 0 SIMBODY_MAJOR)
+    list(GET SIMBODY_VER 1 SIMBODY_MINOR)
+    # Version string does not contain patch version, assume zero
+    set(SIMBODY_PATCH 0)
+
+    message(STATUS "Found Simbody version ${SIMBODY_MAJOR}.${SIMBODY_MINOR}")
+
+    add_definitions("-DSimTK_SimTKCOMMON_MAJOR_VERSION=${SIMBODY_MAJOR}")
+    add_definitions("-DSimTK_SimTKCOMMON_MINOR_VERSION=${SIMBODY_MINOR}")
+    add_definitions("-DSimTK_SimTKCOMMON_PATCH_VERSION=${SIMBODY_PATCH}")
+endfunction()
+
 PROJECT(Molmodel)
 
 SET(MOLMODEL_MAJOR_VERSION 3)
@@ -70,6 +91,8 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules")
 find_package(Simbody REQUIRED)
 find_package(OpenMM REQUIRED)
 find_package(ZLIB REQUIRED)
+
+GET_SIMBODY_VERSION(${Simbody_VERSION})
 
 include_directories(SYSTEM ${Simbody_INCLUDE_DIR})
 include_directories(SYSTEM ${OpenMM_INCLUDE_DIR})
