@@ -15,7 +15,7 @@ FROM ubuntu:22.04 as OSSetup
 RUN apt update
 #RUN apt upgrade
 # This repo has python:
-RUN add-apt-repository ppa:deadsnakes/ppa
+RUN add-apt-repository -y ppa:deadsnakes/ppa
 RUN apt install -y git wget swig doxygen libblas-dev liblapack-dev  cmake-curses-gui zlib1g zlib1g-dev apt-utils snapd build-essential libssl-dev software-properties-common lsb-release vim python3.9
 RUN mkdir /github
 #############
