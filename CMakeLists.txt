@@ -84,6 +84,15 @@ set(
     "${MOLMODEL_MAJOR_VERSION}.${MOLMODEL_MINOR_VERSION}"
 )
 
+# Set installation directories
+if (UNIX)
+    include(GNUInstallDirs)
+elseif (WIN32)
+    set(CMAKE_INSTALL_LIBDIR "lib")
+    set(CMAKE_INSTALL_INCLUDEDIR "include")
+    set(CMAKE_INSTALL_BINDIR "bin")
+endif ()
+
 # Permit use of custom FindOpenMM and FindSimbody modules
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules")
 
@@ -290,7 +299,8 @@ ENDFOREACH(subdir)
 INCLUDE_DIRECTORIES(BEFORE ${PROJECT_SOURCE_DIR}/src)
 
 if (NOT ${GEMMI_DIR} STREQUAL "")
-    include_directories("${GEMMI_DIR}/include")
+    include_directories("${GEMMI_DIR}/${CMAKE_INSTALL_INCLUDEDIR}")
+    link_directories("${GEMMI_DIR}/${CMAKE_INSTALL_LIBDIR}")
 endif ()
 
 #
@@ -315,15 +325,6 @@ else ()
     set(SIMBODY_FIXED_STATIC_LIBS ${Simbody_STATIC_LIBRARIES})
 endif ()
 
-# Set installation directories
-if (UNIX)
-    include(GNUInstallDirs)
-elseif (WIN32)
-    set(CMAKE_INSTALL_LIBDIR "lib")
-    set(CMAKE_INSTALL_INCLUDEDIR "include")
-    set(CMAKE_INSTALL_BINDIR "bin")
-endif ()
-
 if (BUILD_SHARED_LIBRARIES)
     add_library(
         ${SHARED_TARGET} SHARED
@@ -345,12 +346,14 @@ if (BUILD_SHARED_LIBRARIES)
             PRIVATE ${SIMBODY_FIXED_LIBS}
             PRIVATE ${ZLIB_LIBRARIES}
             PRIVATE ws2_32
+            PRIVATE gemmi_cpp
         )
     else ()
         target_link_libraries(
             ${SHARED_TARGET}
             PRIVATE ${SIMBODY_FIXED_LIBS}
             PRIVATE ${ZLIB_LIBRARIES}
+            PRIVATE gemmi_cpp
         )
     endif ()
 
@@ -383,12 +386,14 @@ if (BUILD_STATIC_LIBRARIES)
             PRIVATE ${SIMBODY_FIXED_STATIC_LIBS}
             PRIVATE ${ZLIB_LIBRARIES}
             PRIVATE ws2_32
+            PRIVATE gemmi_cpp
         )
     else ()
         target_link_libraries(
             ${STATIC_TARGET}
             PRIVATE ${SIMBODY_FIXED_STATIC_LIBS}
             PRIVATE ${ZLIB_LIBRARIES}
+            PRIVATE gemmi_cpp
         )
     endif ()
 
