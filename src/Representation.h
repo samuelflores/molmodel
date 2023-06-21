@@ -3,6 +3,7 @@
 #ifndef REPRESENTATION_H
 #define REPRESENTATION_H
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>
