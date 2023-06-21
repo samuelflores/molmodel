@@ -36,7 +36,7 @@ gemmi::Structure gemmiStructFromDoc(const gemmi::cif::Document &doc) {
     else if (doc.blocks.size() > 1)
         std::cerr << "!!! Warning !!! Cif input contains multiple blocks. Molmodel will use the first block named " << doc.blocks.at(0).name << " and ignore the rest." << std::endl;
 
-    return gemmi::impl::make_structure_from_block(doc.blocks.front());
+    return gemmi::make_structure_from_block(doc.blocks.front());
 }
 
 gemmi::Structure gemmiStructFromFile(const std::string &fileName) {

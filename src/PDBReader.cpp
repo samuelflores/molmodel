@@ -95,7 +95,7 @@ static gemmi::Structure getStructureFromFile( const std::string &filename ) {
         }
 
         //======================================== Generate structure from block
-        return gemmi::impl::make_structure_from_block ( gemmiDoc.blocks.at(0) );
+        return gemmi::make_structure_from_block ( gemmiDoc.blocks.at(0) );
     }
 
     // Assume PDB
