@@ -87,6 +87,25 @@ bool PdbResidueId::operator<(const PdbResidueId& other) const {
     else return false;
 }
 
+// coordinate is the actual number to be written, so it should be in Å for PDB format.
+void writeCoordToStream(std::ostream& os, const double coordinate  ) {
+    const int width = 8; // PDB coordinates are fixed to 8 columns.
+    int precision = 2;
+    //std::cout<<"About to write coordinate = "<<coordinate<<"  "<<std::endl;	
+    if ((coordinate <= -100000.00) || (coordinate >=1000000.00)){
+        precision = 1;
+    }
+    else if ((coordinate <= -1000000.00) || (coordinate >=10000000.00)){
+        precision = 0;
+    }
+    else if ((coordinate <= -10000000.00) || (coordinate >=100000000.00)){
+        SimTK_ASSERT_ALWAYS(0,"A coordinate is too large to print in PDB format");
+    }
+    
+    os << std::right << std::setw(width) << std::setiosflags(std::ios::fixed) << std::setprecision(precision)<<coordinate;
+    //std::cout<<"About to write coordinate = "<<coordinate<<" as >" << std::right << std::setw(width) << std::setiosflags(std::ios::fixed) << std::setprecision(precision)<<coordinate<<"< "   <<std::endl;	
+}
+
 // Write columns 31 to 66 of a PDB ATOM/HETATM record at this location.
 std::ostream& PdbAtomLocation::writePdb(std::ostream& os, const Transform& transform) const 
 {
@@ -96,11 +115,17 @@ std::ostream& PdbAtomLocation::writePdb(std::ostream& os, const Transform& trans
     // convert internal nanometers to Angstroms by multiplying by ten
 
     // S Flores modified so that precision is reduced to accomodate larger numbers
-    
-    if (((modCoords[0] * 10.0) > -1000) && ((modCoords[0] * 10.0) < 10000))  
+    // columns 31-38 are for X, 39-46 are for Y, 47-54 are for Z.
+    writeCoordToStream(os, (modCoords[0] * 10.0));
+    writeCoordToStream(os, (modCoords[1] * 10.0));
+    writeCoordToStream(os, (modCoords[2] * 10.0));
+    /*
+    if (((modCoords[0] * 10.0) > -1000) && ((modCoords[0] * 10.0) < 10000)) {  
         os << std::right << std::setw(8) << std::setiosflags(std::ios::fixed) << std::setprecision(3);
-    else if (((modCoords[0] * 10.0) > -10000) && ((modCoords[0] * 10.0) < 100000))
+        }	
+    else if (((modCoords[0] * 10.0) > -10000) && ((modCoords[0] * 10.0) < 100000)){
         os << std::right << std::setw(8) << std::setiosflags(std::ios::fixed) << std::setprecision(2);
+    }
     else if (((modCoords[0] * 10.0) > -100000) && ((modCoords[0] * 10.0) < 1000000)) {
         os << std::right << std::setw(8) << std::setiosflags(std::ios::fixed) << std::setprecision(1);
     }
@@ -108,7 +133,8 @@ std::ostream& PdbAtomLocation::writePdb(std::ostream& os, const Transform& trans
         std::cout<<__FILE__<<":"<<__LINE__<<" : Trouble writing coordinates = "<<modCoords[0]<<", "<<modCoords[1]<<", "<<modCoords[2]<<std::endl;
         SimTK_ASSERT_ALWAYS(0,"An X-coordinate is too large to print in PDB format");}
     os << modCoords[0] * 10.0; // X
-
+    */
+    /*
     if (((modCoords[1] * 10.0) > -1000) && ((modCoords[1] * 10.0) < 10000))
         os << std::right << std::setw(8) << std::setiosflags(std::ios::fixed) << std::setprecision(3);
     else if (((modCoords[1] * 10.0) > -10000) && ((modCoords[1] * 10.0) < 100000))
@@ -119,7 +145,8 @@ std::ostream& PdbAtomLocation::writePdb(std::ostream& os, const Transform& trans
         std::cout<<__FILE__<<":"<<__LINE__<<" : Trouble writing coordinates = "<<modCoords[0]<<", "<<modCoords[1]<<", "<<modCoords[2]<<std::endl;
         SimTK_ASSERT_ALWAYS(0,"A Y-coordinate is too large to print in PDB format");}
     os << modCoords[1] * 10.0; // Y
-
+    */
+    /*
     if (((modCoords[2] * 10.0) > -1000) && ((modCoords[2] * 10.0) < 10000))  
         os << std::right << std::setw(8) << std::setiosflags(std::ios::fixed) << std::setprecision(3);
     else if (((modCoords[2] * 10.0) > -10000) && ((modCoords[2] * 10.0) < 100000))
@@ -130,7 +157,7 @@ std::ostream& PdbAtomLocation::writePdb(std::ostream& os, const Transform& trans
         std::cout<<__FILE__<<":"<<__LINE__<<" : Trouble writing coordinates = "<<modCoords[0]<<", "<<modCoords[1]<<", "<<modCoords[2]<<std::endl;
         SimTK_ASSERT_ALWAYS(0,"A Z-coordinate is too large to print in PDB format");}
     os << modCoords[2] * 10.0; // Z
-
+    */
     // occupancy
     os << std::right << std::setw(6) << std::setiosflags(std::ios::fixed) << std::setprecision(2) << occupancy;
 
@@ -227,7 +254,22 @@ std::ostream& PdbAtom::write(
     // residue number
     // replacing  std::right with std::setfill('0') . this means residue numbers will be padded with zeros on the left. Makes sort by alphabetization easier.  have to turn off setfill with ' '.
     // SCF turned off fill on left with zeros, because that does mucks up negative residue numbers which I think we should have.
-    os << /*std::right*/ std::setfill(' ')  << std::setw(4) << residueId.residueNumber << std::setfill(' ') ;
+    //os << /*std::right*/ std::setfill(' ')  << std::setw(4) << residueId.residueNumber << std::setfill(' ') ;
+
+    if ( residueId.residueNumber  < 10000) 
+    // added a std::dec just to be sure we're back to decimal.
+        {os << std::right << std::dec <<std::setfill(' ')<< std::setw(4) <<  residueId.residueNumber  ;}
+    else 
+	// Following Mike Kuiper's suggestion, if atom numbers are too large to fit in the 5-character alloted column, write in hex.
+	// making sure to set os back to std::dec so as to not muck up all the other fields in the ATOM record
+        {os << std::right << std::hex <<std::setfill(' ')<< std::setw(4) <<  residueId.residueNumber  ;}
+        //{os << std::right << std::hex << std::setw(5) << nextAtomSerialNumber << std::dec;}
+
+
+
+
+
+
 
     // residue insertion code at position 27
     os << residueId.insertionCode;
