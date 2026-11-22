@@ -327,11 +327,32 @@ public:
         if (rStructure.size() > 0) {
             int proteinIndex = 0;
             for (const auto &rChain : rStructure.front().chains) {
+                if (proteinIndex >= (int)compounds.size()) {
+                    std::cerr << "PDBReader::createState(): WARNING: no compound was created for chain '"
+                              << rChain.getId() << "' (" << rChain.residues.size()
+                              << " residues, e.g. waters or heterogens); skipping its atoms." << std::endl;
+                    continue;
+                }
+                const Biopolymer& compound = compounds[proteinIndex];
+                // Look up residues by their PDB residue number, not by their
+                // name within the compound: residue names are 0-based internal
+                // sequence positions, which do not match PDB numbering once
+                // end caps are added.
+                std::map<int, ResidueInfo::Index> residuesByPdbNumber;
+                for (ResidueInfo::Index ix(0); ix < compound.getNumResidues(); ++ix) {
+                    const ResidueInfo& r = compound.getResidue(ix);
+                    residuesByPdbNumber[r.getPdbResidueNumber()] = ix;
+                }
                 for (const auto &rResidue : rChain.residues) {
-                    const auto &resName = std::to_string(rResidue.id);
-                    const Biopolymer& compound = compounds[proteinIndex];
-                    const ResidueInfo::Index resIx = compound.getResidue(resName).getIndex();
-                    const ResidueInfo& residue = compound.getResidue(resName);
+                    const auto found = residuesByPdbNumber.find(rResidue.id);
+                    if (found == residuesByPdbNumber.end()) {
+                        std::cerr << "PDBReader::createState(): WARNING: compound has no residue "
+                                  << "with PDB residue number " << rResidue.id
+                                  << "; skipping its atoms." << std::endl;
+                        continue;
+                    }
+                    const ResidueInfo::Index resIx = found->second;
+                    const ResidueInfo& residue = compound.getResidue(resIx);
 
                     for (const auto &rAtom : rResidue.atoms) {
                         for (ResidueInfo::AtomIndex atomId(0); atomId < residue.getNumAtoms(); atomId++) {

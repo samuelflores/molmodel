@@ -2396,11 +2396,19 @@ ResidueInfo& BiopolymerRep::updResidue(ResidueInfo::Index residueIndex) {
 }
 
 const ResidueInfo& BiopolymerRep::getResidue(const Compound::Name& residueName) const {
-    return residues[residueIdsByName.find(residueName)->second];
+    const auto found = residueIdsByName.find(residueName);
+    if (found == residueIdsByName.end())
+        throw std::invalid_argument(
+            "BiopolymerRep::getResidue(): no residue named '" + residueName + "'");
+    return residues[found->second];
 }
 
 ResidueInfo& BiopolymerRep::updResidue(const Compound::Name& residueName) {
-    return residues[residueIdsByName.find(residueName)->second];
+    const auto found = residueIdsByName.find(residueName);
+    if (found == residueIdsByName.end())
+        throw std::invalid_argument(
+            "BiopolymerRep::updResidue(): no residue named '" + residueName + "'");
+    return residues[found->second];
 }
 
 
